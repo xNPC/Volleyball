@@ -16,7 +16,7 @@ class Organization extends Model
 
     protected $fillable = ['name', 'status'];
 
-    protected $allowedSorts = [
+    protected array $allowedSorts = [
         'status'
     ];
 }
