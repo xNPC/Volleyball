@@ -20,6 +20,7 @@ use App\Orchid\Screens\User\UserProfileScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 use App\Orchid\Screens\Organization\OrganizationListScreen;
+use App\Orchid\Screens\Tournament\TournamentListScreen;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,9 @@ Route::screen('/main', PlatformScreen::class)
 Route::screen('organizations', OrganizationListScreen::class)
     ->name('platform.organizations');
 
+// Турниры
+Route::screen('Tournament', TournamentListScreen::class)
+    ->name('platform.tournaments');
 
 // Platform > Profile
 Route::screen('profile', UserProfileScreen::class)

@@ -39,6 +39,14 @@ class PlatformProvider extends OrchidServiceProvider
                 ->title('Управление турнирами')
                 ->route('platform.organizations'),
 
+            Menu::make('Турниры')
+                ->icon('menu-button-wide-fill')
+                ->list([
+                    Menu::make('Создать турнир')->icon('plus-square'),
+                    Menu::make('Активные турниры')->icon('trophy')
+                        ->route('platform.tournaments'),
+                ]),
+
             Menu::make('Get Started')
                 ->icon('bs.book')
                 ->title('Navigation')
@@ -107,7 +115,8 @@ class PlatformProvider extends OrchidServiceProvider
         return [
             ItemPermission::group(__('System'))
                 ->addPermission('platform.systems.roles', __('Roles'))
-                ->addPermission('platform.systems.users', __('Users')),
+                ->addPermission('platform.systems.users', __('Users'))
+                ->addPermission('platform.systems.test', __('Test')),
         ];
     }
 }
