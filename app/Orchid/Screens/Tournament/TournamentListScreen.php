@@ -19,10 +19,10 @@ class TournamentListScreen extends Screen
         return [
             'tournaments' => new Repository([
                 'id' => '1',
-                'name' => 'Первый и самый главный',
+                /*'name' => 'Первый и самый главный',
                 'date_start' => '2019-01-01',
                 'date_end' => '2019-01-31',
-                'format' => '4+2',
+                'format' => '4+2',*/
             ]),
         ];
     }
@@ -56,7 +56,7 @@ class TournamentListScreen extends Screen
     {
         return [
             Layout::table('tournaments', [
-                TD::make('tournaments.id', 'ID'),
+                TD::make( 'tournament.id','ID'),
 //                TD::make('name', 'Название'),
 //                TD::make('date_start', 'Начало'),
 //                TD::make('date_end', 'Окончание'),

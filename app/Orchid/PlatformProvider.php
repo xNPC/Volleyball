@@ -42,7 +42,8 @@ class PlatformProvider extends OrchidServiceProvider
             Menu::make('Турниры')
                 ->icon('menu-button-wide-fill')
                 ->list([
-                    Menu::make('Создать турнир')->icon('plus-square'),
+                    Menu::make('Создать турнир')->icon('plus-square')
+                        ->route('platform.tournament.create'),
                     Menu::make('Активные турниры')->icon('trophy')
                         ->route('platform.tournaments'),
                 ]),

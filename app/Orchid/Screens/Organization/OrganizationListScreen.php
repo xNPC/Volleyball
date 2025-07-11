@@ -93,7 +93,7 @@ class OrganizationListScreen extends Screen
                     ->required()
                     ->options([
                         'active'=>'Активная',
-                        'inactive'=>'Не активная'
+                        'inactive'=>'Не активная',
                     ])
                     ->title('Статус')
                     ->help('Включение или выключение организации')
@@ -128,9 +128,9 @@ class OrganizationListScreen extends Screen
         $organizationId = $request->input('organization.id');
         Organization::updateOrCreate([
             'id' => $organizationId
-        ], array_merge($request->validated()['organization']/*, [
+        ], array_merge($request->validated()['organization'], [
             'status' => is_null($request->input('organization.status')) ? 'active' : $request->input('organization.status')
-        ]*/));
+        ]));
 
         is_null($organizationId) ? Toast::info('Организация успешно создана') : Toast::info('Организация успешно обновлена');
     }

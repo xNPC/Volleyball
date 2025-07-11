@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 use App\Orchid\Screens\Organization\OrganizationListScreen;
 use App\Orchid\Screens\Tournament\TournamentListScreen;
+use App\Orchid\Screens\Tournament\TournamentCreateScreen;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,8 +42,12 @@ Route::screen('/main', PlatformScreen::class)
 Route::screen('organizations', OrganizationListScreen::class)
     ->name('platform.organizations');
 
+// Создание Турнира
+Route::screen('tournament/create', TournamentCreateScreen::class)
+    ->name('platform.tournament.create');
+
 // Турниры
-Route::screen('Tournament', TournamentListScreen::class)
+Route::screen('tournaments', TournamentListScreen::class)
     ->name('platform.tournaments');
 
 // Platform > Profile
