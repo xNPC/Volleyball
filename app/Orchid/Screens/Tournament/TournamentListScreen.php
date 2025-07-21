@@ -17,13 +17,22 @@ class TournamentListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'tournaments' => new Repository([
-                'id' => '1',
-                /*'name' => 'Первый и самый главный',
-                'date_start' => '2019-01-01',
-                'date_end' => '2019-01-31',
-                'format' => '4+2',*/
-            ]),
+            'tournaments' => [
+                new Repository([
+                    'id' => '1',
+                    'name' => 'Первый и самый главный',
+                    'date_start' => '2019-01-01',
+                    'date_end' => '2019-01-31',
+                    'format' => '4+2',
+                ]),
+                new Repository([
+                    'id' => '2',
+                    'name' => 'Второй и не самый главный',
+                    'date_start' => '2019-01-01',
+                    'date_end' => '2019-01-31',
+                    'format' => 'Мужской',
+                ]),
+            ],
         ];
     }
 
@@ -56,11 +65,11 @@ class TournamentListScreen extends Screen
     {
         return [
             Layout::table('tournaments', [
-                TD::make( 'tournament.id','ID'),
-//                TD::make('name', 'Название'),
-//                TD::make('date_start', 'Начало'),
-//                TD::make('date_end', 'Окончание'),
-//                TD::make('format', 'Формат')
+                TD::make( 'id','ID'),
+                TD::make('name', 'Название'),
+                TD::make('date_start', 'Начало'),
+                TD::make('date_end', 'Окончание'),
+                TD::make('format', 'Формат')
             ])
         ];
     }
