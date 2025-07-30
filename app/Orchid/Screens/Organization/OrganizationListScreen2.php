@@ -135,5 +135,3 @@ class OrganizationListScreen extends Screen
         is_null($organizationId) ? Toast::info('Организация успешно создана') : Toast::info('Организация успешно обновлена');
     }
 }
-
-*/
