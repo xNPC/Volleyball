@@ -23,6 +23,9 @@ use App\Orchid\Screens\Organization\OrganizationListScreen;
 use App\Orchid\Screens\Organization\OrganizationEditScreen;
 use App\Orchid\Screens\Tournament\TournamentListScreen;
 use App\Orchid\Screens\Tournament\TournamentCreateScreen;
+use App\Orchid\Screens\Venue\VenueListScreen;
+use App\Orchid\Screens\Venue\VenueEditScreen;
+use App\Orchid\Controllers\VenueController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +53,12 @@ Route::screen('organizations/create', OrganizationEditScreen::class)
 
 Route::screen('organizations/{organization}/edit', OrganizationEditScreen::class)
     ->name('platform.organizations.edit');
+
+// Залы
+Route::screen('venues', VenueListScreen::class)->name('platform.venues.list');
+Route::screen('venues/create', VenueEditScreen::class)->name('platform.venues.create');
+Route::screen('venues/{venue}/edit', VenueEditScreen::class)->name('platform.venues.edit');
+Route::post('venues/save/{venue?}', [VenueController::class, 'save'])->name('platform.venues.save');
 
 
 // Создание Турнира
