@@ -20,6 +20,7 @@ use App\Orchid\Screens\User\UserProfileScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 use App\Orchid\Screens\Organization\OrganizationListScreen;
+use App\Orchid\Screens\Organization\OrganizationEditScreen;
 use App\Orchid\Screens\Tournament\TournamentListScreen;
 use App\Orchid\Screens\Tournament\TournamentCreateScreen;
 
@@ -39,8 +40,17 @@ Route::screen('/main', PlatformScreen::class)
     ->name('platform.main');
 
 // Organization
+//Route::screen('organizations', OrganizationListScreen::class)
+//    ->name('platform.organizations');
 Route::screen('organizations', OrganizationListScreen::class)
-    ->name('platform.organizations');
+    ->name('platform.organizations.list');
+
+Route::screen('organizations/create', OrganizationEditScreen::class)
+    ->name('platform.organizations.create');
+
+Route::screen('organizations/{organization}/edit', OrganizationEditScreen::class)
+    ->name('platform.organizations.edit');
+
 
 // Создание Турнира
 Route::screen('tournament/create', TournamentCreateScreen::class)

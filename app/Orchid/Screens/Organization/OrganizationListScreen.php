@@ -2,48 +2,42 @@
 
 namespace App\Orchid\Screens\Organization;
 
-use App\Http\Requests\OrganizationRequest;
 use App\Models\Organization;
-use App\Orchid\Layouts\Organization\OrganizationListTable;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rules\In;
-use Orchid\Screen\Actions\ModalToggle;
-use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Screen;
+use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
-use Orchid\Support\Facades\Toast;
+use Orchid\Screen\Actions\Link;
 
 class OrganizationListScreen extends Screen
 {
-    /**
-     * Fetch data to be displayed on the screen.
-     *
-     * @return array
-     */
-    public function query(): iterable
+
+    public function name(): ?string
+    {
+        return 'Все организации';
+    }
+
+    public function query(): array
     {
         return [
-            'organizations' => Organization::filters()->defaultSort('status', 'asc')->paginate(10)
+            'organizations' => Organization::filters()->paginate()
         ];
     }
 
-    /**
-     * The name of the screen displayed in the header.
-     *
-     * @return string|null
-     */
-    public function name(): ?string
+    public function layout(): array
     {
-        return 'Организации';
-    }
-
-    /**
-     * @return string|null
-     */
-    public function description(): ?string
-    {
-        return 'Управление организациями';
+        return [
+            Layout::table('organizations', [
+                TD::make('id', 'ID'),
+                TD::make('name', 'Название'),
+                TD::make('contact_email', 'Email'),
+                TD::make('contact_phone', 'Телефон'),
+                TD::make('actions', 'Действия')
+                    ->render(function (Organization $organization) {
+                        return Link::make('Редактировать')
+                            ->route('platform.organizations.edit', $organization);
+                    })
+            ])
+        ];
     }
 
     /**
@@ -53,85 +47,7 @@ class OrganizationListScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [
-            ModalToggle::make('Добавить организацию')
-                ->modal('createOrganization')
-                ->method('createOrUpdateOrganization')
-                ->class('btn btn-success')
-                ->icon('plus')
-        ];
+        return [];
     }
 
-    /**
-     * The screen's layout elements.
-     *
-     * @return \Orchid\Screen\Layout[]|string[]
-     */
-    public function layout(): iterable
-    {
-        return [
-            OrganizationListTable::class,
-            Layout::modal('createOrganization', Layout::rows([
-                Input::make('organization.name')
-                    ->title('Название')
-                    ->required(),
-                Input::make('organization.status')->type('hidden')
-//                Select::make('organization.status')
-//                    ->options(['active'=>'Активная', 'inactive'=>'Не активная'])
-//                    ->title('Статус')
-//                    ->required()
-            ]))
-                ->title('Создание организации')
-                ->applyButton('Создать'),
-            Layout::modal('editOrganization', Layout::rows([
-                Input::make('organization.id')->type('hidden'),
-                Input::make('organization.name')
-                    ->required()
-                    ->placeholder('Название организации')
-                    ->title('Название'),
-                Select::make('organization.status')
-                    ->required()
-                    ->options([
-                        'active'=>'Активная',
-                        'inactive'=>'Не активная',
-                    ])
-                    ->title('Статус')
-                    ->help('Включение или выключение организации')
-            ]))->title('Редактировать организацию')
-            ->async('asyncGetOrganization')
-        ];
-    }
-
-    public function asyncGetOrganization(Organization $organization): array
-    {
-        return [
-            'organization' => $organization
-        ];
-    }
-
-    public function update(Request $request)
-    {
-        Organization::find($request->input('organization.id'))->update($request->organization);
-        Toast::info('Организация успешно обновлена');
-    }
-
-    public function create(OrganizationRequest $request): void
-    {
-        Organization::create(array_merge($request->validated(), [
-            'status' => 'active'
-        ]));
-        Toast::info('Организация успешно добавлена');
-    }
-
-    public function createOrUpdateOrganization(OrganizationRequest $request): void
-    {
-        $organizationId = $request->input('organization.id');
-        Organization::updateOrCreate([
-            'id' => $organizationId
-        ], array_merge($request->validated()['organization'], [
-            'status' => is_null($request->input('organization.status')) ? 'active' : $request->input('organization.status')
-        ]));
-
-        is_null($organizationId) ? Toast::info('Организация успешно создана') : Toast::info('Организация успешно обновлена');
-    }
 }

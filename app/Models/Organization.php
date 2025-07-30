@@ -2,21 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Orchid\Attachment\Attachable;
 use Orchid\Filters\Filterable;
 use Orchid\Screen\AsSource;
 
-class Organization extends Model
-{
-    //
-    use HasFactory;
-    use AsSource;
-    use Filterable;
+class Organization extends Model {
 
-    protected $fillable = ['name', 'status'];
+    use AsSource, Filterable, Attachable;
 
-    protected array $allowedSorts = [
-        'status'
+    protected $fillable = [
+        'name', 'description', 'logo',
+        'contact_email', 'contact_phone'
     ];
+
+    public function venues()
+    {
+        return $this->hasMany(Venue::class);
+    }
 }
