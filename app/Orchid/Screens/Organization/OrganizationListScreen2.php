@@ -14,7 +14,7 @@ use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
 
-class OrganizationListScreen extends Screen
+class OrganizationListScreen2 extends Screen
 {
     /**
      * Fetch data to be displayed on the screen.
