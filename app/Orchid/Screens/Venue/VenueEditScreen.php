@@ -61,7 +61,7 @@ class VenueEditScreen extends Screen
                 ]),
 
                 'Расписание' => Layout::rows([
-                    \App\Orchid\Layouts\VenueScheduleLayout::class
+                    \App\Orchid\Layouts\Venue\VenueScheduleLayout::class
                 ]),
             ])
         ];

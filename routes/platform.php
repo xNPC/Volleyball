@@ -21,11 +21,12 @@ use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 use App\Orchid\Screens\Organization\OrganizationListScreen;
 use App\Orchid\Screens\Organization\OrganizationEditScreen;
-use App\Orchid\Screens\Tournament\TournamentListScreen;
-use App\Orchid\Screens\Tournament\TournamentCreateScreen;
 use App\Orchid\Screens\Venue\VenueListScreen;
 use App\Orchid\Screens\Venue\VenueEditScreen;
 use App\Orchid\Controllers\VenueController;
+use App\Orchid\Screens\Tournament\TournamentListScreen;
+use App\Orchid\Screens\Tournament\TournamentEditScreen;
+use App\Orchid\Controllers\TournamentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,8 +44,6 @@ Route::screen('/main', PlatformScreen::class)
     ->name('platform.main');
 
 // Organization
-//Route::screen('organizations', OrganizationListScreen::class)
-//    ->name('platform.organizations');
 Route::screen('organizations', OrganizationListScreen::class)
     ->name('platform.organizations.list');
 
@@ -55,19 +54,16 @@ Route::screen('organizations/{organization}/edit', OrganizationEditScreen::class
     ->name('platform.organizations.edit');
 
 // Залы
-Route::screen('venues', VenueListScreen::class)->name('platform.venues.list');
+Route::post('venues/save/{venue?}', [VenueController::class, 'save'])->name('platform.venues.save');
 Route::screen('venues/create', VenueEditScreen::class)->name('platform.venues.create');
 Route::screen('venues/{venue}/edit', VenueEditScreen::class)->name('platform.venues.edit');
-Route::post('venues/save/{venue?}', [VenueController::class, 'save'])->name('platform.venues.save');
-
+//Route::screen('venues', VenueListScreen::class)->name('platform.venues.list');
 
 // Создание Турнира
-Route::screen('tournament/create', TournamentCreateScreen::class)
-    ->name('platform.tournament.create');
-
-// Турниры
-Route::screen('tournaments', TournamentListScreen::class)
-    ->name('platform.tournaments');
+Route::post('tournaments/save/{tournament?}', [TournamentController::class, 'save'])->name('platform.tournaments.save');
+Route::screen('tournaments/create', TournamentEditScreen::class)->name('platform.tournaments.create');
+Route::screen('tournaments/{tournament}/edit', TournamentEditScreen::class)->name('platform.tournaments.edit');
+//Route::screen('tournaments', TournamentListScreen::class)->name('platform.tournaments.list');
 
 // Platform > Profile
 Route::screen('profile', UserProfileScreen::class)
