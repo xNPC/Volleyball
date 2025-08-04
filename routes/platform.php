@@ -30,6 +30,9 @@ use App\Orchid\Controllers\TournamentController;
 use App\Orchid\Screens\Team\TeamListScreen;
 use App\Orchid\Screens\Team\TeamEditScreen;
 use App\Orchid\Controllers\TeamController;
+use App\Orchid\Screens\Match\MatchListScreen;
+use App\Orchid\Screens\Match\MatchEditScreen;
+use App\Orchid\Controllers\MatchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +76,13 @@ Route::post('teams/save/{team?}', [TeamController::class, 'save'])->name('platfo
 Route::screen('teams/create', TeamEditScreen::class)->name('platform.teams.create');
 Route::screen('teams/{team}/edit', TeamEditScreen::class)->name('platform.teams.edit');
 //Route::screen('teams', TeamListScreen::class)->name('platform.teams.list');
+
+// Матчи
+Route::post('matches/save/{match?}', [MatchController::class, 'save'])->name('platform.matches.save');
+Route::screen('matches/create', MatchEditScreen::class)->name('platform.matches.create');
+Route::screen('matches/{match}/edit', MatchEditScreen::class)->name('platform.matches.edit');
+//Route::screen('matches', MatchListScreen::class)->name('platform.matches.list');
+
 
 // Platform > Profile
 Route::screen('profile', UserProfileScreen::class)
