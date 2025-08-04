@@ -2,6 +2,7 @@
 
 namespace App\Orchid\Layouts\Team;
 
+use App\Models\User;
 use Orchid\Screen\Field;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\Input;
