@@ -2,7 +2,10 @@
 
 namespace App\Orchid\Screens\Application;
 
+use App\Models\Team;
+use App\Models\Tournament;
 use App\Models\TournamentApplication;
+use App\Models\Venue;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\CheckBox;
 use Orchid\Support\Facades\Layout;
