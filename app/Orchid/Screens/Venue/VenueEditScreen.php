@@ -2,6 +2,7 @@
 
 namespace App\Orchid\Screens\Venue;
 
+use App\Models\Organization;
 use App\Models\Venue;
 use Orchid\Screen\Screen;
 use Orchid\Screen\Fields\Input;

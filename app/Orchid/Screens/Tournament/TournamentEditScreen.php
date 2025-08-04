@@ -2,6 +2,7 @@
 
 namespace App\Orchid\Screens\Tournament;
 
+use App\Models\Organization;
 use App\Models\Tournament;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
