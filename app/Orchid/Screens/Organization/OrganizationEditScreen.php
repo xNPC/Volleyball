@@ -12,21 +12,34 @@ use Orchid\Screen\Actions\Button;
 
 class OrganizationEditScreen extends Screen
 {
+    public $organization;
+
     /**
      * Fetch data to be displayed on the screen.
      *
      * @return array
      */
-    public function query(): iterable
+    public function query(Organization $organization): iterable
     {
-        return [];
+        return [
+            'organization' => $organization,
+            'logo' => $organization->attachment()->first()
+        ];
     }
-
-    public $organization;
 
     public function name(): ?string
     {
         return $this->organization->exists ? 'Редактирование' : 'Создание организации';
+    }
+
+    /**
+     * The screen's action buttons.
+     *
+     * @return \Orchid\Screen\Action[]
+     */
+    public function commandBar(): iterable
+    {
+        return [];
     }
 
     public function layout(): array
@@ -46,7 +59,8 @@ class OrganizationEditScreen extends Screen
                     ->type('email'),
 
                 Input::make('organization.contact_phone')
-                    ->title('Контактный телефон'),
+                    ->title('Контактный телефон')
+                    ->type('tel'),
 
                 Upload::make('organization.logo')
                     ->title('Логотип')
@@ -55,14 +69,19 @@ class OrganizationEditScreen extends Screen
         ];
     }
 
-    /**
-     * The screen's action buttons.
-     *
-     * @return \Orchid\Screen\Action[]
-     */
-    public function commandBar(): iterable
+    public function createOrUpdate(Organization $organization)
     {
-        return [];
+        $organization->fill($this->request->get('organization'))->save();
+        $organization->attachment()->syncWithoutDetaching(
+            $this->request->input('organization.logo', [])
+        );
     }
 
+    /**
+     * Remove the organization
+     */
+    public function remove(Organization $organization)
+    {
+        $organization->delete();
+    }
 }
