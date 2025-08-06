@@ -37,7 +37,7 @@ class PlatformProvider extends OrchidServiceProvider
             Menu::make('Организации')
                 ->icon('building')
                 ->title('Управление турнирами')
-                ->route('platform.organizations.list'),
+                ->route('platform.organization.list'),
 
             Menu::make('Турниры')
                 ->icon('menu-button-wide-fill')

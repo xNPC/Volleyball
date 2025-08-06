@@ -19,6 +19,7 @@ use App\Orchid\Screens\User\UserListScreen;
 use App\Orchid\Screens\User\UserProfileScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
+use App\Orchid\Screens\Organization\OrganizationScreen;
 use App\Orchid\Screens\Organization\OrganizationListScreen;
 use App\Orchid\Screens\Organization\OrganizationEditScreen;
 use App\Orchid\Screens\Venue\VenueListScreen;
@@ -49,15 +50,18 @@ use App\Orchid\Controllers\MatchController;
 Route::screen('/main', PlatformScreen::class)
     ->name('platform.main');
 
-// Organization
+// Список организаций
 Route::screen('organizations', OrganizationListScreen::class)
-    ->name('platform.organizations.list');
+    ->name('platform.organization.list');
 
+// Создание организации
 Route::screen('organizations/create', OrganizationEditScreen::class)
-    ->name('platform.organizations.create');
+    ->name('platform.organization.create');
 
+// Редактирование организации
 Route::screen('organizations/{organization}/edit', OrganizationEditScreen::class)
-    ->name('platform.organizations.edit');
+    ->name('platform.organization.edit');
+
 
 // Залы
 Route::post('venues/save/{venue?}', [VenueController::class, 'save'])->name('platform.venues.save');

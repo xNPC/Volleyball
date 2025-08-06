@@ -3,12 +3,13 @@
 namespace App\Orchid\Screens\Organization;
 
 use App\Models\Organization;
-use Orchid\Screen\Screen;
+use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Fields\Upload;
 use Orchid\Support\Facades\Layout;
-use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Screen;
+use Illuminate\Http\Request;
 
 class OrganizationEditScreen extends Screen
 {
@@ -29,7 +30,7 @@ class OrganizationEditScreen extends Screen
 
     public function name(): ?string
     {
-        return $this->organization->exists ? 'Редактирование' : 'Создание организации';
+        return $this->organization->exists ? 'Редактирование организации' : 'Создание организации';
     }
 
     /**
@@ -39,7 +40,17 @@ class OrganizationEditScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            Button::make('Сохранить')
+                ->icon('check')
+                ->method('save'),
+
+            Button::make('Удалить')
+                ->icon('trash')
+                ->method('remove')
+                ->confirm('Отменить удаление будет нельзя!')
+                ->canSee($this->organization->exists),
+        ];
     }
 
     public function layout(): array
@@ -62,19 +73,30 @@ class OrganizationEditScreen extends Screen
                     ->title('Контактный телефон')
                     ->type('tel'),
 
-                Upload::make('organization.logo')
+                Upload::make('organization.attachment')
                     ->title('Логотип')
                     ->acceptedFiles('image/*')
+                    ->targetId()
             ])
         ];
     }
 
-    public function createOrUpdate(Organization $organization)
+    public function save(Organization $organization, Request $request)
     {
-        $organization->fill($this->request->get('organization'))->save();
-        $organization->attachment()->syncWithoutDetaching(
-            $this->request->input('organization.logo', [])
-        );
+        $request->validate([
+            'organization.name' => 'required|string|max:255',
+            'organization.attachment' => 'nullable|mimes:jpg,jpeg,png|max:1024'
+        ]);
+
+        $organization->fill($request->input('organization'))->save();
+
+        if ($request->has('organization.attachment')) {
+            $organization->attachment()->sync(
+                $request->input('organization.attachment')
+            );
+        }
+
+        return redirect()->route('platform.organization.list');
     }
 
     /**
@@ -83,5 +105,6 @@ class OrganizationEditScreen extends Screen
     public function remove(Organization $organization)
     {
         $organization->delete();
+        return redirect()->route('platform.organization.list');
     }
 }

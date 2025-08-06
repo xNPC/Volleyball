@@ -3,17 +3,17 @@
 namespace App\Orchid\Screens\Organization;
 
 use App\Models\Organization;
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
-use Orchid\Screen\Actions\Link;
 
 class OrganizationListScreen extends Screen
 {
 
     public function name(): ?string
     {
-        return 'Все организации';
+        return 'Список организаций';
     }
 
     public function query(): array
@@ -34,7 +34,7 @@ class OrganizationListScreen extends Screen
                 TD::make('actions', 'Действия')
                     ->render(function (Organization $organization) {
                         return Link::make('Редактировать')
-                            ->route('platform.organizations.edit', $organization);
+                            ->route('platform.organization.edit', $organization);
                     })
             ])
         ];
@@ -47,7 +47,11 @@ class OrganizationListScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            Link::make('Создать')
+                ->icon('plus')
+                ->route('platform.organization.create')
+        ];
     }
 
 }
