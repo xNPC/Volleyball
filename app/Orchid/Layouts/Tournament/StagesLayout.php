@@ -2,13 +2,12 @@
 
 namespace App\Orchid\Layouts\Tournament;
 
-use Orchid\Screen\Field;
-use Orchid\Screen\Layouts\Rows;
+use Orchid\Screen\Fields\DateRange;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Fields\DateRange;
+use Orchid\Screen\Layouts\Rows;
 
-class TournamentStagesLayout extends Rows
+class StagesLayout extends Rows
 {
     /**
      * Used to create the title of a group of form elements.

@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Tournament;
 
 use App\Models\Organization;
 use App\Models\Tournament;
+use App\Orchid\Layouts\Tournament\StagesLayout;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\DateRange;
@@ -17,9 +18,11 @@ class TournamentEditScreen extends Screen
      *
      * @return array
      */
-    public function query(): iterable
+    public function query(Tournament $tournament): array
     {
-        return [];
+        return [
+            'tournament' => $tournament->load('stages.groups')
+        ];
     }
 
     /**
@@ -67,7 +70,7 @@ class TournamentEditScreen extends Screen
                 ]),
 
                 'Этапы' => Layout::rows([
-                    \App\Orchid\Layouts\Tournament\TournamentStagesLayout::class
+                    StagesLayout::class
                 ]),
             ])
         ];
