@@ -14,6 +14,10 @@ class TournamentStage extends Model
         'order', 'start_date', 'end_date'
     ];
 
+    protected $casts = [
+        'configuration' => 'array'
+    ];
+
     public function tournament()
     {
         return $this->belongsTo(Tournament::class);
@@ -21,6 +25,32 @@ class TournamentStage extends Model
 
     public function groups()
     {
-        return $this->hasMany(StageGroup::class);
+        return $this->hasMany(StageGroup::class)->orderBy('order');
     }
+
+    public function getStageTypeNameAttribute()
+    {
+        return [
+            'group' => 'Групповой',
+            'playoff' => 'Плейофф',
+            'qualification' => 'Квалификация'
+        ][$this->stage_type] ?? $this->stage_type;
+    }
+
+    public function buildGroups()
+    {
+        if ($this->stage_type !== 'group') return;
+
+        $teamCount = $this->tournament->applications()->count();
+        $optimalGroupCount = $this->calculateOptimalGroups($teamCount);
+
+        for ($i = 1; $i <= $optimalGroupCount; $i++) {
+            $this->groups()->firstOrCreate([
+                'name' => "Группа $i",
+                'order' => $i,
+                'team_count' => ceil($teamCount / $optimalGroupCount)
+            ]);
+        }
+    }
+
 }

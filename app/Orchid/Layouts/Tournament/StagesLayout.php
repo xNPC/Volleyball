@@ -2,9 +2,10 @@
 
 namespace App\Orchid\Layouts\Tournament;
 
-use Orchid\Screen\Fields\DateRange;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
+use Orchid\Screen\Fields\Matrix;
+use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Layouts\Rows;
 
 class StagesLayout extends Rows
@@ -19,22 +20,28 @@ class StagesLayout extends Rows
     public function fields(): array
     {
         return [
-            Repeater::make('tournament.stages')
+            Matrix::make('tournament.stages')
                 ->title('Этапы турнира')
+                ->columns([
+                    'Название' => 'name',
+                    'Тип' => 'stage_type',
+                    'Порядок' => 'order'
+                ])
                 ->fields([
-                    Input::make('name')
-                        ->title('Название этапа')
-                        ->required(),
+                    'name' => Input::make()
+                        ->required()
+                        ->placeholder('Групповой этап'),
 
-                    Select::make('stage_type')
+                    'stage_type' => Select::make()
                         ->options([
                             'group' => 'Групповой',
-                            'playoff' => 'Плейофф'
-                        ])
-                        ->title('Тип этапа'),
+                            'playoff' => 'Плейофф',
+                            'qualification' => 'Квалификация'
+                        ]),
 
-                    DateRange::make('dates')
-                        ->title('Даты этапа'),
+                    'order' => Input::make()
+                        ->type('number')
+                        ->min(1)
                 ])
         ];
     }

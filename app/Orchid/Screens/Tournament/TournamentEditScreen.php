@@ -5,14 +5,18 @@ namespace App\Orchid\Screens\Tournament;
 use App\Models\Organization;
 use App\Models\Tournament;
 use App\Orchid\Layouts\Tournament\StagesLayout;
+use Illuminate\Http\Request;
+use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Fields\DateRange;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Fields\DateRange;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
 
 class TournamentEditScreen extends Screen
 {
+    public $tournament;
+
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -21,7 +25,7 @@ class TournamentEditScreen extends Screen
     public function query(Tournament $tournament): array
     {
         return [
-            'tournament' => $tournament->load('stages.groups')
+            'tournament' => $tournament->load('stages')
         ];
     }
 
@@ -34,8 +38,6 @@ class TournamentEditScreen extends Screen
     {
         return [];
     }
-
-    public $tournament;
 
     public function name(): ?string
     {
@@ -74,6 +76,25 @@ class TournamentEditScreen extends Screen
                 ]),
             ])
         ];
+    }
+
+    public function save(Tournament $tournament, Request $request)
+    {
+        $data = $request->validate([
+            'tournament.name' => 'required|string|max:255',
+            'tournament.stages' => 'array'
+        ]);
+
+        $tournament->fill($data['tournament'])->save();
+
+        // Обработка этапов
+        $tournament->stages()->delete();
+
+        foreach ($request->input('tournament.stages', []) as $stageData) {
+            $tournament->stages()->create($stageData);
+        }
+
+        return redirect()->route('platform.tournament.list');
     }
 
 }
