@@ -71,10 +71,9 @@ Route::screen('venues/{venue}/edit', VenueEditScreen::class)->name('platform.ven
 
 // Создание Турнира
 Route::screen('tournament/stages/{stage}/groups/{group}', GroupScreen::class)->name('platform.tournament.group');
-Route::post('tournaments/save/{tournament?}', [TournamentController::class, 'save'])->name('platform.tournaments.save');
 Route::screen('tournaments/create', TournamentEditScreen::class)->name('platform.tournaments.create');
 Route::screen('tournaments/{tournament}/edit', TournamentEditScreen::class)->name('platform.tournaments.edit');
-//Route::screen('tournaments', TournamentListScreen::class)->name('platform.tournaments.list');
+Route::screen('tournaments', TournamentListScreen::class)->name('platform.tournaments.list');
 
 // Команды
 Route::post('teams/save/{team?}', [TeamController::class, 'save'])->name('platform.teams.save');

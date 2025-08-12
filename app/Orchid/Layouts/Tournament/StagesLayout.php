@@ -5,8 +5,8 @@ namespace App\Orchid\Layouts\Tournament;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\Matrix;
-use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Layouts\Rows;
+use Orchid\Screen\Field;
 
 class StagesLayout extends Rows
 {
@@ -28,18 +28,18 @@ class StagesLayout extends Rows
                     'Порядок' => 'order'
                 ])
                 ->fields([
-                    'name' => Input::make()
+                    'name' => Input::make('name')
                         ->required()
                         ->placeholder('Групповой этап'),
 
-                    'stage_type' => Select::make()
+                    'stage_type' => Select::make('stage_type')
                         ->options([
                             'group' => 'Групповой',
                             'playoff' => 'Плейофф',
                             'qualification' => 'Квалификация'
                         ]),
 
-                    'order' => Input::make()
+                    'order' => Input::make('order')
                         ->type('number')
                         ->min(1)
                 ])

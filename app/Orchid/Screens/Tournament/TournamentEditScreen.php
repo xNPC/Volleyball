@@ -7,11 +7,13 @@ use App\Models\Tournament;
 use App\Orchid\Layouts\Tournament\StagesLayout;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
-use Orchid\Screen\Fields\DateRange;
+use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
+use Orchid\Screen\Fields\TextArea;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
+use Orchid\Support\Facades\Toast;
 
 class TournamentEditScreen extends Screen
 {
@@ -25,7 +27,8 @@ class TournamentEditScreen extends Screen
     public function query(Tournament $tournament): array
     {
         return [
-            'tournament' => $tournament->load('stages')
+            'tournament' => $tournament->load('organization'),
+            'organizations' => Organization::all()
         ];
     }
 
@@ -36,7 +39,16 @@ class TournamentEditScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            Button::make('Сохранить')
+                ->icon('check')
+                ->method('save'),
+
+            Button::make('Удалить')
+                ->icon('trash')
+                ->method('remove')
+                ->canSee($this->tournament->exists)
+        ];
     }
 
     public function name(): ?string
@@ -49,18 +61,29 @@ class TournamentEditScreen extends Screen
         return [
             Layout::tabs([
                 'Основное' => Layout::rows([
-                    Select::make('tournament.organization_id')
-                        ->fromModel(Organization::class, 'name')
-                        ->title('Организация')
-                        ->required(),
-
                     Input::make('tournament.name')
-                        ->title('Название')
+                        ->title('Название турнира')
                         ->required(),
 
-                    DateRange::make('tournament.dates')
-                        ->title('Даты проведения')
-                        ->required(),
+                    Select::make('tournament.organization_id')
+                        ->fromQuery(Organization::query(), 'name')
+                        ->title('Организация')
+                        ->required()
+                        ->help('Выберите организацию, проводящую турнир'),
+
+                    TextArea::make('tournament.description')
+                        ->title('Описание')
+                        ->rows(3),
+
+                    DateTimer::make('tournament.start_date')
+                        ->title('Дата начала')
+                        ->required()
+                        ->format('Y-m-d'),
+
+                    DateTimer::make('tournament.end_date')
+                        ->title('Дата окончания')
+                        ->required()
+                        ->format('Y-m-d'),
 
                     Select::make('tournament.status')
                         ->options([
@@ -68,21 +91,46 @@ class TournamentEditScreen extends Screen
                             'ongoing' => 'В процессе',
                             'completed' => 'Завершен'
                         ])
-                        ->title('Статус'),
+                        ->title('Статус')
+                        ->required()
                 ]),
 
-                'Этапы' => Layout::rows([
-                    StagesLayout::class
-                ]),
-            ])
+                'Этапы' => StagesLayout::class
+
+            ]),
+
         ];
     }
 
     public function save(Tournament $tournament, Request $request)
     {
+        $validated = $request->validate([
+            'tournament.name' => 'required|string|max:255',
+            'tournament.organization_id' => 'required|exists:organizations,id',
+            'tournament.description' => 'string',
+            'tournament.start_date' => 'required|date',
+            'tournament.end_date' => 'required|date|after_or_equal:tournament.start_date',
+            'tournament.status' => 'required|in:planned,ongoing,completed'
+        ]);
+
+        $tournament->fill($validated['tournament'])->save();
+
+        return redirect()->route('platform.tournaments.list');
+    }
+
+    public function remove(Tournament $tournament)
+    {
+        $tournament->delete();
+        return redirect()->route('platform.tournament.list');
+    }
+
+    /*public function save(Tournament $tournament, Request $request)
+    {
+        Toast::info($request->input('tournament')['organization_id']);
+
         $data = $request->validate([
             'tournament.name' => 'required|string|max:255',
-            'tournament.stages' => 'array'
+            'tournament.stages' => 'array',
         ]);
 
         $tournament->fill($data['tournament'])->save();
@@ -95,6 +143,6 @@ class TournamentEditScreen extends Screen
         }
 
         return redirect()->route('platform.tournament.list');
-    }
+    }*/
 
 }

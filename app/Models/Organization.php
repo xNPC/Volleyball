@@ -20,4 +20,9 @@ class Organization extends Model {
     {
         return $this->hasMany(Venue::class);
     }
+
+    public function tournaments()
+    {
+        return $this->hasMany(Tournament::class);
+    }
 }
