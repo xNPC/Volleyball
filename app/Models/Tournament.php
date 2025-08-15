@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Illuminate\Database\Eloquent\Model;
@@ -21,24 +22,41 @@ class Tournament extends Model
         'rules'
     ];
 
+    protected $casts = [
+        'start_date' => 'date:Y-m-d',
+        'end_date' => 'date:Y-m-d',
+    ];
+
+    protected $dates = [
+        'start_date',
+        'end_date',
+        'created_at',
+        'updated_at'
+    ];
+
+    public const STATUS = [
+        'planned' => 'Запланирован',
+        'ongoing' => 'В процессе',
+        'completed' => 'Завершен'
+    ];
+
     protected $allowedFilters = [
         'name',
         'status',
-        'start_date',
         'organization_id'
     ];
 
+    /**
+     * The attributes for which can use sort in url.
+     *
+     * @var array
+     */
     protected $allowedSorts = [
         'name',
         'start_date',
         'status',
-        'created_at'
+        'organization_id'
     ];
-
-    public function scopeSearch(Builder $query, string $search): Builder
-    {
-        return $query->where('name', 'like', "%{$search}%");
-    }
 
     public function organization()
     {
@@ -53,5 +71,9 @@ class Tournament extends Model
     public function applications()
     {
         return $this->hasMany(TournamentApplication::class);
+    }
+
+    public function url() {
+        return route('platform.tournaments.edit', $this->id);
     }
 }

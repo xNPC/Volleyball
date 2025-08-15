@@ -19,8 +19,7 @@ class TournamentListScreen extends Screen
     {
         return [
             'tournaments' => Tournament::with('organization')
-                ->filters()
-                ->defaultSort('start_date', 'desc')
+                ->defaultSort('id', 'desc')
                 ->paginate()
         ];
     }
@@ -58,49 +57,31 @@ class TournamentListScreen extends Screen
     {
         return [
             Layout::table('tournaments', [
-                TD::make('id', 'ID')
-                    ->sort(),
 
-                TD::make('name', 'Название')
-                    ->sort()
-                    ->filter(TD::FILTER_TEXT)
-                    ->render(function (Tournament $tournament) {
-                        return Link::make($tournament->name)
-                            ->route('platform.tournament.edit', $tournament);
-                    }),
+//                    TD::make('id', 'ID')
+//                            ->sort(),
 
-                TD::make('organization.name', 'Организация')
-                    ->filter(TD::FILTER_TEXT),
+                    TD::make('name', 'Название')
+                        ->render(function (Tournament $tournament) {
+                            return Link::make($tournament->name)
+                                ->route('platform.tournaments.edit', $tournament);
+                        }),
 
-                TD::make('start_date', 'Дата начала')
-                    ->sort()
-                    ->filter(TD::FILTER_DATE)
-                    ->render(function (Tournament $tournament) {
-                        return $tournament->start_date->format('d.m.Y');
-                    }),
+                    TD::make('organization.name', 'Организация'),
 
-                TD::make('status', 'Статус')
-                    ->sort()
-                    ->filter(TD::FILTER_SELECT)
-                    ->filterOptions([
-                        'planned' => 'Запланирован',
-                        'ongoing' => 'В процессе',
-                        'completed' => 'Завершен'
-                    ])
-                    ->render(function (Tournament $tournament) {
-                        return [
-                            'planned' => '<span class="text-warning">Запланирован</span>',
-                            'ongoing' => '<span class="text-success">В процессе</span>',
-                            'completed' => '<span class="text-secondary">Завершен</span>'
-                        ][$tournament->status];
-                    })
-                    ->align(TD::ALIGN_CENTER),
+                    TD::make('start_date', 'Дата начала')
+                        ->sort()
+                        ->render(function ($tournament) {
+                            return $tournament->start_date->format('d.m.Y');
+                        }),
 
-                TD::make('created_at', 'Создан')
-                    ->sort()
-                    ->render(function (Tournament $tournament) {
-                        return $tournament->created_at->format('d.m.Y H:i');
-                    })
+                    TD::make('status', 'Статус')
+                        ->sort()
+                        ->render(function ($tournament) {
+                            return $tournament::STATUS[$tournament->status];
+                        }
+                )
+
             ])
         ];
     }
