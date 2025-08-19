@@ -6,7 +6,6 @@ use Illuminate\Support\Carbon;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Illuminate\Database\Eloquent\Model;
-use App\Orchid\Filters\TournamentStatusFilter;
 
 class Tournament extends Model
 {
@@ -40,11 +39,11 @@ class Tournament extends Model
         'completed' => 'Завершен'
     ];
 
-    protected $allowedFilters = [
-        'name',
-        'status',
-        'organization_id'
-    ];
+//    protected $allowedFilters = [
+//        'name',
+//        'status',
+//        'organization_id'
+//    ];
 
     /**
      * The attributes for which can use sort in url.

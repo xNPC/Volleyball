@@ -10,6 +10,7 @@ use Orchid\Support\Facades\Layout;
 
 class TournamentListScreen extends Screen
 {
+
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -19,6 +20,7 @@ class TournamentListScreen extends Screen
     {
         return [
             'tournaments' => Tournament::with('organization')
+                ->filters()
                 ->defaultSort('id', 'desc')
                 ->paginate()
         ];
