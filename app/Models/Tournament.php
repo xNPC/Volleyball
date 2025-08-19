@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Support\Carbon;
+use Orchid\Filters\Types\Like;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Illuminate\Database\Eloquent\Model;
+use Orchid\Screen\Fields\Input;
 
 class Tournament extends Model
 {
@@ -39,11 +41,9 @@ class Tournament extends Model
         'completed' => 'Завершен'
     ];
 
-//    protected $allowedFilters = [
-//        'name',
-//        'status',
-//        'organization_id'
-//    ];
+    protected $allowedFilters = [
+        'organization_id' => Like::class
+    ];
 
     /**
      * The attributes for which can use sort in url.

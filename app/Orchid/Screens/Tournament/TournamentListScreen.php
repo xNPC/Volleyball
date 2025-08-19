@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Tournament;
 
 use App\Models\Tournament;
 use Orchid\Screen\Actions\Link;
+use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -69,7 +70,8 @@ class TournamentListScreen extends Screen
                                 ->route('platform.tournaments.edit', $tournament);
                         }),
 
-                    TD::make('organization.name', 'Организация'),
+                    TD::make('organization.name', 'Организация')
+                        ->filter(Input::make()),
 
                     TD::make('start_date', 'Дата начала')
                         ->sort()
