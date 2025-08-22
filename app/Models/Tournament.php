@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Carbon;
+use App\Orchid\Filters\OrganizationFilter;
 use Orchid\Filters\Types\Like;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Illuminate\Database\Eloquent\Model;
-use Orchid\Screen\Fields\Input;
 
 class Tournament extends Model
 {
@@ -42,7 +41,8 @@ class Tournament extends Model
     ];
 
     protected $allowedFilters = [
-        'organization_id' => Like::class
+        //'organization_id',
+        OrganizationFilter::class
     ];
 
     /**

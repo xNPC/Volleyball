@@ -2,9 +2,14 @@
 
 namespace App\Orchid\Screens\Tournament;
 
+use App\Models\Organization;
 use App\Models\Tournament;
+use App\Orchid\Filters\OrganizationFilter;
+use App\Orchid\Layouts\TournamentSelection;
+use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Fields\Input;
+use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -21,9 +26,17 @@ class TournamentListScreen extends Screen
     {
         return [
             'tournaments' => Tournament::with('organization')
-                ->filters()
+                ->filtersApplySelection(TournamentSelection::class)
+                //->filters()
                 ->defaultSort('id', 'desc')
                 ->paginate()
+        ];
+    }
+
+    public function filters(): array
+    {
+        return [
+            OrganizationFilter::class
         ];
     }
 
@@ -59,6 +72,9 @@ class TournamentListScreen extends Screen
     public function layout(): iterable
     {
         return [
+
+            TournamentSelection::class,
+
             Layout::table('tournaments', [
 
 //                    TD::make('id', 'ID')
@@ -70,8 +86,7 @@ class TournamentListScreen extends Screen
                                 ->route('platform.tournaments.edit', $tournament);
                         }),
 
-                    TD::make('organization.name', 'Организация')
-                        ->filter(Input::make()),
+                    TD::make('organization.name', 'Организация'),
 
                     TD::make('start_date', 'Дата начала')
                         ->sort()
