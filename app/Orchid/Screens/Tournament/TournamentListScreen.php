@@ -77,8 +77,8 @@ class TournamentListScreen extends Screen
 
             Layout::table('tournaments', [
 
-//                    TD::make('id', 'ID')
-//                            ->sort(),
+                    TD::make('id', 'ID')
+                            ->sort(),
 
                     TD::make('name', 'Название')
                         ->render(function (Tournament $tournament) {

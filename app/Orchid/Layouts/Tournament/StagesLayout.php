@@ -5,8 +5,10 @@ namespace App\Orchid\Layouts\Tournament;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\Matrix;
+use Orchid\Screen\Layout;
 use Orchid\Screen\Layouts\Rows;
 use Orchid\Screen\Field;
+use Orchid\Screen\TD;
 
 class StagesLayout extends Rows
 {
@@ -20,6 +22,8 @@ class StagesLayout extends Rows
     public function fields(): array
     {
         return [
+
+            /*
             Matrix::make('tournament.stages')
                 ->title('Этапы турнира')
                 ->columns([
@@ -43,6 +47,7 @@ class StagesLayout extends Rows
                         ->type('number')
                         ->min(1)
                 ])
+            */
         ];
     }
 

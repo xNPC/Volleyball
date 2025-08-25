@@ -4,7 +4,8 @@ namespace App\Orchid\Screens\Tournament;
 
 use App\Models\Organization;
 use App\Models\Tournament;
-use App\Orchid\Layouts\Tournament\StagesLayout;
+use App\Models\TournamentStage;
+use App\Orchid\Layouts\Tournament\StageListTable;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\DateTimer;
@@ -28,7 +29,8 @@ class TournamentEditScreen extends Screen
     {
         return [
             'tournament' => $tournament->load('organization'),
-            'organizations' => Organization::all()
+            'organizations' => Organization::all(),
+            'stages' => $tournament->stages,
         ];
     }
 
@@ -58,48 +60,50 @@ class TournamentEditScreen extends Screen
 
     public function layout(): array
     {
-        return [
-            Layout::tabs([
-                'Основное' => Layout::rows([
-                    Input::make('tournament.name')
-                        ->title('Название турнира')
-                        ->required(),
+        $tabs = [
+            'Основное' => Layout::rows([
+                Input::make('tournament.name')
+                    ->title('Название турнира')
+                    ->required(),
 
-                    Select::make('tournament.organization_id')
-                        ->fromQuery(Organization::query(), 'name')
-                        ->title('Организация')
-                        ->required()
-                        ->help('Выберите организацию, проводящую турнир'),
+                Select::make('tournament.organization_id')
+                    ->fromQuery(Organization::query(), 'name')
+                    ->title('Организация')
+                    ->required()
+                    ->help('Выберите организацию, проводящую турнир'),
 
-                    TextArea::make('tournament.description')
-                        ->title('Описание')
-                        ->rows(3),
+                TextArea::make('tournament.description')
+                    ->title('Описание')
+                    ->rows(3),
 
-                    DateTimer::make('tournament.start_date')
-                        ->title('Дата начала')
-                        ->required()
-                        ->format('Y-m-d'),
+                DateTimer::make('tournament.start_date')
+                    ->title('Дата начала')
+                    ->required()
+                    ->format('Y-m-d'),
 
-                    DateTimer::make('tournament.end_date')
-                        ->title('Дата окончания')
-                        ->required()
-                        ->format('Y-m-d'),
+                DateTimer::make('tournament.end_date')
+                    ->title('Дата окончания')
+                    ->required()
+                    ->format('Y-m-d'),
 
-                    Select::make('tournament.status')
-                        ->options([
-                            'planned' => 'Запланирован',
-                            'ongoing' => 'В процессе',
-                            'completed' => 'Завершен'
-                        ])
-                        ->title('Статус')
-                        ->required()
-                ]),
-
-                'Этапы' => StagesLayout::class
-
-            ]),
-
+                Select::make('tournament.status')
+                    ->options([
+                        'planned' => 'Запланирован',
+                        'ongoing' => 'В процессе',
+                        'completed' => 'Завершен'
+                    ])
+                    ->title('Статус')
+                    ->required()
+            ])
         ];
+
+        if ($this->tournament->exists)
+            $tabs['Этапы'] = StageListTable::class;
+
+        return [
+            Layout::tabs($tabs)
+        ];
+
     }
 
     public function save(Tournament $tournament, Request $request)
