@@ -52,6 +52,7 @@ class StageListTable extends Table
                 ->width('100px'),
             TD::make('order','Порядок')
                 ->width('50px')
+                ->align(TD::ALIGN_CENTER)
 
         ];
     }
