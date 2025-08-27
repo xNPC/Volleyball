@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class StageGroup extends Model
 {
     use AsSource;
+    use Sortable;
 
     protected $fillable = [
         'stage_id',

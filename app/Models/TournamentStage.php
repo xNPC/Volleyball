@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class TournamentStage extends Model
 {
-    use AsSource;
+    use AsSource, Sortable;
 
     protected $fillable = [
         'tournament_id', 'name', 'stage_type',

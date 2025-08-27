@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Orchid\Filters\OrganizationFilter;
 use Orchid\Filters\Types\Like;
+use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
 class Tournament extends Model
 {
-    use AsSource, Filterable;
+    use AsSource, Filterable, Sortable;
 
     protected $fillable = [
         'organization_id',

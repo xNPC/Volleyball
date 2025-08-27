@@ -2,8 +2,10 @@
 
 namespace App\Orchid\Layouts\Tournament;
 
+use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Layouts\Table;
+use Orchid\Screen\Sight;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
 

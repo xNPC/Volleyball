@@ -7,7 +7,9 @@ use App\Models\Tournament;
 use App\Models\TournamentStage;
 use App\Orchid\Layouts\Tournament\StageListTable;
 use Illuminate\Http\Request;
+use Orchid\Platform\Dashboard;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
@@ -30,7 +32,8 @@ class TournamentEditScreen extends Screen
         return [
             'tournament' => $tournament->load('organization'),
             'organizations' => Organization::all(),
-            'stages' => $tournament->stages,
+            //'stages' => $tournament->stages,
+            'stages' => TournamentStage::sorted()->get()
         ];
     }
 
@@ -102,6 +105,7 @@ class TournamentEditScreen extends Screen
 
         return [
             Layout::tabs($tabs)
+                ->activeTab('Основное')
         ];
 
     }

@@ -3,7 +3,9 @@
 namespace App\Orchid\Screens\Organization;
 
 use App\Models\Organization;
+use Orchid\Platform\Dashboard;
 use Orchid\Screen\Actions\Link;
+use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -36,7 +38,7 @@ class OrganizationListScreen extends Screen
                         return Link::make('Редактировать')
                             ->route('platform.organization.edit', $organization);
                     })
-            ])
+            ]),
         ];
     }
 
