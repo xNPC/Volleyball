@@ -32,8 +32,7 @@ class TournamentEditScreen extends Screen
         return [
             'tournament' => $tournament->load('organization'),
             'organizations' => Organization::all(),
-            //'stages' => $tournament->stages,
-            'stages' => TournamentStage::sorted()->get()
+            'stages' => $tournament->stages,
         ];
     }
 
