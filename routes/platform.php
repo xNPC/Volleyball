@@ -50,17 +50,27 @@ use App\Orchid\Controllers\MatchController;
 Route::screen('/main', PlatformScreen::class)
     ->name('platform.main');
 
-// Список организаций
+// Организации
 Route::screen('organizations', OrganizationListScreen::class)
-    ->name('platform.organization.list');
+    ->name('platform.organization.list')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.index')
+        ->push('Список организаций', route('platform.organization.list'))
+    );
 
-// Создание организации
 Route::screen('organizations/create', OrganizationEditScreen::class)
-    ->name('platform.organization.create');
+    ->name('platform.organization.create')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.organization.list')
+        ->push('Создание организации')
+    );
 
-// Редактирование организации
 Route::screen('organizations/{organization}/edit', OrganizationEditScreen::class)
-    ->name('platform.organization.edit');
+    ->name('platform.organization.edit')
+    ->breadcrumbs(fn (Trail $trail, $organization) => $trail
+        ->parent('platform.organization.list')
+        ->push($organization->name, route('platform.organization.edit', $organization))
+    );
 
 
 // Залы
@@ -69,11 +79,32 @@ Route::screen('venues/create', VenueEditScreen::class)->name('platform.venues.cr
 Route::screen('venues/{venue}/edit', VenueEditScreen::class)->name('platform.venues.edit');
 //Route::screen('venues', VenueListScreen::class)->name('platform.venues.list');
 
-// Создание Турнира
-Route::screen('tournament/stages/{stage}/groups/{group}', GroupScreen::class)->name('platform.tournament.group');
-Route::screen('tournaments/create', TournamentEditScreen::class)->name('platform.tournaments.create');
-Route::screen('tournaments/{tournament}/edit', TournamentEditScreen::class)->name('platform.tournaments.edit');
-Route::screen('tournaments', TournamentListScreen::class)->name('platform.tournaments.list');
+/*
+ * Турниры
+*/
+Route::screen('tournament/stages/{stage}/groups/{group}', GroupScreen::class)
+    ->name('platform.tournament.group');
+
+Route::screen('tournaments/create', TournamentEditScreen::class)
+    ->name('platform.tournaments.create')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+            ->parent('platform.tournaments.list')
+            ->push('Создание турнира')
+    );
+
+Route::screen('tournaments/{tournament}/edit', TournamentEditScreen::class)
+    ->name('platform.tournaments.edit')
+    ->breadcrumbs(fn (Trail $trail, $tournament) => $trail
+            ->parent('platform.tournaments.list')
+            ->push($tournament->name, route('platform.tournaments.edit', $tournament))
+    );
+
+Route::screen('tournaments', TournamentListScreen::class)
+    ->name('platform.tournaments.list')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+            ->parent('platform.index')
+            ->push('Список турниров', route('platform.tournaments.list'))
+    );
 
 // Команды
 Route::post('teams/save/{team?}', [TeamController::class, 'save'])->name('platform.teams.save');
