@@ -50,7 +50,11 @@ use App\Orchid\Controllers\MatchController;
 Route::screen('/main', PlatformScreen::class)
     ->name('platform.main');
 
-// Организации
+/**
+ *
+ * Работа с организациями
+ *
+ */
 Route::screen('organizations', OrganizationListScreen::class)
     ->name('platform.organization.list')
     ->breadcrumbs(fn (Trail $trail) => $trail
@@ -79,9 +83,11 @@ Route::screen('venues/create', VenueEditScreen::class)->name('platform.venues.cr
 Route::screen('venues/{venue}/edit', VenueEditScreen::class)->name('platform.venues.edit');
 //Route::screen('venues', VenueListScreen::class)->name('platform.venues.list');
 
-/*
- * Турниры
-*/
+/**
+ *
+ * Работа с турнирами
+ *
+ */
 Route::screen('tournament/stages/{stage}/groups/{group}', GroupScreen::class)
     ->name('platform.tournament.group');
 
@@ -106,13 +112,21 @@ Route::screen('tournaments', TournamentListScreen::class)
             ->push('Список турниров', route('platform.tournaments.list'))
     );
 
-// Команды
+/**
+ *
+ * Работа с командами
+ *
+ */
 Route::post('teams/save/{team?}', [TeamController::class, 'save'])->name('platform.teams.save');
 Route::screen('teams/create', TeamEditScreen::class)->name('platform.teams.create');
 Route::screen('teams/{team}/edit', TeamEditScreen::class)->name('platform.teams.edit');
 //Route::screen('teams', TeamListScreen::class)->name('platform.teams.list');
 
-// Матчи
+/**
+ *
+ * Работа с играми
+ *
+ */
 Route::post('matches/save/{match?}', [MatchController::class, 'save'])->name('platform.matches.save');
 Route::screen('matches/create', MatchEditScreen::class)->name('platform.matches.create');
 Route::screen('matches/{match}/edit', MatchEditScreen::class)->name('platform.matches.edit');
