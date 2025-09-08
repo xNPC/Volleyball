@@ -2,13 +2,11 @@
 
 namespace App\Orchid\Layouts\Tournament;
 
+use Orchid\Screen\Fields\DateTimer;
+use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Fields\Matrix;
-use Orchid\Screen\Layout;
 use Orchid\Screen\Layouts\Rows;
-use Orchid\Screen\Field;
-use Orchid\Screen\TD;
 
 class StagesLayout extends Rows
 {
@@ -23,31 +21,41 @@ class StagesLayout extends Rows
     {
         return [
 
-            /*
-            Matrix::make('tournament.stages')
-                ->title('Этапы турнира')
-                ->columns([
-                    'Название' => 'name',
-                    'Тип' => 'stage_type',
-                    'Порядок' => 'order'
-                ])
-                ->fields([
-                    'name' => Input::make('name')
-                        ->required()
-                        ->placeholder('Групповой этап'),
+            Input::make('stage.id')
+                ->type('hidden'),
 
-                    'stage_type' => Select::make('stage_type')
-                        ->options([
-                            'group' => 'Групповой',
-                            'playoff' => 'Плейофф',
-                            'qualification' => 'Квалификация'
-                        ]),
+            Input::make('stage.name')
+                ->title('Название')
+                ->required()
+                ->placeholder('Групповой этап'),
 
-                    'order' => Input::make('order')
-                        ->type('number')
-                        ->min(1)
+            Select::make('stage.stage_type')
+                ->options([
+                    'group' => 'Групповой',
+                    'playoff' => 'Плейофф',
+                    'qualification' => 'Квалификация'
                 ])
-            */
+                ->title('Тип'),
+
+            Input::make('stage.order')
+                ->title('Порядок')
+                ->type('number')
+                ->min(1),
+
+            Group::make([
+                DateTimer::make('stage.start_date')
+                    ->title('Дата начала')
+                    ->required()
+                    ->format('Y-m-d')
+                    ->placeholder('Выберите дату'),
+
+                DateTimer::make('stage.end_date')
+                    ->title('Дата окончания')
+                    ->required()
+                    ->format('Y-m-d')
+                    ->placeholder('Выберите дату'),
+            ])
+                ->autoWidth(),
         ];
     }
 

@@ -5,15 +5,21 @@ namespace App\Orchid\Screens\Tournament;
 use App\Models\Organization;
 use App\Models\Tournament;
 use App\Models\TournamentStage;
+use App\Orchid\Layouts\Tournament\StageListLayout;
 use App\Orchid\Layouts\Tournament\StageListTable;
+use App\Orchid\Layouts\Tournament\StagesLayout;
+use App\Orchid\Layouts\Tournament\TournamentEditLayout;
 use Illuminate\Http\Request;
 use Orchid\Platform\Dashboard;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Menu;
+use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\DateTimer;
+use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\TextArea;
+use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Toast;
@@ -44,14 +50,21 @@ class TournamentEditScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Button::make('Сохранить')
-                ->icon('check')
-                ->method('save'),
+//            Button::make('Добавить этап')
+//                ->modal('createStage')
+//                ->icon('plus')
+//                ->method('createStage')
+//                ->canSee($this->tournament->exists),
 
-            Button::make('Удалить')
-                ->icon('trash')
-                ->method('remove')
-                ->canSee($this->tournament->exists)
+            ModalToggle::make('Добавить этап')
+                ->modal('createOrUpdateStage')
+                ->method('createOrUpdateStage')
+                ->icon('plus')
+
+//            Button::make('Удалить')
+//                ->icon('trash')
+//                ->method('remove')
+//                ->canSee($this->tournament->exists)
         ];
     }
 
@@ -62,51 +75,32 @@ class TournamentEditScreen extends Screen
 
     public function layout(): array
     {
-        $tabs = [
-            'Основное' => Layout::rows([
-                Input::make('tournament.name')
-                    ->title('Название турнира')
-                    ->required(),
-
-                Select::make('tournament.organization_id')
-                    ->fromQuery(Organization::query(), 'name')
-                    ->title('Организация')
-                    ->required()
-                    ->help('Выберите организацию, проводящую турнир'),
-
-                TextArea::make('tournament.description')
-                    ->title('Описание')
-                    ->rows(3),
-
-                DateTimer::make('tournament.start_date')
-                    ->title('Дата начала')
-                    ->required()
-                    ->format('Y-m-d'),
-
-                DateTimer::make('tournament.end_date')
-                    ->title('Дата окончания')
-                    ->required()
-                    ->format('Y-m-d'),
-
-                Select::make('tournament.status')
-                    ->options([
-                        'planned' => 'Запланирован',
-                        'ongoing' => 'В процессе',
-                        'completed' => 'Завершен'
-                    ])
-                    ->title('Статус')
-                    ->required()
-            ])
+        $columns = [
+            TournamentEditLayout::class
         ];
 
-        if ($this->tournament->exists)
-            $tabs['Этапы'] = StageListTable::class;
+        if ($this->tournament->exists) {
+            $columns[] = StageListTable::class;
+        }
 
         return [
-            Layout::tabs($tabs)
-                ->activeTab('Основное')
+            Layout::modal('createOrUpdateStage', [
+                StagesLayout::class
+            ])
+                ->title('Добавить этап')
+                ->applyButton('Сохранить')
+                ->async('asyncGetStage'),
+
+            Layout::columns($columns)
         ];
 
+    }
+
+    public function asyncGetStage(TournamentStage $stage)
+    {
+        return [
+            'stage' => $stage
+        ];
     }
 
     public function save(Tournament $tournament, Request $request)
@@ -129,6 +123,13 @@ class TournamentEditScreen extends Screen
     {
         $tournament->delete();
         return redirect()->route('platform.tournament.list');
+    }
+
+    public function createOrUpdateStage(Request $request)
+    {
+        Toast::info('ok');
+
+        dd($request->all());
     }
 
     /*public function save(Tournament $tournament, Request $request)
