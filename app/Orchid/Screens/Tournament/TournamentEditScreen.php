@@ -5,7 +5,6 @@ namespace App\Orchid\Screens\Tournament;
 use App\Models\Organization;
 use App\Models\Tournament;
 use App\Models\TournamentStage;
-use App\Orchid\Layouts\Tournament\StageListLayout;
 use App\Orchid\Layouts\Tournament\StageListTable;
 use App\Orchid\Layouts\Tournament\StagesLayout;
 use App\Orchid\Layouts\Tournament\TournamentEditLayout;
