@@ -28,6 +28,11 @@ class StageListTable extends Table
      * @return TD[]
      */
 
+    public function hoverable(): bool
+    {
+        return true;
+    }
+
     protected $title = 'Этапы';
 
     protected function columns(): iterable

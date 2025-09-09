@@ -14,6 +14,7 @@ use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
+use Orchid\Screen\Layouts\Table;
 
 class TournamentListScreen extends Screen
 {
@@ -100,9 +101,8 @@ class TournamentListScreen extends Screen
                         ->render(function ($tournament) {
                             return $tournament::STATUS[$tournament->status];
                         }
-                )
-
-            ])
+                    )
+            ])->class('table-hover')
         ];
     }
 }
