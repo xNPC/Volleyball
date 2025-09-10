@@ -2,7 +2,9 @@
 
 namespace App\Orchid\Layouts\Tournament;
 
+use App\Models\TournamentStage;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Layouts\Table;
@@ -69,16 +71,31 @@ class StageListTable extends Table
                 ->width('50px')
                 ->align(TD::ALIGN_CENTER),
 
-            TD::make('Действия')->render(function ($stages) {
-                return ModalToggle::make('Редактировать')
-                    ->modal('createOrUpdateStage')
-                    ->method('createOrUpdateStage')
-                    ->modalTitle('Редактирование этапа ' . $stages->name)
-                    ->asyncParameters([
-                        'stage' => $stages->id
-                    ]);
-            })
+            TD::make(__('Actions'))
+                ->align(TD::ALIGN_CENTER)
+                ->width('100px')
+                ->render(fn (TournamentStage $stage) => DropDown::make()
+                    ->icon('bs.three-dots-vertical')
+                    ->list([
+                        ModalToggle::make('Редактировать')
+                            ->icon('bs.pencil')
+                            ->modal('createOrUpdateStage')
+                            ->method('createOrUpdateStage')
+                            ->modalTitle('Редактирование этапа: ' . $stage->name)
+                            ->asyncParameters([
+                                'stage' => $stage->id
+                            ]),
 
+                        Button::make('Группы этапа')
+                            ->icon('bs.journals'),
+
+                        Button::make(__('Delete'))
+                            ->icon('bs.trash3')
+                            ->confirm('После удаления ни чего нельзя будет вернуть, Вы уверены, что хотите удалить?')
+                            ->method('removeStage', [
+                                'stage' => $stage->id,
+                            ]),
+                    ])),
         ];
     }
 }

@@ -95,7 +95,7 @@ class TournamentEditScreen extends Screen
 
     }
 
-    public function asyncGetStage(TournamentStage $stage)
+    public function asyncGetStage(TournamentStage $stage): array
     {
         return [
             'stage' => $stage
@@ -126,30 +126,33 @@ class TournamentEditScreen extends Screen
 
     public function createOrUpdateStage(Request $request)
     {
-        Toast::info('ok');
+        $stageId = $request->input('stage.id');
 
-        dd($request->all());
-    }
-
-    /*public function save(Tournament $tournament, Request $request)
-    {
-        Toast::info($request->input('tournament')['organization_id']);
-
-        $data = $request->validate([
-            'tournament.name' => 'required|string|max:255',
-            'tournament.stages' => 'array',
+        $validated = $request->validate([
+            'stage.name' => 'required|string|max:255',
+            'stage.stage_type' => 'required|in:group,playoff,qualification',
+            'stage.order' => 'required|integer|min:1',
+            'stage.start_date' => 'required|date',
+            'stage.end_date' => 'required|date|after_or_equal:stage.start_date',
         ]);
 
-        $tournament->fill($data['tournament'])->save();
+        TournamentStage::updateOrCreate([
+            'id' => $stageId,
+            'tournament_id' => $this->tournament->id
+        ],
+            $validated['stage']
+        );
 
-        // Обработка этапов
-        $tournament->stages()->delete();
+        Toast::info('Успешно сохранено');
 
-        foreach ($request->input('tournament.stages', []) as $stageData) {
-            $tournament->stages()->create($stageData);
-        }
+    }
 
-        return redirect()->route('platform.tournament.list');
-    }*/
+    public function removeStage(TournamentStage $stage)
+    {
+        $stage->delete();
+
+        Toast::info('Этап успешно удален');
+        //return redirect()->route('platform.tournament.list');
+    }
 
 }

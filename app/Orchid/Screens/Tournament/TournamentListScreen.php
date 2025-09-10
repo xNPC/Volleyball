@@ -102,7 +102,7 @@ class TournamentListScreen extends Screen
                             return $tournament::STATUS[$tournament->status];
                         }
                     )
-            ])->class('table-hover')
+            ])
         ];
     }
 }
