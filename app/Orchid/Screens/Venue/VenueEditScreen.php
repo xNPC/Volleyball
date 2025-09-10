@@ -17,9 +17,11 @@ class VenueEditScreen extends Screen
      *
      * @return array
      */
-    public function query(): iterable
+    public function query(Venue $venue): iterable
     {
-        return [];
+        return [
+            'venue' => $venue
+        ];
     }
 
     /**
@@ -42,29 +44,29 @@ class VenueEditScreen extends Screen
     public function layout(): array
     {
         return [
-            Layout::tabs([
-                'Основное' => Layout::rows([
-                    Select::make('venue.organization_id')
-                        ->fromModel(Organization::class, 'name')
-                        ->title('Организация')
-                        ->required(),
-
-                    Input::make('venue.name')
-                        ->title('Название зала')
-                        ->required(),
-
-                    Input::make('venue.address')
-                        ->title('Адрес'),
-
-                    Input::make('venue.capacity')
-                        ->title('Вместимость')
-                        ->type('number'),
-                ]),
-
-                'Расписание' => Layout::rows([
-                    \App\Orchid\Layouts\Venue\VenueScheduleLayout::class
-                ]),
-            ])
+//            Layout::tabs([
+//                'Основное' => Layout::rows([
+//                    Select::make('venue.organization_id')
+//                        ->fromModel(Organization::class, 'name')
+//                        ->title('Организация')
+//                        ->required(),
+//
+//                    Input::make('venue.name')
+//                        ->title('Название зала')
+//                        ->required(),
+//
+//                    Input::make('venue.address')
+//                        ->title('Адрес'),
+//
+//                    Input::make('venue.capacity')
+//                        ->title('Вместимость')
+//                        ->type('number'),
+//                ]),
+//
+//                'Расписание' => Layout::rows([
+//                    \App\Orchid\Layouts\Venue\VenueScheduleLayout::class
+//                ]),
+//            ])
         ];
     }
 

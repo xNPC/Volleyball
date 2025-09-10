@@ -42,10 +42,6 @@ class PlatformProvider extends OrchidServiceProvider
                     Menu::make('Список организаций')
                         ->icon('building')
                         ->route('platform.organization.list'),
-
-                    Menu::make('Залы')
-                        ->icon('bs.houses')
-                        ->route('platform.venues.list')
                 ]),
 
 

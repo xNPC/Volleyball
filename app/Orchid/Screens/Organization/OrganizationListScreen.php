@@ -3,6 +3,8 @@
 namespace App\Orchid\Screens\Organization;
 
 use App\Models\Organization;
+use App\Models\Venue;
+use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
@@ -32,10 +34,17 @@ class OrganizationListScreen extends Screen
                 TD::make('contact_email', 'Email'),
                 TD::make('contact_phone', 'Телефон'),
                 TD::make('actions', 'Действия')
-                    ->render(function (Organization $organization) {
-                        return Link::make('Редактировать')
-                            ->route('platform.organization.edit', $organization);
-                    })
+                    ->render(fn (Organization $organization) => DropDown::make()
+                        ->icon('bs.three-dots-vertical')
+                        ->list([
+                            Link::make('Редактировать')
+                                ->route('platform.organization.edit', $organization),
+
+                            Link::make('Залы')
+                                ->route('platform.venues.list', $organization)
+                        ])
+
+                    )
             ]),
         ];
     }

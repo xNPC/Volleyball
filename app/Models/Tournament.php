@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Orchid\Filters\OrganizationFilter;
-use Orchid\Filters\Types\Like;
 use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;

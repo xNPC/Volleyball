@@ -17,13 +17,13 @@ use App\Orchid\Screens\Role\RoleListScreen;
 use App\Orchid\Screens\User\UserEditScreen;
 use App\Orchid\Screens\User\UserListScreen;
 use App\Orchid\Screens\User\UserProfileScreen;
-use App\Orchid\Screens\Venue\VenueListScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 use App\Orchid\Screens\Organization\OrganizationListScreen;
 use App\Orchid\Screens\Organization\OrganizationEditScreen;
 use App\Orchid\Screens\Venue\VenueEditScreen;
-use App\Orchid\Controllers\VenueController;
+use App\Orchid\Screens\Venue\VenueListScreen;
+
 use App\Orchid\Screens\Tournament\GroupScreen;
 use App\Orchid\Screens\Tournament\TournamentListScreen;
 use App\Orchid\Screens\Tournament\TournamentEditScreen;
@@ -55,18 +55,19 @@ Route::screen('/main', PlatformScreen::class)
  * Работа с организациями
  *
  */
-Route::screen('organizations', OrganizationListScreen::class)
-    ->name('platform.organization.list')
-    ->breadcrumbs(fn (Trail $trail) => $trail
-        ->parent('platform.index')
-        ->push('Список организаций', route('platform.organization.list'))
+Route::screen('organizations/{organization}/venues/{venue}/edit', VenueEditScreen::class)
+    ->name('platform.venues.edit')
+    ->breadcrumbs(fn (Trail $trail, $organization, $venue) => $trail
+        ->parent('platform.venues.list', route('platform.venues.list', $organization) )
+        ->push($venue->name)
     );
 
-Route::screen('organizations/create', OrganizationEditScreen::class)
-    ->name('platform.organization.create')
-    ->breadcrumbs(fn (Trail $trail) => $trail
+
+Route::screen('organizations/{organization}/venues', VenueListScreen::class)
+    ->name('platform.venues.list')
+    ->breadcrumbs(fn (Trail $trail, $organization) => $trail
         ->parent('platform.organization.list')
-        ->push('Создание организации')
+        ->push('Список залов', route('platform.venues.list', $organization))
     );
 
 Route::screen('organizations/{organization}/edit', OrganizationEditScreen::class)
@@ -76,12 +77,23 @@ Route::screen('organizations/{organization}/edit', OrganizationEditScreen::class
         ->push($organization->name, route('platform.organization.edit', $organization))
     );
 
+Route::screen('organizations/create', OrganizationEditScreen::class)
+    ->name('platform.organization.create')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.organization.list')
+        ->push('Создание организации')
+    );
+
+Route::screen('organizations', OrganizationListScreen::class)
+    ->name('platform.organization.list')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.index')
+        ->push('Список организаций', route('platform.organization.list'))
+    );
+
 
 // Залы
-Route::post('venues/save/{venue?}', [VenueController::class, 'save'])->name('platform.venues.save');
 Route::screen('venues/create', VenueEditScreen::class)->name('platform.venues.create');
-Route::screen('venues/{venue}/edit', VenueEditScreen::class)->name('platform.venues.edit');
-Route::screen('venues', VenueListScreen::class)->name('platform.venues.list');
 
 /**
  *

@@ -9,16 +9,7 @@ use App\Orchid\Layouts\Tournament\StageListTable;
 use App\Orchid\Layouts\Tournament\StagesLayout;
 use App\Orchid\Layouts\Tournament\TournamentEditLayout;
 use Illuminate\Http\Request;
-use Orchid\Platform\Dashboard;
-use Orchid\Screen\Actions\Button;
-use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Actions\ModalToggle;
-use Orchid\Screen\Fields\DateTimer;
-use Orchid\Screen\Fields\Group;
-use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Fields\TextArea;
-use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Toast;
@@ -49,12 +40,6 @@ class TournamentEditScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-//            Button::make('Добавить этап')
-//                ->modal('createStage')
-//                ->icon('plus')
-//                ->method('createStage')
-//                ->canSee($this->tournament->exists),
-
             ModalToggle::make('Добавить этап')
                 ->modal('createOrUpdateStage')
                 ->method('createOrUpdateStage')
