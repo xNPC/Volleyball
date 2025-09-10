@@ -17,11 +17,11 @@ use App\Orchid\Screens\Role\RoleListScreen;
 use App\Orchid\Screens\User\UserEditScreen;
 use App\Orchid\Screens\User\UserListScreen;
 use App\Orchid\Screens\User\UserProfileScreen;
+use App\Orchid\Screens\Venue\VenueListScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 use App\Orchid\Screens\Organization\OrganizationListScreen;
 use App\Orchid\Screens\Organization\OrganizationEditScreen;
-//use App\Orchid\Screens\Venue\VenueListScreen;
 use App\Orchid\Screens\Venue\VenueEditScreen;
 use App\Orchid\Controllers\VenueController;
 use App\Orchid\Screens\Tournament\GroupScreen;
@@ -81,7 +81,7 @@ Route::screen('organizations/{organization}/edit', OrganizationEditScreen::class
 Route::post('venues/save/{venue?}', [VenueController::class, 'save'])->name('platform.venues.save');
 Route::screen('venues/create', VenueEditScreen::class)->name('platform.venues.create');
 Route::screen('venues/{venue}/edit', VenueEditScreen::class)->name('platform.venues.edit');
-//Route::screen('venues', VenueListScreen::class)->name('platform.venues.list');
+Route::screen('venues', VenueListScreen::class)->name('platform.venues.list');
 
 /**
  *

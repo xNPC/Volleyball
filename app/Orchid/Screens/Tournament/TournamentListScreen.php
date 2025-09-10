@@ -2,19 +2,15 @@
 
 namespace App\Orchid\Screens\Tournament;
 
-use App\Models\Organization;
+
 use App\Models\Tournament;
 use App\Orchid\Filters\OrganizationFilter;
 use App\Orchid\Layouts\TournamentSelection;
-use Illuminate\Http\Request;
-use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
-use Orchid\Screen\Layouts\Table;
+
 
 class TournamentListScreen extends Screen
 {

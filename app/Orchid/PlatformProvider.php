@@ -35,18 +35,29 @@ class PlatformProvider extends OrchidServiceProvider
     {
         return [
             Menu::make('Организации')
+                ->slug('organizations')
                 ->icon('building')
                 ->title('Управление турнирами')
-                ->route('platform.organization.list'),
+                ->list([
+                    Menu::make('Список организаций')
+                        ->icon('building')
+                        ->route('platform.organization.list'),
+
+                    Menu::make('Залы')
+                        ->icon('bs.houses')
+                        ->route('platform.venues.list')
+                ]),
+
 
             Menu::make('Турниры')
                 ->slug('tournaments')
                 ->icon('menu-button-wide-fill')
                 ->list([
-                    Menu::make('Список турниров')->icon('trophy')
+                    Menu::make('Список турниров')
+                        ->icon('trophy')
                         ->route('platform.tournaments.list'),
-                ])
-            ->route('platform.tournaments.list'),
+                ]),
+            //->route('platform.tournaments.list'),
 
             Menu::make('Get Started')
                 ->icon('bs.book')
