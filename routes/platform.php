@@ -55,13 +55,19 @@ Route::screen('/main', PlatformScreen::class)
  * Работа с организациями
  *
  */
+Route::screen('organizations/{organization}/venues/create', VenueEditScreen::class)
+    ->name('platform.venues.create')
+    ->breadcrumbs(fn (Trail $trail, $organization) => $trail
+        ->parent('platform.organization.list')
+        ->push('Создание зала', route('platform.venues.edit', $organization))
+    );
+
 Route::screen('organizations/{organization}/venues/{venue}/edit', VenueEditScreen::class)
     ->name('platform.venues.edit')
     ->breadcrumbs(fn (Trail $trail, $organization, $venue) => $trail
-        ->parent('platform.venues.list', route('platform.venues.list', $organization) )
+        ->parent('platform.venues.list', $organization)
         ->push($venue->name)
     );
-
 
 Route::screen('organizations/{organization}/venues', VenueListScreen::class)
     ->name('platform.venues.list')
@@ -90,10 +96,6 @@ Route::screen('organizations', OrganizationListScreen::class)
         ->parent('platform.index')
         ->push('Список организаций', route('platform.organization.list'))
     );
-
-
-// Залы
-Route::screen('venues/create', VenueEditScreen::class)->name('platform.venues.create');
 
 /**
  *

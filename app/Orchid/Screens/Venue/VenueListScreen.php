@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Venue;
 
 use App\Models\Organization;
 use App\Models\Venue;
+use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
@@ -49,7 +50,11 @@ class VenueListScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            Button::make('Добавить зал')
+                ->icon('plus')
+                ->route('platform.venues.create', $this->organization),
+        ];
     }
 
     /**

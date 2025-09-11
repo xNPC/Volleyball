@@ -4,11 +4,13 @@ namespace App\Orchid\Screens\Venue;
 
 use App\Models\Organization;
 use App\Models\Venue;
+use Illuminate\Http\Request;
 use Orchid\Screen\Screen;
 use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Select;
+use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Actions\Button;
+use Orchid\Support\Facades\Toast;
 
 class VenueEditScreen extends Screen
 {
@@ -44,30 +46,50 @@ class VenueEditScreen extends Screen
     public function layout(): array
     {
         return [
-//            Layout::tabs([
-//                'Основное' => Layout::rows([
-//                    Select::make('venue.organization_id')
-//                        ->fromModel(Organization::class, 'name')
-//                        ->title('Организация')
-//                        ->required(),
-//
-//                    Input::make('venue.name')
-//                        ->title('Название зала')
-//                        ->required(),
-//
-//                    Input::make('venue.address')
-//                        ->title('Адрес'),
-//
-//                    Input::make('venue.capacity')
-//                        ->title('Вместимость')
-//                        ->type('number'),
-//                ]),
-//
-//                'Расписание' => Layout::rows([
-//                    \App\Orchid\Layouts\Venue\VenueScheduleLayout::class
-//                ]),
-//            ])
+
+            Layout::rows([
+                Input::make('venue.id')
+                    ->type('hidden'),
+
+                Input::make('venue.name')
+                    ->title('Название')
+                    ->type('text')
+                    ->required(),
+
+                Input::make('venue.address')
+                    ->title('Адрес')
+                    ->type('text')
+                    ->required(),
+
+                Button::make('Сохранить')
+                    ->icon('check')
+                    ->method('createOrUpdateStage')
+                    ->type(Color::PRIMARY)
+
+            ])
         ];
+    }
+
+    public function createOrUpdateStage(Venue $venue, Organization $organization, Request $request)
+    {
+
+        $venueId = $request->input('venue.id');
+
+        $validated = $request->validate([
+            'venue.name' => 'required|string|max:255',
+            'venue.address' => 'required|string|max:255',
+        ]);
+
+        Venue::updateOrCreate([
+            'id' => $venueId,
+            'organization_id' => $organization->id,
+        ],
+            $validated['venue']
+        );
+
+        Toast::info('Успешно сохранено');
+
+        return redirect()->route('platform.venues.list', $organization);
     }
 
 }
