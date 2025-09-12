@@ -58,8 +58,8 @@ Route::screen('/main', PlatformScreen::class)
 Route::screen('organizations/{organization}/venues/create', VenueEditScreen::class)
     ->name('platform.venues.create')
     ->breadcrumbs(fn (Trail $trail, $organization) => $trail
-        ->parent('platform.organization.list')
-        ->push('Создание зала', route('platform.venues.edit', $organization))
+        ->parent('platform.venues.list', $organization)
+        ->push('Создание зала', route('platform.venues.list', $organization))
     );
 
 Route::screen('organizations/{organization}/venues/{venue}/edit', VenueEditScreen::class)

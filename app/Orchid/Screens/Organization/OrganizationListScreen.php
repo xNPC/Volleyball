@@ -38,9 +38,11 @@ class OrganizationListScreen extends Screen
                         ->icon('bs.three-dots-vertical')
                         ->list([
                             Link::make('Редактировать')
+                                ->icon('bs.pencil')
                                 ->route('platform.organization.edit', $organization),
 
                             Link::make('Залы')
+                                ->icon('bs.houses')
                                 ->route('platform.venues.list', $organization)
                         ])
 

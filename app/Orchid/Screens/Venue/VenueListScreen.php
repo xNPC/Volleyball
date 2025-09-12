@@ -10,6 +10,7 @@ use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
+use Orchid\Support\Facades\Toast;
 
 class VenueListScreen extends Screen
 {
@@ -51,7 +52,7 @@ class VenueListScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Button::make('Добавить зал')
+            Link::make('Добавить зал')
                 ->icon('plus')
                 ->route('platform.venues.create', $this->organization),
         ];
@@ -73,13 +74,30 @@ class VenueListScreen extends Screen
                         ->icon('bs.three-dots-vertical')
                         ->list([
                             Link::make('Редактировать')
+                                ->icon('bs.pencil')
                                 ->route('platform.venues.edit', [
                                     'organization' => $this->organization,
-                                    'venue' => '1'
-                                ])
+                                    'venue' => $venue
+                                ]),
+
+                            Button::make('Удалить')
+                                ->icon('bs.trash')
+                                ->method('remove', [
+                                    'venue' => $venue]
+                                )
+                                ->confirm('После удаления, все домашние залы у команд тоже удалятся, Вы уверены, что хотите удалить зал?')
                         ])
                     )
             ])
         ];
+    }
+
+    public function remove(Venue $venue)
+    {
+        $venue->delete();
+
+        Toast::info('Успешно удалено');
+
+        //return redirect()->route('platform.venues.list', $this->organization);
     }
 }

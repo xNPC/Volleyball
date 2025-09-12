@@ -97,7 +97,9 @@ class TournamentListScreen extends Screen
                         ->render(function ($tournament) {
                             return $tournament::STATUS[$tournament->status];
                         }
-                    )
+                    ),
+
+
             ])
         ];
     }

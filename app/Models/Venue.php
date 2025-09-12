@@ -10,8 +10,7 @@ class Venue extends Model
     use AsSource;
 
     protected $fillable = [
-        'organization_id', 'name', 'address',
-        'city', 'capacity', 'contact_phone'
+        'organization_id', 'name', 'address'
     ];
 
     public function organization()
