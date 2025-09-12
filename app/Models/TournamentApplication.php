@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class TournamentApplication extends Model
 {
-    use AsSource;
+    use AsSource, SoftDeletes;
 
     protected $fillable = [
         'tournament_id', 'team_id', 'venue_id',
         'status', 'is_complete'
+    ];
+
+    protected $dates = [
+        'deleted_at'
     ];
 
     public function tournament()

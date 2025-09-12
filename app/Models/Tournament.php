@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Orchid\Filters\OrganizationFilter;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tournament extends Model
 {
-    use AsSource, Filterable, Sortable;
+    use AsSource, Filterable, Sortable, SoftDeletes;
 
     protected $fillable = [
         'organization_id',
@@ -31,7 +32,8 @@ class Tournament extends Model
         'start_date',
         'end_date',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'deleted_at'
     ];
 
     public const STATUS = [

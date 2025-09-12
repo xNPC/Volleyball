@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class StageGroup extends Model
 {
-    use AsSource;
-    use Sortable;
+    use AsSource, Sortable, SoftDeletes;
+
 
     protected $fillable = [
         'stage_id',
@@ -17,6 +18,10 @@ class StageGroup extends Model
         'order',
         'team_count',
         'is_active'
+    ];
+
+    protected $dates = [
+        'deleted_at'
     ];
 
     public function stage()

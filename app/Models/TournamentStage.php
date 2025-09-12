@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class TournamentStage extends Model
 {
-    use AsSource, Sortable;
+    use AsSource, Sortable, SoftDeletes;
 
     protected $fillable = [
         'tournament_id', 'name', 'stage_type',
@@ -19,6 +20,10 @@ class TournamentStage extends Model
         'configuration' => 'array',
         'start_date' => 'date:Y-m-d',
         'end_date' => 'date:Y-m-d',
+    ];
+
+    protected $dates = [
+        'deleted_at'
     ];
 
     public function tournament()

@@ -3,17 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Screen\AsSource;
 
 class Mmatch extends Model
 {
-    use AsSource;
+    use AsSource, SoftDeletes;
 
     protected $fillable = [
         'stage_id', 'group_id', 'home_application_id',
         'away_application_id', 'venue_id', 'scheduled_time',
         'status', 'home_score', 'away_score',
         'first_referee_id', 'second_referee_id'
+    ];
+
+    protected $dates = [
+        'deleted_at'
     ];
 
     public function homeTeam()

@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
 {
-    use AsSource;
+    use AsSource, SoftDeletes;
 
     protected $fillable = [
         'name', 'logo', 'city',
         'description', 'captain_id'
+    ];
+
+    protected $dates = [
+        'deleted_at'
     ];
 
     public function captain()
