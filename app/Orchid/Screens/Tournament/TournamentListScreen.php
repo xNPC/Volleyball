@@ -4,12 +4,16 @@ namespace App\Orchid\Screens\Tournament;
 
 
 use App\Models\Tournament;
+use App\Models\Venue;
 use App\Orchid\Filters\OrganizationFilter;
 use App\Orchid\Layouts\TournamentSelection;
+use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
+use Orchid\Support\Facades\Toast;
 
 
 class TournamentListScreen extends Screen
@@ -75,32 +79,54 @@ class TournamentListScreen extends Screen
 
             Layout::table('tournaments', [
 
-                    TD::make('id', 'ID')
-                            ->sort(),
+                TD::make('id', 'ID')
+                    ->sort(),
 
-                    TD::make('name', 'Название')
-                        ->render(function (Tournament $tournament) {
-                            return Link::make($tournament->name)
-                                ->route('platform.tournaments.edit', $tournament);
-                        }),
+                TD::make('name', 'Название')
+                    ->render(function (Tournament $tournament) {
+                        return Link::make($tournament->name)
+                            ->route('platform.tournaments.edit', $tournament);
+                    }),
 
-                    TD::make('organization.name', 'Организация'),
+                TD::make('organization.name', 'Организация'),
 
-                    TD::make('start_date', 'Дата начала')
-                        ->sort()
-                        ->render(function ($tournament) {
-                            return $tournament->start_date->format('d.m.Y');
-                        }),
+                TD::make('start_date', 'Дата начала')
+                    ->sort()
+                    ->render(function ($tournament) {
+                        return $tournament->start_date->format('d.m.Y');
+                    }),
 
-                    TD::make('status', 'Статус')
-                        ->sort()
-                        ->render(function ($tournament) {
-                            return $tournament::STATUS[$tournament->status];
-                        }
-                    ),
+                TD::make('status', 'Статус')
+                    ->sort()
+                    ->render(function ($tournament) {
+                        return $tournament::STATUS[$tournament->status];
+                    }),
 
+                TD::make('Действия')
+                    ->render(fn (Tournament $tournament) => DropDown::make()
+                        ->icon('bs.three-dots-vertical')
+                        ->list([
+                            Link::make('Редактировать')
+                                ->icon('bs.pencil')
+                                ->route('platform.tournaments.edit', $tournament),
+
+                            Button::make('Удалить')
+                                ->icon('bs.trash')
+                                ->method('remove', [
+                                        'tournament' => $tournament]
+                                )
+                                ->confirm('После удаления, будут так же удалены все этапы и группы от этого турнира, что, Вы уверены, что хотите удалить турнир?')
+                        ])
+                    )
 
             ])
         ];
+    }
+
+    public function remove(Tournament $tournament)
+    {
+        $tournament->delete();
+
+        Toast::info('Успешно удалено');
     }
 }
