@@ -26,7 +26,7 @@ class StageGroup extends Model
 
     public function stage()
     {
-        return $this->belongsTo(TournamentStage::class);
+        return $this->belongsTo(TournamentStage::class, 'stage_id', 'id');
     }
 
     public function teams()

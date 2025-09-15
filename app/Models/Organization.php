@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Dyrynda\Database\Support\CascadeSoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Attachment\Attachable;
@@ -10,7 +11,11 @@ use Orchid\Screen\AsSource;
 
 class Organization extends Model {
 
-    use AsSource, Filterable, Attachable, SoftDeletes;
+    use AsSource, Filterable, Attachable, SoftDeletes, CascadeSoftDeletes;
+
+    protected $cascadeDeletes = ['tournaments', 'venues'];
+
+    protected $fetchMethod = 'get';
 
     protected $fillable = [
         'name', 'description', 'logo',

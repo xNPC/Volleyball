@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Dyrynda\Database\Support\CascadeSoftDeletes;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
@@ -9,7 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class TournamentStage extends Model
 {
-    use AsSource, Sortable, SoftDeletes;
+    use AsSource, Sortable, SoftDeletes, CascadeSoftDeletes;
+
+    protected $cascadeDeletes = ['groups'];
+
+    protected $fetchMethod = 'get';
 
     protected $fillable = [
         'tournament_id', 'name', 'stage_type',
@@ -33,7 +38,7 @@ class TournamentStage extends Model
 
     public function groups()
     {
-        return $this->hasMany(StageGroup::class)->orderBy('order');
+        return $this->hasMany(StageGroup::class, 'stage_id', 'id')->orderBy('order');
     }
 
     public function getStageTypeNameAttribute()
