@@ -102,8 +102,11 @@ Route::screen('organizations', OrganizationListScreen::class)
  * Работа с турнирами
  *
  */
-Route::screen('tournament/stages/{stage}/groups/{group}', GroupScreen::class)
-    ->name('platform.tournament.group');
+//Route::screen('tournament/{tournament}/stages/{stage}/groups/{group}', GroupScreen::class)
+//    ->name('platform.tournament.group');
+
+Route::screen('tournament/{tournament}/stages/{stage}', GroupScreen::class)
+    ->name('platform.tournament.groups');
 
 Route::screen('tournaments/create', TournamentEditScreen::class)
     ->name('platform.tournaments.create')

@@ -13,22 +13,23 @@ use Orchid\Screen\Screen;
 
 class GroupScreen extends Screen
 {
-    public StageGroup $group;
-    public TournamentStage $stage;
+    public $groups;
+    //public $stage;
 
     /**
      * Fetch data to be displayed on the screen.
      *
      * @return array
      */
-    public function query(StageGroup $group): iterable
+    public function query(StageGroup $group, TournamentStage $stage): iterable
     {
-        $this->group = $group;
-        $this->stage = $group->stage;
+
+        //$stage = $group->stage;
 
         return [
             'group' => $group->load('teams'),
-            'stage' => $this->stage
+            'stage' => $stage,
+            'groups' => $stage->groups,
         ];
     }
 
@@ -59,33 +60,53 @@ class GroupScreen extends Screen
      */
     public function layout(): iterable
     {
-        return [
-            Layout::tabs([
-                'Основное' => Layout::rows([
+
+        foreach ($this->groups as $group)
+        {
+            $tabs = [
+                $group->name => Layout::rows([
                     Input::make('group.name')
                         ->title('Название группы')
                         ->required(),
 
-                    Input::make('group.team_count')
-                        ->title('Количество команд')
-                        ->type('number')
-                        ->min(2),
                 ]),
+            ];
+        }
 
-                'Команды' => Layout::rows([
-                    Matrix::make('group.teams')
-                        ->title('Распределение команд')
-                        ->columns([
-                            'Команда' => 'team.name',
-                            'Позиция' => 'pivot.position'
-                        ])
-                        ->fields([
-                            'pivot.position' => Input::make()
-                                ->type('number')
-                                ->min(1)
-                        ])
+        return [
+
+                Layout::tabs([
+                    $tabs
                 ])
-            ])
+
+
+
+//            Layout::tabs([
+//                'Основное' => Layout::rows([
+//                    Input::make('group.name')
+//                        ->title('Название группы')
+//                        ->required(),
+//
+//                    Input::make('group.team_count')
+//                        ->title('Количество команд')
+//                        ->type('number')
+//                        ->min(2),
+//                ]),
+//
+//                'Команды' => Layout::rows([
+//                    Matrix::make('group.teams')
+//                        ->title('Распределение команд')
+//                        ->columns([
+//                            'Команда' => 'team.name',
+//                            'Позиция' => 'pivot.position'
+//                        ])
+//                        ->fields([
+//                            'pivot.position' => Input::make()
+//                                ->type('number')
+//                                ->min(1)
+//                        ])
+//                ])
+//            ])
         ];
     }
 

@@ -86,8 +86,12 @@ class StageListTable extends Table
                                 'stage' => $stage->id
                             ]),
 
-                        Button::make('Группы этапа')
-                            ->icon('bs.journals'),
+                        Link::make('Группы этапа')
+                            ->icon('bs.journals')
+                            ->route('platform.tournament.groups', [
+                                'tournament' => 1,
+                                'stage' => 1,
+                            ]),
 
                         Button::make(__('Delete'))
                             ->icon('bs.trash3')
