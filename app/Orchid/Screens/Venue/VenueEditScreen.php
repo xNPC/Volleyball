@@ -63,14 +63,14 @@ class VenueEditScreen extends Screen
 
                 Button::make('Сохранить')
                     ->icon('check')
-                    ->method('createOrUpdateStage')
+                    ->method('createOrUpdateVenue')
                     ->type(Color::PRIMARY)
 
             ])
         ];
     }
 
-    public function createOrUpdateStage(Venue $venue, Organization $organization, Request $request)
+    public function createOrUpdateVenue(Venue $venue, Organization $organization, Request $request)
     {
 
         $venueId = $request->input('venue.id');
