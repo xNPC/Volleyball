@@ -134,8 +134,13 @@ Route::screen('tournaments', TournamentListScreen::class)
  * Работа с командами
  *
  */
-Route::post('teams/save/{team?}', [TeamController::class, 'save'])->name('platform.teams.save');
-Route::screen('teams/create', TeamEditScreen::class)->name('platform.teams.create');
+Route::screen('teams/create', TeamEditScreen::class)
+    ->name('platform.teams.create')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.index')
+        ->push('Создание команды')
+    );
+
 Route::screen('teams/{team}/edit', TeamEditScreen::class)->name('platform.teams.edit');
 //Route::screen('teams', TeamListScreen::class)->name('platform.teams.list');
 

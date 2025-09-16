@@ -55,6 +55,30 @@ class PlatformProvider extends OrchidServiceProvider
                 ]),
             //->route('platform.tournaments.list'),
 
+            Menu::make('Команды')
+                ->slug('teams')
+                ->icon('people')
+                ->list([
+                    Menu::make('Создать')
+                        ->icon('plus')
+                        ->route('platform.teams.create'),
+                    Menu::make('Список команд')
+                        ->icon('list')
+                        ->route('platform.index'),
+                ]),
+
+            Menu::make('Заявки')
+                ->slug('applications')
+                ->icon('card-checklist')
+                ->list([
+                    Menu::make('Подать заявку')
+                        ->icon('plus')
+                        ->route('platform.index'),
+                    Menu::make('Список заявок')
+                        ->icon('list')
+                        ->route('platform.index'),
+                ]),
+
             Menu::make('Get Started')
                 ->icon('bs.book')
                 ->title('Navigation')

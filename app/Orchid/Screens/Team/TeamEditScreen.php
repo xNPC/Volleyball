@@ -3,8 +3,11 @@
 namespace App\Orchid\Screens\Team;
 
 use App\Models\Team;
+use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\Input;
+use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Fields\Upload;
+use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
 
@@ -15,9 +18,11 @@ class TeamEditScreen extends Screen
      *
      * @return array
      */
-    public function query(): iterable
+    public function query(Team $team): iterable
     {
-        return [];
+        return [
+            'team' => $team
+        ];
     }
 
     /**
@@ -49,18 +54,22 @@ class TeamEditScreen extends Screen
                     Input::make('team.city')
                         ->title('Город'),
 
-                    Upload::make('team.logo')
-                        ->title('Логотип')
-                        ->acceptedFiles('image/*'),
+//                    Upload::make('team.logo')
+//                        ->title('Логотип')
+//                        ->acceptedFiles('image/*'),
 
-                    Input::make('team.description')
+                    TextArea::make('team.description')
                         ->title('Описание')
-                        ->type('textarea'),
+                        ->rows(4),
+
+                    Button::make('Сохранить')
+                        ->icon('check')
+                        ->type(Color::SUCCESS)
                 ]),
 
-                'Состав' => Layout::rows([
-                    \App\Orchid\Layouts\Team\TeamMembersLayout::class
-                ]),
+//                'Состав' => Layout::rows([
+//                    \App\Orchid\Layouts\Team\TeamMembersLayout::class
+//                ]),
             ])
         ];
     }

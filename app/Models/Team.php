@@ -11,7 +11,7 @@ class Team extends Model
     use AsSource, SoftDeletes;
 
     protected $fillable = [
-        'name', 'logo', 'city',
+        'name', 'logo',
         'description', 'captain_id'
     ];
 
