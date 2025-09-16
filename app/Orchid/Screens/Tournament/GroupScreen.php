@@ -6,15 +6,21 @@ use App\Models\StageGroup;
 use App\Models\TournamentStage;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\Link;
+use Orchid\Screen\Actions\ModalToggle;
+use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Matrix;
+use Orchid\Screen\TD;
+use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
+use Orchid\Support\Facades\Toast;
 
 class GroupScreen extends Screen
 {
     public $groups;
-    //public $stage;
+    public $stage;
 
     /**
      * Fetch data to be displayed on the screen.
@@ -40,7 +46,7 @@ class GroupScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'GroupScreen';
+        return 'Группы ' . $this->stage->name;
     }
 
     /**
@@ -50,7 +56,12 @@ class GroupScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            ModalToggle::make('Добавить группу')
+                ->icon('plus')
+                ->modal('createOrUpdateGroup')
+                ->method('createOrUpdateGroup'),
+        ];
     }
 
     /**
@@ -60,53 +71,55 @@ class GroupScreen extends Screen
      */
     public function layout(): iterable
     {
+        static $tabs = [];
 
-        foreach ($this->groups as $group)
+        foreach ($this->groups as $gr)
         {
-            $tabs = [
-                $group->name => Layout::rows([
-                    Input::make('group.name')
-                        ->title('Название группы')
-                        ->required(),
-
-                ]),
-            ];
+            $tabs[$gr->name] =
+                Layout::columns([
+                    Layout::table('groups', [
+                        TD::make('name', 'Команда'),
+                        TD::make('Действие')
+                            ->render(fn() => Link::make('Убрать из группы'))
+                    ]),
+                    Layout::rows([
+                        Group::make([
+                            Button::make('Добавить команду')
+                                ->type(Color::SUCCESS)
+                                ->icon('plus'),
+                            Button::make('Редактировать группу')
+                                ->type(Color::PRIMARY)
+                                ->icon('pencil'),
+                            Button::make('Удалить группу')
+                                ->type(Color::DANGER)
+                                ->icon('trash'),
+                        ])
+                    ]),
+                ]);
         }
 
         return [
 
-                Layout::tabs([
-                    $tabs
+            //dd(),
+
+            Layout::modal('createOrUpdateGroup', [
+                Layout::rows([
+//                    Input::make('stage_id')
+//                        ->type('integer'),
+                    Input::make('group.name')
+                        ->title('Название'),
+                    Input::make('group.order')
+                        ->title('Порядок')
+                        ->type('number')
+                        ->min(1)
                 ])
+            ])
+            ->title('Создать или обновить группу'),
 
+                Layout::tabs(
+                    $tabs
+                )
 
-
-//            Layout::tabs([
-//                'Основное' => Layout::rows([
-//                    Input::make('group.name')
-//                        ->title('Название группы')
-//                        ->required(),
-//
-//                    Input::make('group.team_count')
-//                        ->title('Количество команд')
-//                        ->type('number')
-//                        ->min(2),
-//                ]),
-//
-//                'Команды' => Layout::rows([
-//                    Matrix::make('group.teams')
-//                        ->title('Распределение команд')
-//                        ->columns([
-//                            'Команда' => 'team.name',
-//                            'Позиция' => 'pivot.position'
-//                        ])
-//                        ->fields([
-//                            'pivot.position' => Input::make()
-//                                ->type('number')
-//                                ->min(1)
-//                        ])
-//                ])
-//            ])
         ];
     }
 
@@ -121,6 +134,25 @@ class GroupScreen extends Screen
         $group->teams()->sync($teams);
 
         return redirect()->route('platform.tournament.stage', $group->stage_id);
+    }
+
+    public function createOrUpdateGroup(Request $request)
+    {
+        $groupId = $request->input('group.id');
+
+        $validated = $request->validate([
+            //'group.stage_id' => 'required|integer|exists:App\Models\TournamentStage,id',
+            'group.name' => 'required|string|max:255',
+            'group.order' => 'required|integer|min:1',
+        ]);
+
+        StageGroup::updateOrCreate([
+            'id' => $groupId,
+            'stage_id' => $this->stage->id,
+        ], $validated['group']);
+
+        Toast::info('Успешно сохранено');
+
     }
 
 }
