@@ -71,7 +71,8 @@ class OrganizationEditScreen extends Screen
 
                 Input::make('organization.contact_phone')
                     ->title('Контактный телефон')
-                    ->type('tel'),
+                    ->mask('+7 (999) 999-9999')
+                    ->type('Phone'),
 
                 Upload::make('organization.attachment')
                     ->title('Логотип')
