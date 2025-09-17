@@ -14,6 +14,7 @@ use App\Orchid\Screens\Examples\ExampleTextEditorsScreen;
 use App\Orchid\Screens\PlatformScreen;
 use App\Orchid\Screens\Role\RoleEditScreen;
 use App\Orchid\Screens\Role\RoleListScreen;
+use App\Orchid\Screens\Team\TeamListScreen;
 use App\Orchid\Screens\User\UserEditScreen;
 use App\Orchid\Screens\User\UserListScreen;
 use App\Orchid\Screens\User\UserProfileScreen;
@@ -134,6 +135,13 @@ Route::screen('tournaments', TournamentListScreen::class)
  * Работа с командами
  *
  */
+Route::screen('teams/{team}/edit', TeamEditScreen::class)
+    ->name('platform.teams.edit')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.index')
+        ->push('Редактирование команды')
+    );
+
 Route::screen('teams/create', TeamEditScreen::class)
     ->name('platform.teams.create')
     ->breadcrumbs(fn (Trail $trail) => $trail
@@ -141,8 +149,12 @@ Route::screen('teams/create', TeamEditScreen::class)
         ->push('Создание команды')
     );
 
-Route::screen('teams/{team}/edit', TeamEditScreen::class)->name('platform.teams.edit');
-//Route::screen('teams', TeamListScreen::class)->name('platform.teams.list');
+Route::screen('teams', TeamListScreen::class)
+    ->name('platform.teams.list')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.index')
+        ->push('Список команд')
+    );
 
 /**
  *

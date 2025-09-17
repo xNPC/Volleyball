@@ -3,13 +3,18 @@
 namespace App\Orchid\Screens\Team;
 
 use App\Models\Team;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
+use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Fields\Upload;
 use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
+use Orchid\Support\Facades\Toast;
 
 class TeamEditScreen extends Screen
 {
@@ -51,8 +56,12 @@ class TeamEditScreen extends Screen
                         ->title('Название команды')
                         ->required(),
 
-                    Input::make('team.city')
-                        ->title('Город'),
+                    Relation::make('team.captain_id')
+                        ->fromModel(User::class, 'name')
+                        ->title('Капитан')
+                        ->required()
+                        ->allowEmpty()
+                        ->help('Выберите капитана'),
 
 //                    Upload::make('team.logo')
 //                        ->title('Логотип')
@@ -62,9 +71,20 @@ class TeamEditScreen extends Screen
                         ->title('Описание')
                         ->rows(4),
 
-                    Button::make('Сохранить')
-                        ->icon('check')
-                        ->type(Color::SUCCESS)
+                    Group::make([
+
+                        Button::make('Сохранить')
+                            ->method('createOrUpdateTeam')
+                            ->icon('check')
+                            ->type(Color::SUCCESS),
+
+                        Button::make('Удалить')
+                            ->method('remove')
+                            ->icon('trash')
+                            ->type(Color::DANGER)
+                            ->canSee($this->team->exists)
+                    ])
+                        ->autoWidth()
                 ]),
 
 //                'Состав' => Layout::rows([
@@ -72,5 +92,29 @@ class TeamEditScreen extends Screen
 //                ]),
             ])
         ];
+    }
+
+    public function createOrUpdateTeam(Request $request)
+    {
+        //$teamId = $request->input('team.id');
+
+        $validated = $request->validate([
+            'team.name' => 'required|string|max:255',
+            'team.captain_id' => 'required|integer|exists:users,id',
+            'team.description' => 'nullable|string|max:2500',
+        ]);
+
+        Team::updateOrCreate($validated['team']);
+
+        Toast::info('Успешно сохранено');
+    }
+
+    public function remove(Team $team)
+    {
+        $team->delete();
+
+        Toast::info('Команда успешно удалена');
+
+        return redirect()->route('platform.main');
     }
 }

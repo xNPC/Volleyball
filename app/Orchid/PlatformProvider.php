@@ -62,9 +62,12 @@ class PlatformProvider extends OrchidServiceProvider
                     Menu::make('Создать')
                         ->icon('plus')
                         ->route('platform.teams.create'),
+                    Menu::make('Редактировать')
+                        ->icon('pencil')
+                        ->route('platform.teams.edit', ['team' => 1]),
                     Menu::make('Список команд')
                         ->icon('list')
-                        ->route('platform.index'),
+                        ->route('platform.teams.list'),
                 ]),
 
             Menu::make('Заявки')
@@ -73,10 +76,10 @@ class PlatformProvider extends OrchidServiceProvider
                 ->list([
                     Menu::make('Подать заявку')
                         ->icon('plus')
-                        ->route('platform.index'),
+                        ->route('platform.main'),
                     Menu::make('Список заявок')
                         ->icon('list')
-                        ->route('platform.index'),
+                        ->route('platform.main'),
                 ]),
 
             Menu::make('Get Started')
