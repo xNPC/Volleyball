@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Orchid\Filters\OrganizationFilter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

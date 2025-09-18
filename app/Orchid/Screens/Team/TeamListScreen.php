@@ -3,6 +3,7 @@
 namespace App\Orchid\Screens\Team;
 
 use App\Models\Team;
+use App\Orchid\Layouts\Team\TeamListTable;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Screen;
@@ -19,10 +20,17 @@ class TeamListScreen extends Screen
      */
     public function query(): iterable
     {
-        $teams = Team::where('captain_id', '=', auth()->user()->id)->get();
+        static $teams;
+
+        if(auth()->user()->hasAccess('platform.teams.edit'))
+
+            $teams = Team::paginate();
+
+        $userTeams = Team::where('captain_id', '=', auth()->user()->id)->get();
 
         return [
-            'teams' => $teams
+            'teams' => $teams,
+            'user_teams' => $userTeams,
         ];
     }
 
@@ -54,22 +62,42 @@ class TeamListScreen extends Screen
     public function layout(): iterable
     {
         return [
-            Layout::table('teams', [
-                TD::make('name', 'Название'),
-                TD::make('Действия')
-                    ->render(function (Team $team) {
-                        return
-                            Group::make([
-                                Button::make('Редактировать')
-                                    ->icon('pencil')
-                                    ->type(Color::PRIMARY),
-                                Button::make('Удалить')
-                                    ->icon('trash')
-                                    ->type(Color::DANGER)
-                            ])->autoWidth()
-                            ;
-                    }),
+            Layout::tabs([
+//                'Мои команды' => Layout::table('user_teams', [
+//                    TD::make('name', 'Название'),
+//                    TD::make('Действия')
+//                        ->render(function (Team $team) {
+//                            return
+//                                Group::make([
+//                                    Button::make('Редактировать')
+//                                        ->icon('pencil')
+//                                        ->type(Color::PRIMARY),
+//                                    Button::make('Удалить')
+//                                        ->icon('trash')
+//                                        ->type(Color::DANGER)
+//                                ])->autoWidth();
+//                        }),
+//                ]),
+//                'Все команды' => Layout::table('teams', [
+//                    TD::make('name', 'Название'),
+//                    TD::make('Действия')
+//                        ->render(function (Team $team) {
+//                            return
+//                                Group::make([
+//                                    Button::make('Редактировать')
+//                                        ->icon('pencil')
+//                                        ->type(Color::PRIMARY),
+//                                    Button::make('Удалить')
+//                                        ->icon('trash')
+//                                        ->type(Color::DANGER)
+//                                ])->autoWidth();
+//                        }),
+//                ])
+//                    ->canSee(auth()->user()->hasAccess('platform.teams.edit')),
+                'Мои команды' => new TeamListTable('user_teams'),
+                'Все команды' => new TeamListTable('teams')
             ])
+
         ];
     }
 }

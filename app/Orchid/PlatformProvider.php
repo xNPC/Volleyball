@@ -152,6 +152,10 @@ class PlatformProvider extends OrchidServiceProvider
                 ->addPermission('platform.systems.roles', __('Roles'))
                 ->addPermission('platform.systems.users', __('Users'))
                 ->addPermission('platform.systems.test', __('Test')),
+
+            ItemPermission::group('Команды')
+                ->addPermission('platform.teams.create', 'Создание')
+                ->addPermission('platform.teams.edit', 'Редактирование всех'),
         ];
     }
 }
