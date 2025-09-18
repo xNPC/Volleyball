@@ -5,7 +5,7 @@
     "Profile": "Профиль",
     "Select A New Photo": "Выбрать новое фото",
     "Remove Photo": "Удалить фото",
-    "Name": "Ф.И.О.",
+    "Name": "Название",
     "Email": "Эл. почта",
     "Save": "Сохранить",
     "Profile Information": "Информация профиля",
@@ -33,5 +33,7 @@
     "Delete Account": "Удалить уч. запись",
     "Permanently delete your account.": "Удаление своей уч. запись навсегда.",
     "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.": "После удаления вашего аккаунта все его ресурсы и данные будут удалены навсегда. Перед удалением аккаунта загрузите любые данные или информацию, которые вы хотите сохранить.",
+
+    "Access Controls": "Контроль доступа",
     "": ""
 }
