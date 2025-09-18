@@ -52,6 +52,9 @@ class TeamEditScreen extends Screen
         return [
             Layout::tabs([
                 'Основное' => Layout::rows([
+                    Input::make('team.id')
+                        ->type('hidden'),
+
                     Input::make('team.name')
                         ->title('Название команды')
                         ->required(),
@@ -96,7 +99,7 @@ class TeamEditScreen extends Screen
 
     public function createOrUpdateTeam(Request $request)
     {
-        //$teamId = $request->input('team.id');
+        $teamId = $request->input('team.id');
 
         $validated = $request->validate([
             'team.name' => 'required|string|max:255',
@@ -104,17 +107,14 @@ class TeamEditScreen extends Screen
             'team.description' => 'nullable|string|max:2500',
         ]);
 
-        Team::updateOrCreate($validated['team']);
+        Team::updateOrCreate([
+            'id' => $teamId
+        ],
+            $validated['team']);
 
         Toast::info('Успешно сохранено');
+
+        return redirect()->route('platform.teams.list');
     }
 
-    public function remove(Team $team)
-    {
-        $team->delete();
-
-        Toast::info('Команда успешно удалена');
-
-        return redirect()->route('platform.main');
-    }
 }

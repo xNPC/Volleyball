@@ -3,7 +3,11 @@
 namespace App\Orchid\Layouts\Team;
 
 use App\Models\Team;
+use App\Models\User;
+use App\Orchid\Screens\Team\TeamEditScreen;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\DropDown;
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
@@ -19,39 +23,59 @@ class TeamListTable extends Table
      *
      * @var string
      */
-    //protected $target = 'teams';
-
-    /**
-     * Get the table cells to be displayed.
-     *
-     * @return TD[]
-     */
     public function __construct(protected $target)
     {
 
     }
 
-//    public function isSee(): bool
-//    {
-//        return auth()->user()->hasAccess('platform.teams.edit');
-//    }
+    public function isSee(): bool
+    {
+        $isSee = false;
+
+        if ($this->target == 'teams')
+            $isSee = auth()->user()->hasAccess('platform.teams.edit');
+
+        if($this->target == 'user_teams')
+            $isSee = true;
+
+        return $isSee;
+    }
+
+    public function iconNotFound(): string
+    {
+        return 'emoji-frown';
+    }
+    public function textNotFound(): string
+    {
+        return 'Упс...';
+    }
+    public function subNotFound(): string
+    {
+        return 'Доступные для Вас команды отсутствуют.';
+    }
 
     protected function columns(): iterable
     {
         return [
             TD::make('name', 'Название'),
+
+            TD::make('captain.name', 'Капитан'),
+
             TD::make('Действия')
-                ->render(function (Team $team) {
-                    return
-                        Group::make([
-                            Button::make('Редактировать')
-                                ->icon('pencil')
-                                ->type(Color::PRIMARY),
-                            Button::make('Удалить')
-                                ->icon('trash')
-                                ->type(Color::DANGER)
-                        ])->autoWidth();
-                })
+                ->render(fn (Team $team) => DropDown::make()
+                    ->icon('bs.three-dots-vertical')
+                    ->list([
+                        Link::make('Редактировать')
+                            ->route('platform.teams.edit', $team)
+                            ->icon('pencil'),
+                        Button::make('Удалить')
+                            ->method('remove', [
+                                'team' => $team
+                            ])
+                            ->icon('trash')
+                        ->confirm('Вместе с командой удалится вся ее история - заявки, игры и т.д., Вы точно хотите удалить команду?')
+                    ])
+                ),
         ];
     }
 }
