@@ -38,46 +38,49 @@ class PlatformProvider extends OrchidServiceProvider
                 ->slug('organizations')
                 ->icon('building')
                 ->title('Управление турнирами')
-                ->list([
-                    Menu::make('Список организаций')
-                        ->icon('building')
-                        ->route('platform.organization.list'),
-                ]),
+//                ->list([
+//                    Menu::make('Список организаций')
+//                        ->icon('building')
+//                        ->route('platform.organization.list'),
+//                ])
+                ->route('platform.organization.list'),
 
 
             Menu::make('Турниры')
                 ->slug('tournaments')
                 ->icon('menu-button-wide-fill')
-                ->list([
-                    Menu::make('Список турниров')
-                        ->icon('trophy')
-                        ->route('platform.tournaments.list'),
-                ]),
-            //->route('platform.tournaments.list'),
+//                ->list([
+//                    Menu::make('Список турниров')
+//                        ->icon('trophy')
+//                        ->route('platform.tournaments.list'),
+//                ]),
+            ->route('platform.tournaments.list'),
 
             Menu::make('Команды')
                 ->slug('teams')
                 ->icon('people')
-                ->list([
+//                ->list([
 //                    Menu::make('Создать')
 //                        ->icon('plus')
 //                        ->route('platform.teams.create'),
-                    Menu::make('Список команд')
-                        ->icon('list')
-                        ->route('platform.teams.list'),
-                ]),
+//                    Menu::make('Список команд')
+//                        ->icon('list')
+//                        ->route('platform.teams.list'),
+//                ])
+                ->route('platform.teams.list'),
 
             Menu::make('Заявки')
                 ->slug('applications')
                 ->icon('card-checklist')
-                ->list([
-                    Menu::make('Подать заявку')
-                        ->icon('plus')
-                        ->route('platform.main'),
-                    Menu::make('Список заявок')
-                        ->icon('list')
-                        ->route('platform.main'),
-                ]),
+//                ->list([
+//                    Menu::make('Подать заявку')
+//                        ->icon('plus')
+//                        ->route('platform.main'),
+//                    Menu::make('Список заявок')
+//                        ->icon('list')
+//                        ->route('platform.main'),
+//                ])
+                ->route('platform.main'),
 
             Menu::make('Get Started')
                 ->icon('bs.book')

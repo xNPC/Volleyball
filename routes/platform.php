@@ -137,15 +137,15 @@ Route::screen('tournaments', TournamentListScreen::class)
  */
 Route::screen('teams/{team}/edit', TeamEditScreen::class)
     ->name('platform.teams.edit')
-    ->breadcrumbs(fn (Trail $trail) => $trail
-        ->parent('platform.index')
-        ->push('Редактирование команды')
+    ->breadcrumbs(fn (Trail $trail, $team) => $trail
+        ->parent('platform.teams.list', route('platform.teams.edit', $team))
+        ->push($team->name)
     );
 
 Route::screen('teams/create', TeamEditScreen::class)
     ->name('platform.teams.create')
     ->breadcrumbs(fn (Trail $trail) => $trail
-        ->parent('platform.index')
+        ->parent('platform.teams.list')
         ->push('Создание команды')
     );
 
@@ -153,7 +153,7 @@ Route::screen('teams', TeamListScreen::class)
     ->name('platform.teams.list')
     ->breadcrumbs(fn (Trail $trail) => $trail
         ->parent('platform.index')
-        ->push('Список команд')
+        ->push('Список команд', route('platform.teams.list'))
     );
 
 /**

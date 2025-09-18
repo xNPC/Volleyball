@@ -86,6 +86,7 @@ class TeamEditScreen extends Screen
                             ->icon('trash')
                             ->type(Color::DANGER)
                             ->canSee($this->team->exists)
+                            ->confirm('Вместе с командой удалится вся ее история - заявки, игры и т.д., Вы точно хотите удалить команду?')
                     ])
                         ->autoWidth()
                 ]),
