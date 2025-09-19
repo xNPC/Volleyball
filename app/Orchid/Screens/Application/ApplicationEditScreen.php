@@ -65,13 +65,13 @@ class ApplicationEditScreen extends Screen
                         ->sendTrueOrFalse(),
                 ]),
 
-                'Расписание' => Layout::rows([
-                    \App\Orchid\Layouts\Application\ApplicationScheduleLayout::class
-                ]),
-
-                'Состав' => Layout::rows([
-                    \App\Orchid\Layouts\Application\ApplicationRosterLayout::class
-                ])
+//                'Расписание' => Layout::rows([
+//                    \App\Orchid\Layouts\Application\ApplicationScheduleLayout::class
+//                ]),
+//
+//                'Состав' => Layout::rows([
+//                    \App\Orchid\Layouts\Application\ApplicationRosterLayout::class
+//                ])
             ])
         ];
     }

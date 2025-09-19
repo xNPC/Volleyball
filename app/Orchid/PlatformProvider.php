@@ -80,7 +80,7 @@ class PlatformProvider extends OrchidServiceProvider
 //                        ->icon('list')
 //                        ->route('platform.main'),
 //                ])
-                ->route('platform.main'),
+                ->route('platform.applications.list'),
 
             Menu::make('Get Started')
                 ->icon('bs.book')
