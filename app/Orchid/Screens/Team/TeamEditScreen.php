@@ -61,10 +61,12 @@ class TeamEditScreen extends Screen
 
                     Relation::make('team.captain_id')
                         ->fromModel(User::class, 'name')
+                        ->value(auth()->user()->id)
                         ->title('Капитан')
                         ->required()
                         ->allowEmpty()
-                        ->help('Выберите капитана'),
+                        ->help('Выберите капитана')
+                        ->disabled(!auth()->user()->hasAccess('platform.teams.edit')),
 
 //                    Upload::make('team.logo')
 //                        ->title('Логотип')
