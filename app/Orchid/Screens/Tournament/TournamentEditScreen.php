@@ -44,6 +44,7 @@ class TournamentEditScreen extends Screen
                 ->modal('createOrUpdateStage')
                 ->method('createOrUpdateStage')
                 ->icon('plus')
+                ->canSee($this->tournament->exists)
 
 //            Button::make('Удалить')
 //                ->icon('trash')
@@ -100,7 +101,9 @@ class TournamentEditScreen extends Screen
 
         $tournament->fill($validated['tournament'])->save();
 
-        return redirect()->route('platform.tournaments.list');
+        Toast::info('Успешно сохранено');
+
+        //return redirect()->route('platform.tournaments.list');
     }
 
     public function remove(Tournament $tournament)
