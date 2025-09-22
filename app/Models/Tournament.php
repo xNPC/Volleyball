@@ -82,4 +82,9 @@ class Tournament extends Model
     public function url() {
         return route('platform.tournaments.edit', $this->id);
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status','planned');
+    }
 }
