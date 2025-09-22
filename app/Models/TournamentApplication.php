@@ -19,6 +19,17 @@ class TournamentApplication extends Model
         'deleted_at'
     ];
 
+    public const STATUS = [
+        'pending' => 'В ожидании',
+        'approved' => 'Утверждена',
+        'rejected' => 'Отклонена'
+    ];
+
+    public const IS_COMPLETE = [
+        0 => 'Заполняется',
+        1 => 'Завершена'
+    ];
+
     public function tournament()
     {
         return $this->belongsTo(Tournament::class);
@@ -27,6 +38,11 @@ class TournamentApplication extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function venue()
+    {
+        return $this->belongsTo(Venue::class);
     }
 
     public function schedules()
