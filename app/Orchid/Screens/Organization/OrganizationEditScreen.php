@@ -86,7 +86,7 @@ class OrganizationEditScreen extends Screen
     {
         $request->validate([
             'organization.name' => 'required|string|max:255',
-            'organization.attachment' => 'nullable|mimes:jpg,jpeg,png|max:1024'
+            'organization.attachment' => 'nullable|mimes:jpg,jpeg,png|max:10240'
         ]);
 
         $organization->fill($request->input('organization'))->save();
