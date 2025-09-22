@@ -4,6 +4,8 @@ namespace App\Orchid\Screens\Application;
 
 use App\Models\TournamentApplication;
 use App\Orchid\Layouts\Application\ApplicationListTable;
+use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Layout;
 use Orchid\Screen\Screen;
 
@@ -17,7 +19,7 @@ class ApplicationListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'applications' => TournamentApplication::all()
+            'applications' => TournamentApplication::with('tournament', 'team', 'venue')->get()
         ];
     }
 
@@ -38,7 +40,11 @@ class ApplicationListScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            Link::make('Создать заявку')
+                ->icon('plus')
+                ->route('platform.applications.create'),
+        ];
     }
 
     /**

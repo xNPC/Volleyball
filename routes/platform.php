@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Orchid\Screens\Application\ApplicationEditScreen;
 use App\Orchid\Screens\Application\ApplicationListScreen;
 use App\Orchid\Screens\Examples\ExampleActionsScreen;
 use App\Orchid\Screens\Examples\ExampleCardsScreen;
@@ -162,6 +163,13 @@ Route::screen('teams', TeamListScreen::class)
  * Работа с Заявками
  *
  */
+Route::screen('applications/create', ApplicationEditScreen::class)
+    ->name('platform.applications.create')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.applications.list')
+        ->push('Создание заявки', route('platform.applications.create'))
+    );
+
 Route::screen('applications', ApplicationListScreen::class)
     ->name('platform.applications.list')
     ->breadcrumbs(fn (Trail $trail) => $trail
