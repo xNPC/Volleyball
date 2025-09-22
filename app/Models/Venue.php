@@ -41,4 +41,9 @@ class Venue extends Model
             7 => 'Воскресенье'
         ];
     }
+
+    public function getDisplayNameAttribute()
+    {
+        return "{$this->name}, {$this->address}";
+    }
 }
