@@ -103,7 +103,7 @@ class TournamentEditScreen extends Screen
 
         Toast::info('Успешно сохранено');
 
-        //return redirect()->route('platform.tournaments.list');
+        return redirect()->route('platform.tournaments.edit', ['tournament' => $tournament]);
     }
 
     public function remove(Tournament $tournament)
