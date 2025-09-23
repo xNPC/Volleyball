@@ -12,6 +12,7 @@ use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\CheckBox;
+use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
 
@@ -37,9 +38,10 @@ class ApplicationEditScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Button::make('Test')
-                ->icon('pencil')
-                ->method('test')
+//            Button::make('Сохранить')
+//                ->icon('check')
+//                ->type(Color::PRIMARY)
+//                ->method('test')
         ];
     }
 
@@ -101,8 +103,12 @@ class ApplicationEditScreen extends Screen
                         ->fields([
                             'name' => Relation::make( 'name')
                                 ->fromModel(User::class, 'name')
-                        ])
-                ])
+                        ]),
+                    Button::make('Сохранить')
+                        ->icon('check')
+                        ->type(Color::PRIMARY)
+                        ->method('test')
+                ]),
             //])
         ];
     }

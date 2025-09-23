@@ -40,6 +40,17 @@ class TournamentApplication extends Model
         return $this->belongsTo(Team::class);
     }
 
+    public function players()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'application_rosters',
+            'application_id',
+            'user_id'
+        )
+            ->withPivot('jersey_number', 'position', 'is_captain');
+    }
+
     public function venue()
     {
         return $this->belongsTo(Venue::class);

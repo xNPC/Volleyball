@@ -163,6 +163,13 @@ Route::screen('teams', TeamListScreen::class)
  * Работа с Заявками
  *
  */
+Route::screen('applications/{application}/edit', ApplicationEditScreen::class)
+    ->name('platform.applications.edit')
+    ->breadcrumbs(fn (Trail $trail, $application) => $trail
+        ->parent('platform.applications.list')
+        ->push($application->team->name)
+    );
+
 Route::screen('applications/create', ApplicationEditScreen::class)
     ->name('platform.applications.create')
     ->breadcrumbs(fn (Trail $trail) => $trail

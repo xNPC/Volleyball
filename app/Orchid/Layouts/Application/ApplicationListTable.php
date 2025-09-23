@@ -4,6 +4,7 @@ namespace App\Orchid\Layouts\Application;
 
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
 
@@ -50,8 +51,9 @@ class ApplicationListTable extends Table
                 ->render(fn ($application) => DropDown::make()
                     ->icon('bs.three-dots-vertical')
                     ->list([
-                        Button::make('Редактировать')
-                            ->icon('pencil'),
+                        Link::make('Редактировать')
+                            ->icon('pencil')
+                            ->route('platform.applications.edit', $application),
                         Button::make('Удалить')
                             ->icon('trash'),
                     ])
