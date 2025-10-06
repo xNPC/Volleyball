@@ -81,6 +81,21 @@
                 @endif
             @endif
         </div>
+
+        <!-- Phone Number -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="phone" value="{{ __('Phone Number') }}" />
+            <x-input id="phone" type="tel" class="mt-1 block w-full" wire:model="state.phone" autocomplete="tel" />
+            <x-input-error for="phone" class="mt-2" />
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="date_of_birth" value="{{ __('Date of Birth') }}" />
+            <x-input id="date_of_birth" type="date" class="mt-1 block w-full" wire:model="state.date_of_birth" />
+            <x-input-error for="date_of_birth" class="mt-2" />
+        </div>
+
     </x-slot>
 
     <x-slot name="actions">
