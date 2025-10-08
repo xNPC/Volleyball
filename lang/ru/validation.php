@@ -176,8 +176,8 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
-        'validation' => [
-            'regex' => 'The :attribute format is invalid.',
+        'phone' => [
+            'regex' => ':attribute должен соответствовать формату +79999999999',
         ]
     ],
 
@@ -193,7 +193,7 @@ return [
     */
 
     'attributes' => [
-        'regex' => 'The :attribute format is invalid.'
+        'phone' => 'Номер телефона'
     ],
 
 ];
