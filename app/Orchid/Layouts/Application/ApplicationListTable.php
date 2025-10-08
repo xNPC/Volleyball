@@ -30,7 +30,7 @@ class ApplicationListTable extends Table
         return [
             TD::make('tournament.name', 'Турнир'),
             TD::make('team.name', 'Команда'),
-            TD::make('venue.name', 'Домашний зал'),
+            //TD::make('venue.name', 'Домашний зал'),
             TD::make('status', 'Статус')
                 ->render(function ($application) {
                     return $application::STATUS[$application->status];

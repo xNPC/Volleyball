@@ -63,6 +63,6 @@ class TournamentApplication extends Model
 
     public function roster()
     {
-        return $this->hasMany(ApplicationRoster::class);
+        return $this->hasMany(ApplicationRoster::class, 'application_id');
     }
 }

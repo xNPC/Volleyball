@@ -12,6 +12,8 @@ use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\CheckBox;
+use Orchid\Screen\Layouts\Table;
+use Orchid\Screen\TD;
 use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
@@ -26,7 +28,8 @@ class ApplicationEditScreen extends Screen
     public function query(TournamentApplication $application): iterable
     {
         return [
-            'application' => $application
+            'application' => $application,
+            //'roster' => $application->roster()
         ];
     }
 
@@ -55,7 +58,7 @@ class ApplicationEditScreen extends Screen
     public function layout(): array
     {
         return [
-            //Layout::columns([
+            Layout::columns([
                 Layout::rows([
                     Relation::make('application.tournament_id')
                         ->fromModel(Tournament::class, 'name')
@@ -81,33 +84,36 @@ class ApplicationEditScreen extends Screen
                         ->title('Статус')
                         ->options(
                             TournamentApplication::STATUS
-                        ),
+                        )
+                        ->disabled(),
 
                     CheckBox::make('application.is_complete')
                         ->title('Заявка завершена')
                         ->help('Будьте внимательны! Если Заявка будет завершена, вы не сможете больше ее изменять!')
-                        ->sendTrueOrFalse(),
+                        ->sendTrueOrFalse()
+                        ->canSee(!$this->application->is_complete),
                 ]),
 
 //                Layout::rows([
 //                    //ApplicationScheduleLayout::class
 //                ]),
 //
-                Layout::rows([
-                    Matrix::make('application.team')
-                        ->columns([
-                            'Фамилия Имя Отчество' => 'name',
-                            'Номер' => 'jersey_number',
-                            'Амплуа' => 'position',
-                        ])
-                        ->fields([
-                            'name' => Relation::make( 'name')
-                                ->fromModel(User::class, 'name')
-                        ]),
-                    Button::make('Сохранить')
-                        ->icon('check')
-                        ->type(Color::PRIMARY)
-                        ->method('test')
+                //Layout::rows([
+                    Layout::table('application.roster', [
+                        TD::make('user_id', 'Ф.И.О.')
+                            //->render(fn (User $user) => $user->name
+
+                            //)
+        ,
+                        TD::make('jersey_number', 'Номер'),
+                        TD::make('position', 'Амплуа'),
+                    ]),
+
+
+//                    Button::make('Сохранить')
+//                        ->icon('check')
+//                        ->type(Color::PRIMARY)
+//                        ->method('test')
                 ]),
             //])
         ];
