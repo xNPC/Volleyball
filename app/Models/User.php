@@ -34,6 +34,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'birthday',
     ];
 
     protected $dates = [

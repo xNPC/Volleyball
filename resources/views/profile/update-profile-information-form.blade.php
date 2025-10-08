@@ -54,7 +54,7 @@
 
         <!-- Name -->
         <div class="col-span-6 sm:col-span-4">
-            <x-label for="name" value="{{ __('Name') }}" />
+            <x-label for="name" value="{{ __('Full_name') }}" />
             <x-input id="name" type="text" class="mt-1 block w-full" wire:model="state.name" required autocomplete="name" />
             <x-input-error for="name" class="mt-2" />
         </div>
@@ -85,15 +85,15 @@
         <!-- Phone Number -->
         <div class="col-span-6 sm:col-span-4">
             <x-label for="phone" value="{{ __('Phone Number') }}" />
-            <x-input id="phone" type="tel" class="mt-1 block w-full" wire:model="state.phone" autocomplete="tel" />
+            <x-input id="phone" type="tel" class="mt-1 block w-full" wire:model="state.phone" autocomplete="tel" maxlength="12" placeholder="+79999999999" />
             <x-input-error for="phone" class="mt-2" />
         </div>
 
         <!-- Date of Birth -->
         <div class="col-span-6 sm:col-span-4">
-            <x-label for="date_of_birth" value="{{ __('Date of Birth') }}" />
-            <x-input id="date_of_birth" type="date" class="mt-1 block w-full" wire:model="state.date_of_birth" />
-            <x-input-error for="date_of_birth" class="mt-2" />
+            <x-label for="birthday" value="{{ __('Birthday') }}" />
+            <x-input id="birthday" type="date" class="mt-1 block w-full" wire:model="state.birthday" />
+            <x-input-error for="birthday" class="mt-2" />
         </div>
 
     </x-slot>
