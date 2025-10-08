@@ -1,10 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\HomePage;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+//Route::get('/', function () {
+//    return view('welcome');
+//});
+
+Route::get('/', HomePage::class)->name('home');
 
 Route::middleware([
     'auth:sanctum',
@@ -15,3 +18,9 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
+
+//Route::middleware(['auth'])->group(function () {
+//    Route::get('/profile', function () {
+//        return view('profile');
+//    })->name('profile.show');
+//});
