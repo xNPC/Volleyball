@@ -34,8 +34,17 @@ class Team extends Model
         return $this->members()->whereNull('leave_date');
     }
 
-    public function scopeUserTeams($query)
+    public function applications()
     {
-        return $query->where('captain_id', auth()->user()->id);
+        return $this->hasMany(TournamentApplication::class);
+    }
+
+    public function scopeUserTeamsWithoutApplication($query, $tournamentId)
+    {
+        return $query
+                    ->where('captain_id', auth()->user()->id)
+                    ->whereDoesntHave('applications', function ($subQuery) use ($tournamentId) {
+                        $subQuery->where('tournament_id', $tournamentId);
+                    });
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Tournament;
 use App\Models\TournamentApplication;
 use App\Models\User;
 use App\Models\Venue;
+use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Relation;
@@ -17,6 +18,7 @@ use Orchid\Screen\TD;
 use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
+use Orchid\Support\Facades\Toast;
 
 class ApplicationEditScreen extends Screen
 {
@@ -69,7 +71,8 @@ class ApplicationEditScreen extends Screen
 
                     Relation::make('application.team_id')
                         ->fromModel(Team::class, 'name')
-                        ->applyScope('userTeams')
+                        ->applyScope('userTeamsWithoutApplication', 'application.tournament_id')
+                        ->dependentOf('application.tournament_id')
                         ->title('Команда')
                         ->required(),
 
@@ -84,15 +87,21 @@ class ApplicationEditScreen extends Screen
                     Select::make('application.status')
                         ->title('Статус')
                         ->options(
-                            TournamentApplication::STATUS
+                            TournamentApplication::STATUS,
                         )
-                        ->disabled(),
+                        ->canSee($this->application->exists),
 
                     CheckBox::make('application.is_complete')
                         ->title('Заявка завершена')
                         ->help('Будьте внимательны! Если Заявка будет завершена, вы не сможете больше ее изменять!')
                         ->sendTrueOrFalse()
                         ->canSee(!$this->application->is_complete),
+
+                    Button::make('Сохранить')
+                        ->icon('check')
+                        ->type(Color::SUCCESS)
+                        ->method('createOrUpdateApplication')
+                        //->method('test')
                 ]),
 
 //                Layout::rows([
@@ -100,28 +109,50 @@ class ApplicationEditScreen extends Screen
 //                ]),
 //
                 //Layout::rows([
-                    Layout::table('application.roster', [
-                        TD::make('user_id', 'Ф.И.О.')
-                            ->render(fn ($user) => $user->player->name)
+                Layout::table('application.roster', [
+                    TD::make('user_id', 'Ф.И.О.')
+                        ->render(fn($user) => $user->player->name)
 
-                            //)
-        ,
-                        TD::make('jersey_number', 'Номер'),
-                        TD::make('position', 'Амплуа'),
-                    ]),
+                    //)
+                    ,
+                    TD::make('jersey_number', 'Номер'),
+                    TD::make('position', 'Амплуа'),
+                ]),
 
 
 //                    Button::make('Сохранить')
 //                        ->icon('check')
 //                        ->type(Color::PRIMARY)
 //                        ->method('test')
-                ]),
+            ]),
             //])
         ];
     }
 
-    function test()
+    function createOrUpdateApplication(TournamentApplication $application, Request $request)
     {
-        dd($this->application);
+        $applicationStatus = $request['application.status'] ?: 'pending';
+
+        $validated = $request->validate([
+            'application.tournament_id' => 'required|exists:tournaments,id',
+            'application.team_id' => 'required|exists:teams,id',
+            'application.venue_id' => 'required|exists:venues,id',
+            'application.status' => 'nullable|in:pending,approved,rejected',
+            'application.is_complete' => 'required',
+        ]);
+
+        //dd($applicationStatus);
+
+        TournamentApplication::updateOrCreate([
+                'id' => $request['application.id'],
+            ],
+            array_merge($validated['application'], [
+                'status' => $applicationStatus
+            ])
+        );
+
+        Toast::info('Успешно сохранено');
+
+        //return redirect()->route('platform.applications.edit', $application);
     }
 }
