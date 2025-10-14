@@ -69,6 +69,7 @@ class ApplicationEditScreen extends Screen
 
                     Relation::make('application.team_id')
                         ->fromModel(Team::class, 'name')
+                        ->applyScope('userTeams')
                         ->title('Команда')
                         ->required(),
 
@@ -101,7 +102,7 @@ class ApplicationEditScreen extends Screen
                 //Layout::rows([
                     Layout::table('application.roster', [
                         TD::make('user_id', 'Ф.И.О.')
-                            //->render(fn (User $user) => $user->name
+                            ->render(fn ($user) => $user->player->name)
 
                             //)
         ,

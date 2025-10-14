@@ -33,4 +33,9 @@ class Team extends Model
     {
         return $this->members()->whereNull('leave_date');
     }
+
+    public function scopeUserTeams($query)
+    {
+        return $query->where('captain_id', auth()->user()->id);
+    }
 }
