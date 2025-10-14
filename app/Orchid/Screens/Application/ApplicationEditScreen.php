@@ -71,8 +71,7 @@ class ApplicationEditScreen extends Screen
 
                     Relation::make('application.team_id')
                         ->fromModel(Team::class, 'name')
-                        ->applyScope('userTeamsWithoutApplication', 'application.tournament_id')
-                        ->dependentOf('application.tournament_id')
+                        ->applyScope('userTeamsWithoutApplication', '2')
                         ->title('Команда')
                         ->required(),
 
