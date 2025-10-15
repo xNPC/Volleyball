@@ -7,13 +7,12 @@ use App\Models\Tournament;
 use App\Models\TournamentApplication;
 use App\Models\User;
 use App\Models\Venue;
+use App\Orchid\Layouts\Application\TournamentsListener;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
-use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\CheckBox;
-use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
 use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
@@ -61,19 +60,18 @@ class ApplicationEditScreen extends Screen
     {
         return [
             Layout::columns([
+                //TournamentsListener::class,
+
                 Layout::rows([
                     Relation::make('application.tournament_id')
                         ->fromModel(Tournament::class, 'name')
                         ->applyScope('active')
-                        //->value($this->application->tournament)
                         ->title('Турнир')
                         ->required(),
 
-                    Relation::make('application.team_id')
-                        ->fromModel(Team::class, 'name')
-                        ->applyScope('userTeamsWithoutApplication', '2')
-                        ->title('Команда')
-                        ->required(),
+
+                    //TournamentsListener::class,
+                    //new TournamentsListener(),
 
                     Relation::make('application.venue_id')
                         ->fromModel(Venue::class, 'name')
@@ -99,10 +97,9 @@ class ApplicationEditScreen extends Screen
                     Button::make('Сохранить')
                         ->icon('check')
                         ->type(Color::SUCCESS)
-                        ->method('createOrUpdateApplication')
-                        //->method('test')
-                ]),
+                        ->method('createOrUpdateApplication'),
 
+                ]),
 //                Layout::rows([
 //                    //ApplicationScheduleLayout::class
 //                ]),
@@ -124,7 +121,7 @@ class ApplicationEditScreen extends Screen
 //                        ->type(Color::PRIMARY)
 //                        ->method('test')
             ]),
-            //])
+
         ];
     }
 
