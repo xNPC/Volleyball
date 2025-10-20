@@ -30,7 +30,7 @@ class ApplicationRoster extends Model
 
     public function application()
     {
-        return $this->belongsTo(TournamentApplication::class);
+        return $this->belongsTo(TournamentApplication::class, 'tournament_id');
     }
 
     public function player()

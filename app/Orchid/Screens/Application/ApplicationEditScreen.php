@@ -2,14 +2,17 @@
 
 namespace App\Orchid\Screens\Application;
 
+use App\Models\ApplicationRoster;
 use App\Models\Team;
 use App\Models\Tournament;
 use App\Models\TournamentApplication;
 use App\Models\User;
 use App\Models\Venue;
+use App\Orchid\Layouts\Application\AddPlayerLayout;
 use App\Orchid\Layouts\Application\TournamentsListener;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Fields\Relation;
@@ -32,7 +35,7 @@ class ApplicationEditScreen extends Screen
     {
         return [
             'application' => $application,
-            //'roster' => $application->roster()
+            'roster' => $application->roster,
         ];
     }
 
@@ -44,10 +47,12 @@ class ApplicationEditScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Button::make('Добавить игрока')
-                ->icon('plus')
-                ->method('test')
-                ->canSee($this->application->exists)
+
+                ModalToggle::make('Добавить игрока')
+                    ->modal('addPlayer')
+                    ->method('addPlayer')
+                    ->icon('plus')
+                    ->canSee($this->application->exists)
         ];
     }
 
@@ -61,6 +66,14 @@ class ApplicationEditScreen extends Screen
     public function layout(): array
     {
         return [
+
+            Layout::modal('addPlayer', [
+                AddPlayerLayout::class
+            ])
+                ->title('Добавить игрока')
+                ->applyButton('Сохранить')
+                ->async('asyncGetRoster'),
+
             Layout::columns([
 
                 [
@@ -112,6 +125,13 @@ class ApplicationEditScreen extends Screen
 
             ]),
 
+        ];
+    }
+
+    public function asyncGetRoster(ApplicationRoster $roster): array
+    {
+        return [
+            'roster' => $roster
         ];
     }
 
