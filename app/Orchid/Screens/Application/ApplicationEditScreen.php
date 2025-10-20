@@ -10,6 +10,8 @@ use App\Models\Venue;
 use App\Orchid\Layouts\Application\TournamentsListener;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Fields\Group;
+use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\CheckBox;
@@ -42,10 +44,10 @@ class ApplicationEditScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-//            Button::make('Сохранить')
-//                ->icon('check')
-//                ->type(Color::PRIMARY)
-//                ->method('test')
+            Button::make('Добавить игрока')
+                ->icon('plus')
+                ->method('test')
+                ->canSee($this->application->exists)
         ];
     }
 
@@ -60,46 +62,41 @@ class ApplicationEditScreen extends Screen
     {
         return [
             Layout::columns([
-                //TournamentsListener::class,
 
-                Layout::rows([
-                    Relation::make('application.tournament_id')
-                        ->fromModel(Tournament::class, 'name')
-                        ->applyScope('active')
-                        ->title('Турнир')
-                        ->required(),
+                [
 
+                    new TournamentsListener(),
 
-                    //TournamentsListener::class,
-                    //new TournamentsListener(),
+                    Layout::rows([
 
-                    Relation::make('application.venue_id')
-                        ->fromModel(Venue::class, 'name')
-                        ->displayAppend('display_name')
-                        ->title('Домашний зал')
-                        ->help('Обратите внимание! Поиск зала идет по названию, а не по адресу!')
-                        ->allowEmpty()
-                        ->required(),
+                        Relation::make('application.venue_id')
+                            ->fromModel(Venue::class, 'name')
+                            ->displayAppend('display_name')
+                            ->title('Домашний зал')
+                            ->help('Обратите внимание! Поиск зала идет по названию, а не по адресу!')
+                            ->allowEmpty()
+                            ->required(),
 
-                    Select::make('application.status')
-                        ->title('Статус')
-                        ->options(
-                            TournamentApplication::STATUS,
-                        )
-                        ->canSee($this->application->exists),
+                        Select::make('application.status')
+                            ->title('Статус')
+                            ->options(
+                                TournamentApplication::STATUS,
+                            )
+                            ->canSee($this->application->exists),
 
-                    CheckBox::make('application.is_complete')
-                        ->title('Заявка завершена')
-                        ->help('Будьте внимательны! Если Заявка будет завершена, вы не сможете больше ее изменять!')
-                        ->sendTrueOrFalse()
-                        ->canSee(!$this->application->is_complete),
+                        CheckBox::make('application.is_complete')
+                            ->title('Заявка завершена')
+                            ->help('Будьте внимательны! Если Заявка будет завершена, вы не сможете больше ее изменять!')
+                            ->sendTrueOrFalse()
+                            ->canSee(!$this->application->is_complete),
 
-                    Button::make('Сохранить')
-                        ->icon('check')
-                        ->type(Color::SUCCESS)
-                        ->method('createOrUpdateApplication'),
+                        Button::make('Сохранить')
+                            ->icon('check')
+                            ->type(Color::SUCCESS)
+                            ->method('createOrUpdateApplication'),
 
-                ]),
+                    ])
+                ],
 //                Layout::rows([
 //                    //ApplicationScheduleLayout::class
 //                ]),
@@ -107,19 +104,12 @@ class ApplicationEditScreen extends Screen
                 //Layout::rows([
                 Layout::table('application.roster', [
                     TD::make('user_id', 'Ф.И.О.')
-                        ->render(fn($user) => $user->player->name)
-
-                    //)
-                    ,
+                        ->render(fn($user) => $user->player->name),
                     TD::make('jersey_number', 'Номер'),
                     TD::make('position', 'Амплуа'),
-                ]),
+                ])
+                ->title('Состав'),
 
-
-//                    Button::make('Сохранить')
-//                        ->icon('check')
-//                        ->type(Color::PRIMARY)
-//                        ->method('test')
             ]),
 
         ];
@@ -139,7 +129,7 @@ class ApplicationEditScreen extends Screen
 
         //dd($applicationStatus);
 
-        TournamentApplication::updateOrCreate([
+        $appl = TournamentApplication::updateOrCreate([
                 'id' => $request['application.id'],
             ],
             array_merge($validated['application'], [
@@ -149,6 +139,6 @@ class ApplicationEditScreen extends Screen
 
         Toast::info('Успешно сохранено');
 
-        //return redirect()->route('platform.applications.edit', $application);
+        return redirect()->route('platform.applications.edit', ['application' => $appl]);
     }
 }
