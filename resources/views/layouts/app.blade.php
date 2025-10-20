@@ -193,7 +193,7 @@
                             <li><a class="dropdown-item" href="{{ route('profile.show') }}">
                                     <i class="fas fa-user-circle me-2"></i>Профиль
                                 </a></li>
-                            <li><a class="dropdown-item" href="#">
+                            <li><a class="dropdown-item" href="{{ route('platform.teams.list') }}">
                                     <i class="fas fa-volleyball-ball me-2"></i>Мои команды
                                 </a></li>
                             <li><hr class="dropdown-divider"></li>
