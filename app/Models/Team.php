@@ -19,6 +19,13 @@ class Team extends Model
         'deleted_at'
     ];
 
+    public function groups()
+    {
+        return $this->belongsToMany(StageGroup::class, 'group_teams', 'team_id', 'group_id')
+            ->withPivot('position')
+            ->withTimestamps();
+    }
+
     public function captain()
     {
         return $this->belongsTo(User::class, 'captain_id');
