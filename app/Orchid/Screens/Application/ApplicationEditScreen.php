@@ -12,8 +12,10 @@ use App\Orchid\Layouts\Application\AddPlayerLayout;
 use App\Orchid\Layouts\Application\TournamentsListener;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\Group;
+use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
@@ -70,9 +72,32 @@ class ApplicationEditScreen extends Screen
             Layout::modal('addPlayer', [
                 AddPlayerLayout::class
             ])
-                ->title('Добавить игрока')
+                ->applyButton('Добавить игрока')
+                ->async('asyncGetPlayer')
+                ->title('Добавить игрока'),
+
+            Layout::modal('editPlayer', [
+                Layout::rows([
+
+                    Input::make('roster.player.name')
+                        ->title('Игрок')
+                        ->disabled()
+                        ->required(),
+                    Input::make('roster.jersey_number')
+                        ->title('Игровой номер')
+                        ->min(1)
+                        ->max(99)
+                        ->required(),
+
+                    Select::make('roster.position')
+                        ->options(ApplicationRoster::POSITIONS)
+                        ->title('Амплуа')
+                        ->required(),
+                ])
+            ])
                 ->applyButton('Сохранить')
-                ->async('asyncGetRoster'),
+                ->async('asyncGetPlayer')
+                ->title('Редактирование игрока'),
 
             Layout::columns([
 
@@ -119,19 +144,34 @@ class ApplicationEditScreen extends Screen
                     TD::make('user_id', 'Ф.И.О.')
                         ->render(fn($user) => $user->player->name),
                     TD::make('jersey_number', 'Номер'),
-                    TD::make('position', 'Амплуа'),
+                    TD::make('position', 'Амплуа')
+                        ->render(function ($roster) {
+                            $positions = ApplicationRoster::POSITIONS;
+                            return $positions[$roster->position] ?? $roster->position;
+                        }),
+
+                    TD::make('actions', 'Действия')
+                        ->render(fn ($roster)  =>
+                            DropDown::make()
+                                ->icon('bs.three-dots-vertical')
+                                ->list([
+                                    ModalToggle::make('Редактировать')
+                                        ->modal('editPlayer')
+                                        ->method('editPlayer')
+                                        ->asyncParameters(['roster' => $roster->id])
+                                        ->icon('pencil'),
+
+                                    Button::make('Удалить')
+                                        ->icon('trash')
+                                        ->method('removePlayer', ['id' => $roster->id])
+                                        ->confirm('Вы уверены, что хотите удалить игрока из заявки?')
+                            ])
+                        )
                 ])
                 ->title('Состав'),
 
             ]),
 
-        ];
-    }
-
-    public function asyncGetRoster(ApplicationRoster $roster): array
-    {
-        return [
-            'roster' => $roster
         ];
     }
 
@@ -161,4 +201,97 @@ class ApplicationEditScreen extends Screen
 
         return redirect()->route('platform.applications.edit', ['application' => $appl]);
     }
+
+    public function addPlayer(TournamentApplication $application, Request $request)
+    {
+        $request->validate([
+            'roster.user_id'       => 'required|exists:users,id',
+            'roster.jersey_number' => 'required|integer|min:1|max:99',
+            'roster.position'      => [
+                'required',
+                'string',
+                'max:50',
+                function ($attribute, $value, $fail) {
+                    $allowedPositions = ApplicationRoster::POSITIONS;
+
+                    if (!array_key_exists($value, $allowedPositions)) {
+                        $fail('Недопустимое значение для амплуа.');
+                    }
+                },
+            ],
+
+        ]);
+
+        $data = $request->input('roster');
+        $data['application_id'] = $application->id;
+
+        // Проверка на дубликат игрока
+        $exists = ApplicationRoster::where('application_id', $application->id)
+            ->where('user_id', $data['user_id'])
+            ->exists();
+
+        if ($exists) {
+            Toast::error('Этот игрок уже добавлен в заявку');
+            return back();
+        }
+
+        ApplicationRoster::create($data);
+
+        Toast::info('Игрок успешно добавлен');
+
+        return back();
+    }
+
+    public function removePlayer(TournamentApplication $application, Request $request)
+    {
+        $rosterId = $request->get('id');
+
+        ApplicationRoster::where('application_id', $application->id)
+            ->where('id', $rosterId)
+            ->delete();
+
+        Toast::info('Игрок удален из заявки');
+
+        return back();
+    }
+
+    public function editPlayer(TournamentApplication $application, Request $request)
+    {
+        $rosterId = $request->get('roster');
+
+        $request->validate([
+            'roster.jersey_number' => 'required|integer|min:1|max:99',
+            'roster.position'      => [
+                'required',
+                'string',
+                'max:50',
+                function ($attribute, $value, $fail) {
+                    $allowedPositions = ApplicationRoster::POSITIONS;
+
+                    if (!array_key_exists($value, $allowedPositions)) {
+                        $fail('Недопустимое значение для амплуа.');
+                    }
+                },
+            ],
+        ]);
+
+        $roster = ApplicationRoster::where('application_id', $application->id)
+            ->where('id', $rosterId)
+            ->firstOrFail();
+
+        $roster->update($request->input('roster'));
+
+        Toast::info('Игрок успешно обновлен');
+
+        return back();
+    }
+
+    public function asyncGetPlayer(ApplicationRoster $roster): array
+    {
+        return [
+            'roster' => $roster
+        ];
+    }
+
+
 }

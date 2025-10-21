@@ -28,9 +28,17 @@ class ApplicationRoster extends Model
         'is_captain' => 'boolean'
     ];
 
+    public const POSITIONS = [
+        'libero' => 'Либеро',
+        'setter' => 'Связующий',
+        'outside' => 'Доигровщик',
+        'middle' => 'Центральный блокирующий',
+        'opposite' => 'Диагональный'
+    ];
+
     public function application()
     {
-        return $this->belongsTo(TournamentApplication::class, 'tournament_id');
+        return $this->belongsTo(TournamentApplication::class);
     }
 
     public function player()

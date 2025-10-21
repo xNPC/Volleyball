@@ -28,28 +28,24 @@ class AddPlayerLayout extends Rows
     protected function fields(): iterable
     {
         return [
-            Relation::make('roster')
+            Relation::make('roster.user_id')
                 ->fromModel(User::class, 'name')
-                //->displayAppend('display_name')
                 ->title('Игрок')
                 ->help('')
-                ->allowEmpty()
                 ->required(),
 
 
             Group::make([
                 Input::make('roster.jersey_number')
-                    ->title('Игровой номер'),
+                    ->title('Игровой номер')
+                    ->min(1)
+                    ->max(99)
+                    ->required(),
 
-                Select::make('roster.player.position')
-                    ->options([
-                        'Диагональный' => 'Диагональный',
-                        'Доигровщик' => 'Доигровщик',
-                        'Центральный блокирующий' => 'Центральный блокирующий',
-                        'Связующий' => 'Связующий',
-                        'Либеро' => 'Либеро'
-                    ])
+                Select::make('roster.position')
+                    ->options(ApplicationRoster::POSITIONS)
                     ->title('Амплуа')
+                    ->required(),
             ])
             ->widthColumns('30% 65%')
 
