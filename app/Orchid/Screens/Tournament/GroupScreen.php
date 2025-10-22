@@ -3,6 +3,9 @@
 namespace App\Orchid\Screens\Tournament;
 
 use App\Models\StageGroup;
+use App\Models\Team;
+use App\Models\Tournament;
+use App\Models\TournamentApplication;
 use App\Models\TournamentStage;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
@@ -22,12 +25,14 @@ class GroupScreen extends Screen
     public $groups;
     public $stage;
 
+    public $teams;
+
     /**
      * Fetch data to be displayed on the screen.
      *
      * @return array
      */
-    public function query(StageGroup $group, TournamentStage $stage): iterable
+    public function query(Tournament $tournament,StageGroup $group, TournamentStage $stage, TournamentApplication $application): iterable
     {
 
         //$stage = $group->stage;
@@ -35,7 +40,15 @@ class GroupScreen extends Screen
         return [
             'group' => $group->load('teams'),
             'stage' => $stage,
-            'groups' => $stage->groups,
+            'groups' => $stage->load('groups.teams')->groups,
+            'tournament' => $tournament,
+
+            'teams' => Team::whereHas('applications', function ($query) use ($tournament) {
+                $query->where('tournament_id', $tournament->id);
+            })
+                ->with(['applications' => function ($query) use ($tournament, $stage) {
+                    $query->where('tournament_id', $tournament->id)->where('tournament.stage_id', $stage->id);
+                }])->get(),
         ];
     }
 
@@ -77,16 +90,25 @@ class GroupScreen extends Screen
         {
             $tabs[$gr->name] =
                 Layout::columns([
-                    Layout::table('groups', [
+                    Layout::table('teams', [
                         TD::make('name', 'Команда'),
                         TD::make('Действие')
-                            ->render(fn() => Link::make('Убрать из группы'))
+                            ->render(fn() =>
+                                Button::make('Убрать из группы')
+                                    ->icon('trash')
+                                    ->method('removeTeamFromGroup', [
+                                        'group_id' => $gr->id,
+                                        //'team_id' => $this->teams->id,
+
+                                    ]),
+                            )
                     ]),
                     Layout::rows([
                         Group::make([
                             Button::make('Добавить команду')
                                 ->type(Color::SUCCESS)
-                                ->icon('plus'),
+                                ->icon('plus')
+                                ->method('test'),
                             Button::make('Редактировать группу')
                                 ->type(Color::PRIMARY)
                                 ->icon('pencil'),
@@ -153,6 +175,21 @@ class GroupScreen extends Screen
 
         Toast::info('Успешно сохранено');
 
+    }
+
+    public function removeTeamFromGroup(Request $request)
+    {
+        $groupId = $request->input('group_id');
+        $teamId = $request->input('team_id');
+
+        $group = StageGroup::find($groupId);
+        $group->teams()->detach($teamId);
+
+        Toast::info('Успешно удалено');
+    }
+
+    public function test() {
+        dd($this->teams);
     }
 
 }
