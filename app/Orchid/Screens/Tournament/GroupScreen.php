@@ -37,18 +37,20 @@ class GroupScreen extends Screen
 
         //$stage = $group->stage;
 
+        $teams = Team::withApprovedApplicationForTournament($tournament->id)->get();
+
+        $teamsInGroup = Team::inGroupWithApprovedApplication($group->id, $tournament->id)->get();
+
+
         return [
             'group' => $group->load('teams'),
             'stage' => $stage,
             'groups' => $stage->load('groups.teams')->groups,
             'tournament' => $tournament,
 
-            'teams' => Team::whereHas('applications', function ($query) use ($tournament) {
-                $query->where('tournament_id', $tournament->id);
-            })
-                ->with(['applications' => function ($query) use ($tournament, $stage) {
-                    $query->where('tournament_id', $tournament->id)->where('tournament.stage_id', $stage->id);
-                }])->get(),
+            'teamsInGroup' => $teamsInGroup,
+
+            'teams' => $teams,
         ];
     }
 
@@ -90,7 +92,7 @@ class GroupScreen extends Screen
         {
             $tabs[$gr->name] =
                 Layout::columns([
-                    Layout::table('teams', [
+                    Layout::table('teamsInGroup', [
                         TD::make('name', 'Команда'),
                         TD::make('Действие')
                             ->render(fn() =>

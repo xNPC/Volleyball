@@ -54,4 +54,27 @@ class Team extends Model
                         $subQuery->where('tournament_id', $tournamentId);
                     });
     }
+
+    public function scopeWithApprovedApplicationForTournament($query, $tournamentId)
+    {
+        return $query->whereHas('applications', function ($q) use ($tournamentId) {
+            $q->where('tournament_id', $tournamentId)
+                ->where('status', 'approved');
+        });
+    }
+
+    // app/Models/Team.php
+
+    public function scopeInGroupWithApprovedApplication($query, $groupId, $tournamentId)
+    {
+        return $query->whereHas('applications', function ($q) use ($groupId, $tournamentId) {
+            $q->where('tournament_id', $tournamentId)
+                ->where('status', 'approved')
+                ->whereHas('groups', function ($q2) use ($groupId) {
+                    $q2->where('group_id', $groupId);
+                });
+        });
+    }
+
+
 }
