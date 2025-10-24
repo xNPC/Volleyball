@@ -27,19 +27,23 @@ class GroupScreen extends Screen
 
     public $teams;
 
+    //public $teamsInGroup;
+
+    public $tournament;
+
     /**
      * Fetch data to be displayed on the screen.
      *
      * @return array
      */
-    public function query(Tournament $tournament,StageGroup $group, TournamentStage $stage, TournamentApplication $application): iterable
+    public function query(Tournament $tournament,StageGroup $group, TournamentStage $stage): iterable
     {
 
         //$stage = $group->stage;
 
         $teams = Team::withApprovedApplicationForTournament($tournament->id)->get();
 
-        $teamsInGroup = Team::inGroupWithApprovedApplication($group->id, $tournament->id)->get();
+        //$teamsInGroup = Team::inGroupWithApprovedApplication($group->id, $tournament->id)->get();
 
 
         return [
@@ -48,7 +52,7 @@ class GroupScreen extends Screen
             'groups' => $stage->load('groups.teams')->groups,
             'tournament' => $tournament,
 
-            'teamsInGroup' => $teamsInGroup,
+            //'teamsInGroup' => $teamsInGroup,
 
             'teams' => $teams,
         ];
@@ -90,9 +94,11 @@ class GroupScreen extends Screen
 
         foreach ($this->groups as $gr)
         {
+            $teamsInGroup = Team::inGroupWithApprovedApplication($gr->id, 15/*$this->tournament->id*/)->get();
+
             $tabs[$gr->name] =
                 Layout::columns([
-                    Layout::table('teamsInGroup', [
+                    Layout::table($teamsInGroup, [
                         TD::make('name', 'Команда'),
                         TD::make('Действие')
                             ->render(fn() =>
@@ -191,7 +197,7 @@ class GroupScreen extends Screen
     }
 
     public function test() {
-        dd($this->teams);
+        dd($this->tournament->id);
     }
 
 }

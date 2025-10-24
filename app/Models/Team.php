@@ -63,15 +63,16 @@ class Team extends Model
         });
     }
 
-    // app/Models/Team.php
-
     public function scopeInGroupWithApprovedApplication($query, $groupId, $tournamentId)
     {
         return $query->whereHas('applications', function ($q) use ($groupId, $tournamentId) {
             $q->where('tournament_id', $tournamentId)
                 ->where('status', 'approved')
-                ->whereHas('groups', function ($q2) use ($groupId) {
-                    $q2->where('group_id', $groupId);
+                ->whereExists(function ($query) use ($groupId) {
+                    $query->selectRaw(1)
+                        ->from('group_teams')
+                        ->whereColumn('group_teams.application_id', 'tournament_applications.id')
+                        ->where('group_teams.group_id', $groupId);
                 });
         });
     }

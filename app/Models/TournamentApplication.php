@@ -65,4 +65,14 @@ class TournamentApplication extends Model
     {
         return $this->hasMany(ApplicationRoster::class, 'application_id');
     }
+
+    public function groups()
+    {
+        return $this->belongsToMany(
+            StageGroup::class,
+            'group_teams',
+            'application_id',
+            'group_id'
+        )->withPivot('position');
+    }
 }
