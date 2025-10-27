@@ -3,10 +3,7 @@
 namespace App\Orchid\Screens\Application;
 
 use App\Models\ApplicationRoster;
-use App\Models\Team;
-use App\Models\Tournament;
 use App\Models\TournamentApplication;
-use App\Models\User;
 use App\Models\Venue;
 use App\Orchid\Layouts\Application\AddPlayerLayout;
 use App\Orchid\Layouts\Application\TournamentsListener;
@@ -14,16 +11,14 @@ use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\ModalToggle;
-use Orchid\Screen\Fields\Group;
+use Orchid\Screen\Fields\CheckBox;
 use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Fields\CheckBox;
+use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
-use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Toast;
 
 class ApplicationEditScreen extends Screen

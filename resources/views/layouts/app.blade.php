@@ -166,7 +166,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="#tournaments">
+                    <a class="nav-link fw-semibold" href="/tournaments">
                         <i class="fas fa-trophy me-1"></i>Турниры
                     </a>
                 </li>

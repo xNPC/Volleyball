@@ -94,7 +94,7 @@ class GroupScreen extends Screen
 
         foreach ($this->groups as $gr)
         {
-            $teamsInGroup = Team::inGroupWithApprovedApplication($gr->id, 15/*$this->tournament->id*/)->get();
+            $teamsInGroup = Team::inGroupWithApprovedApplication($gr->id, $this->tournament->id)->get();
 
             $tabs[$gr->name] =
                 Layout::columns([

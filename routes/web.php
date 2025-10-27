@@ -19,6 +19,10 @@ Route::middleware([
     })->name('dashboard');
 });
 
+Route::get('/tournaments', function () {
+    return view('tournaments');
+});
+
 //Route::middleware(['auth'])->group(function () {
 //    Route::get('/profile', function () {
 //        return view('profile');
