@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
+use App\Models\StageGroup as Group;
 use Illuminate\Http\Request;
 
 class GroupController extends Controller
@@ -10,7 +10,7 @@ class GroupController extends Controller
     public function show(Group $group)
     {
         $group->load(['stage.tournament', 'teams' => function($query) {
-            $query->orderBy('points', 'desc');
+            //$query->orderBy('name', 'desc');
         }]);
 
         return view('groups.show', compact('group'));

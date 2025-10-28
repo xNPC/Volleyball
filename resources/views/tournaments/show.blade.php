@@ -27,13 +27,13 @@
                                     </span>
                                     <span>
                                         <i class="fas fa-layer-group me-1"></i>
-                                        {{ $tournament->stages->count() }} этапов
+                                        Этапов: {{ $tournament->stages->count() }}
                                     </span>
                                 </div>
                             </div>
                             <div class="col-md-4 text-end">
                                 <div class="score-badge d-inline-block">
-                                    <i class="fas fa-volleyball-ball me-2"></i>Активен
+                                    <i class="fas fa-volleyball-ball me-2"></i>{{ $tournament::STATUS[$tournament->status] }}
                                 </div>
                             </div>
                         </div>

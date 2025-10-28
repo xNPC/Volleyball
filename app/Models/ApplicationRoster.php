@@ -41,6 +41,19 @@ class ApplicationRoster extends Model
         return $this->belongsTo(TournamentApplication::class);
     }
 
+    public function tournamentApplication()
+    {
+        return $this->belongsTo(TournamentApplication::class);
+    }
+
+    /**
+     * Пользователь
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function player()
     {
         return $this->belongsTo(User::class, 'user_id');

@@ -31,9 +31,19 @@ class Team extends Model
         return $this->belongsTo(User::class, 'captain_id');
     }
 
+    /**
+     * Участники команды через заявки
+     */
     public function members()
     {
-        return $this->hasMany(TeamMember::class);
+        return $this->hasManyThrough(
+            User::class,
+            ApplicationRoster::class,
+            'team_id', // Внешний ключ в application_rosters
+            'id', // Внешний ключ в users
+            'id', // Локальный ключ в teams
+            'user_id' // Локальный ключ в application_rosters
+        )->distinct();
     }
 
     public function activeMembers()
@@ -75,6 +85,32 @@ class Team extends Model
                         ->where('group_teams.group_id', $groupId);
                 });
         });
+    }
+
+    /**
+     * Турниры, в которых участвует команда
+     */
+    public function tournaments()
+    {
+        return $this->belongsToMany(Tournament::class, 'tournament_applications', 'team_id', 'tournament_id')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
+
+    /**
+     * Активные турниры (где заявка принята)
+     */
+    public function activeTournaments()
+    {
+        return $this->tournaments()->wherePivot('status', 'approved');
+    }
+
+    /**
+     * Турнирные заявки команды
+     */
+    public function tournamentApplications()
+    {
+        return $this->hasMany(TournamentApplication::class);
     }
 
 

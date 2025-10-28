@@ -39,6 +39,7 @@ class User extends Authenticatable
     ];
 
     protected $dates = [
+        'birthday',
         'deleted_at'
     ];
 
@@ -75,6 +76,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'permissions' => 'array',
+            'birthday' => 'datetime'
         ];
     }
 
@@ -103,4 +105,52 @@ class User extends Authenticatable
         'updated_at',
         'created_at',
     ];
+
+    /**
+     * Составы заявок, где участвует пользователь
+     */
+    public function applicationRosters()
+    {
+        return $this->hasMany(ApplicationRoster::class);
+    }
+
+    /**
+     * Турнирные заявки, в которых участвует пользователь
+     */
+    public function tournamentApplications()
+    {
+        return $this->hasManyThrough(
+            TournamentApplication::class,
+            ApplicationRoster::class,
+            'user_id', // Внешний ключ в application_rosters
+            'id', // Внешний ключ в tournament_applications
+            'id', // Локальный ключ в users
+            'application_id' // Локальный ключ в application_rosters
+        );
+    }
+
+    /**
+     * Подтвержденные турнирные заявки пользователя
+     */
+    public function approvedTournamentApplications()
+    {
+        return $this->tournamentApplications()->where('status', 'approved');
+    }
+
+    /**
+     * Команды пользователя через заявки
+     */
+    public function teams()
+    {
+        return $this->hasManyThrough(
+            Team::class,
+            TournamentApplication::class,
+            'id', // Внешний ключ в tournament_applications
+            'id', // Внешний ключ в teams
+            'id', // Локальный ключ в users
+            'team_id' // Локальный ключ в tournament_applications
+        )->where('tournament_applications.status', 'approved')
+            ->distinct();
+    }
+
 }

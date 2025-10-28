@@ -30,7 +30,7 @@
                                     <h5 class="card-title fw-bold" style="color: var(--volleyball-blue);">
                                         {{ $tournament->name }}
                                     </h5>
-                                    <span class="badge bg-primary">{{ $tournament->stages_count }} этапов</span>
+                                    <span class="badge bg-primary">Этапы: {{ $tournament->stages_count }}</span>
                                 </div>
                                 <i class="fas fa-volleyball-ball net-icon"></i>
                             </div>
@@ -49,10 +49,17 @@
                             </div>
 
                             <!-- Кнопка -->
-                            <a href="{{ route('tournaments.show', $tournament) }}"
-                               class="btn btn-volleyball mt-auto">
-                                <i class="fas fa-eye me-2"></i>Смотреть турнир
-                            </a>
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="{{ route('tournaments.show', $tournament) }}"
+                                   class="btn btn-volleyball btn-sm flex-grow-1">
+                                    <i class="fas fa-eye me-1"></i>Смотреть турнир
+                                </a>
+                                <a href="{{ route('tournaments.teams', $tournament) }}"
+                                   class="btn btn-outline-secondary btn-sm"
+                                   title="Команды участники">
+                                    <i class="fas fa-users"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

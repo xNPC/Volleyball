@@ -37,10 +37,14 @@
             border-bottom: 3px solid var(--volleyball-orange);
         }
 
+        .card {
+            border-radius: 0;
+        }
+
         .card-volleyball {
             background: white;
-            border-radius: 15px;
-            border: 2px solid var(--volleyball-orange);
+            //border-radius: 15px;
+            //border: 2px solid var(--volleyball-orange);
             box-shadow: 0 8px 25px rgba(0, 78, 137, 0.15);
             transition: all 0.3s ease;
         }
@@ -117,7 +121,7 @@
             height: 60px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--volleyball-orange);
+            //border: 3px solid var(--volleyball-orange);
         }
 
         .match-card {
@@ -151,7 +155,7 @@
 <nav class="navbar navbar-expand-lg navbar-volleyball fixed-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="{{ url('/') }}" style="color: var(--volleyball-blue);">
-            <i class="fas fa-volleyball-ball me-2"></i>Волейбол
+            <i class="fas fa-volleyball-ball me-2"></i>{{ config('app.name', 'Laravel') }}
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -171,7 +175,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="#teams">
+                    <a class="nav-link fw-semibold" href="{{ route('users.index') }}">
+                        <i class="fas fa-users me-1"></i>Игроки
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="{{ route('teams.index') }}">
                         <i class="fas fa-users me-1"></i>Команды
                     </a>
                 </li>
@@ -181,6 +190,19 @@
                     </a>
                 </li>
             </ul>
+            <!-- Поиск в навигации -->
+{{--            <form action="{{ route('users.index') }}" method="GET" class="d-flex me-3">--}}
+{{--                <div class="input-group input-group-sm">--}}
+{{--                    <input type="text"--}}
+{{--                           name="search"--}}
+{{--                           class="form-control form-control-sm"--}}
+{{--                           placeholder="Поиск игроков..."--}}
+{{--                           style="width: 200px;">--}}
+{{--                    <button type="submit" class="btn btn-sm btn-volleyball">--}}
+{{--                        <i class="fas fa-search"></i>--}}
+{{--                    </button>--}}
+{{--                </div>--}}
+{{--            </form>--}}
 
             <!-- Right Side Of Navbar -->
             <ul class="navbar-nav ms-auto">
@@ -237,7 +259,7 @@
         <div class="row">
             <div class="col-md-6">
                 <h5 class="fw-bold">
-                    <i class="fas fa-volleyball-ball me-2"></i>VolleyTournaments
+                    <i class="fas fa-volleyball-ball me-2"></i>{{ config('app.name', 'Laravel') }}
                 </h5>
                 <p>Платформа для организации и проведения волейбольных турниров</p>
             </div>

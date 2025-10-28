@@ -87,4 +87,35 @@ class Tournament extends Model
     {
         return $query->where('status','planned');
     }
+
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class, 'tournament_applications', 'tournament_id', 'team_id')
+            ->withPivot('status', 'created_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Принятые команды (с approved заявками)
+     */
+    public function approvedTeams()
+    {
+        return $this->teams()->wherePivot('status', 'approved');
+    }
+
+    /**
+     * Турнирные заявки
+     */
+    public function tournamentApplications()
+    {
+        return $this->hasMany(TournamentApplication::class);
+    }
+
+    /**
+     * Принятые заявки
+     */
+    public function approvedApplications()
+    {
+        return $this->tournamentApplications()->where('status', 'approved');
+    }
 }
