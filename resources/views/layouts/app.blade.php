@@ -146,6 +146,43 @@
             background: rgba(255, 255, 255, 0.3);
             transform: translateX(-50%);
         }
+
+        .photo-modal-trigger {
+            cursor: zoom-in;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            padding: 0;
+            display: block;
+        }
+
+        .photo-modal-trigger:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .photo-modal-trigger .player-avatar,
+        .photo-modal-trigger .player-avatar-large,
+        .photo-modal-trigger .player-avatar-sm,
+        .photo-modal-trigger .player-avatar-xs {
+            transition: all 0.3s ease;
+        }
+
+        .photo-modal-trigger:hover .player-avatar {
+            box-shadow: 0 0 0 3px var(--volleyball-orange);
+        }
+
+        .photo-modal-trigger:hover .player-avatar-large {
+            box-shadow: 0 0 0 4px var(--volleyball-orange);
+        }
+
+        .photo-modal-trigger:hover .player-avatar-sm {
+            box-shadow: 0 0 0 2px var(--volleyball-orange);
+        }
+
+        .photo-modal-trigger:hover .player-avatar-xs {
+            box-shadow: 0 0 0 1px var(--volleyball-orange);
+        }
     </style>
 
     @livewireStyles
@@ -282,6 +319,9 @@
         </div>
     </div>
 </footer>
+
+<!-- Модальное окно для фото -->
+<x-photo-modal />
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

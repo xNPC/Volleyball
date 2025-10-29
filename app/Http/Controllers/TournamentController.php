@@ -39,7 +39,6 @@ class TournamentController extends Controller
             ->wherePivot('status', 'approved') // Только принятые заявки
             ->when($search, function($query) use ($search) {
                 $query->where('teams.name', 'like', "%{$search}%")
-                    ->orWhere('teams.city', 'like', "%{$search}%")
                     ->orWhere('teams.description', 'like', "%{$search}%");
             })
             ->orderBy('teams.name')

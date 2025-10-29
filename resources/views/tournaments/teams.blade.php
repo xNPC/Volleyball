@@ -62,7 +62,7 @@
                                 <input type="text"
                                        name="search"
                                        class="form-control border-start-0"
-                                       placeholder="Поиск по названию команды, городу или описанию..."
+                                       placeholder="Поиск по названию команды или описанию..."
                                        value="{{ $search }}">
                                 @if($search)
                                     <a href="{{ route('tournaments.teams', $tournament) }}" class="input-group-text bg-transparent border-start-0 text-muted" title="Очистить поиск">
@@ -226,6 +226,10 @@
                                 <a href="{{ route('teams.show', $team) }}"
                                    class="btn btn-volleyball btn-sm">
                                     <i class="fas fa-eye me-1"></i>Профиль команды
+                                </a>
+                                <a href="{{ route('tournaments.teams.roster', ['tournament' => $tournament, 'team' => $team]) }}"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-users me-1"></i>Состав в турнире
                                 </a>
                             </div>
                         </div>

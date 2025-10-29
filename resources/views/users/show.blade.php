@@ -69,7 +69,7 @@
                         <div class="user-info text-start">
                             <div class="info-item mb-2">
                                 <i class="fas fa-birthday-cake me-2 text-muted"></i>
-                                <span class="text-muted">Дата рождения: {{ $user->birthday->format('d.m.Y') }}</span>
+                                <span class="text-muted">Дата рождения: {{ $user->birthday?->format('d.m.Y') }}</span>
                             </div>
                             <div class="info-item mb-2">
                                 <i class="fas fa-envelope me-2 text-muted"></i>

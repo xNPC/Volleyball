@@ -38,10 +38,12 @@ class User extends Authenticatable
         'birthday',
     ];
 
-    protected $dates = [
-        'birthday',
-        'deleted_at'
-    ];
+//    protected $dates = [
+//        'birthday',
+//        'deleted_at',
+//        'created_at',
+//        'updated_at'
+//    ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -76,7 +78,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'permissions' => 'array',
-            'birthday' => 'datetime'
+            'birthday' => 'date:Y-m-d',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime'
         ];
     }
 

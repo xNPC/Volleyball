@@ -7,6 +7,7 @@ use App\Http\Controllers\StageController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TournamentTeamController;
 
 //Route::get('/', function () {
 //    return view('welcome');
@@ -18,6 +19,9 @@ Route::get('/', HomePage::class)->name('home');
 Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index');
 Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
 Route::get('/tournaments/{tournament}/teams', [TournamentController::class, 'teams'])->name('tournaments.teams');
+
+// Состав команды в турнире
+Route::get('/tournaments/{tournament}/teams/{team}/roster', [TournamentTeamController::class, 'roster'])->name('tournaments.teams.roster');
 
 // Этапы
 Route::get('/tournaments/{tournament}/stages/{stage}', [StageController::class, 'show'])->name('stages.show');

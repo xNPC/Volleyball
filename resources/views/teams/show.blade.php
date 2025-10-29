@@ -119,8 +119,12 @@
                                                         {{ $tournament->start_date->format('d.m.Y') }} - {{ $tournament->end_date->format('d.m.Y') }}
                                                     </small>
                                                 </div>
-                                                <div class="mt-2">
-                                                    <span class="badge bg-success">Участвует</span>
+                                                <div class="mt-3">
+                                                    <span class="badge bg-success me-2">Участвует</span>
+                                                    <a href="{{ route('tournaments.teams.roster', ['tournament' => $tournament, 'team' => $team]) }}"
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-users me-1"></i>Состав
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>

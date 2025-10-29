@@ -55,7 +55,7 @@
             <div class="card-body">
                 <form action="{{ route('teams.index') }}" method="GET">
                     <div class="row align-items-center">
-                        <div class="col-md-6 mb-3 mb-md-0">
+                        <div class="col-md-8 mb-3 mb-md-0">
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent border-end-0">
                                     <i class="fas fa-search text-muted"></i>
@@ -79,9 +79,9 @@
 {{--                                <option value="new" {{ $filter == 'new' ? 'selected' : '' }}>Новые команды</option>--}}
 {{--                            </select>--}}
 {{--                        </div>--}}
-                        <div class="col-md-2 text-end">
+                        <div class="col-md-4 text-end">
                             <button type="submit" class="btn btn-volleyball w-100">
-                                <i class="fas fa-filter me-1"></i>Применить
+                                <i class="fas fa-filter me-1"></i>Найти
                             </button>
                         </div>
                     </div>
@@ -188,7 +188,7 @@
                             <!-- Кнопка -->
                             <a href="{{ route('teams.show', $team) }}"
                                class="btn btn-volleyball btn-sm w-100">
-                                <i class="fas fa-eye me-1"></i>Подробнее
+                                <i class="fas fa-eye me-1"></i>Профиль команды
                             </a>
                         </div>
                     </div>

@@ -130,10 +130,21 @@
                             <!-- Аватар -->
                             <div class="user-avatar mx-auto mb-3">
                                 @if($user->profile_photo_path)
-                                    <img src="{{ asset('storage/' . $user->profile_photo_path) }}"
-                                         alt="{{ $user->name }}"
-                                         class="player-avatar">
+                                    <div class="photo-modal-trigger player-avatar"
+                                         data-photo="{{ asset('storage/' . $user->profile_photo_path) }}"
+                                         data-name="{{ $user->name }}"
+                                         data-profile-url="{{ route('users.show', $user) }}"
+                                         title="Посмотреть фото">
+                                        <img src="{{ asset('storage/' . $user->profile_photo_path) }}"
+                                             alt="{{ $user->name }}"
+                                             class="w-100 h-100 player-avatar">
+                                    </div>
                                 @else
+{{--                                @if($user->profile_photo_path)--}}
+{{--                                    <img src="{{ asset('storage/' . $user->profile_photo_path) }}"--}}
+{{--                                         alt="{{ $user->name }}"--}}
+{{--                                         class="player-avatar photo-modal-trigger">--}}
+{{--                                @else--}}
                                     <div class="player-avatar bg-volleyball-blue text-white d-flex align-items-center justify-content-center mx-auto">
                                         <i class="fas fa-user fa-lg"></i>
                                     </div>
