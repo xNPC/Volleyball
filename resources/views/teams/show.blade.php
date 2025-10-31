@@ -68,10 +68,21 @@
                                 <div class="d-flex align-items-center justify-content-center">
                                     <div class="user-avatar me-3">
                                         @if($team->captain->profile_photo_path)
-                                            <img src="{{ asset('storage/' . $team->captain->profile_photo_path) }}"
-                                                 alt="{{ $team->captain->name }}"
-                                                 class="player-avatar">
+                                            <div class="photo-modal-trigger player-avatar"
+                                                 data-photo="{{ asset('storage/' . $team->captain->profile_photo_path) }}"
+                                                 data-name="{{ $team->captain->name }}"
+                                                 data-profile-url="{{ route('users.show', $team->captain) }}"
+                                                 title="Посмотреть фото">
+                                                <img src="{{ asset('storage/' . $team->captain->profile_photo_path) }}"
+                                                     alt="{{ $team->captain->name }}"
+                                                     class="w-100 h-100 player-avatar">
+                                            </div>
                                         @else
+{{--                                        @if($team->captain->profile_photo_path)--}}
+{{--                                            <img src="{{ asset('storage/' . $team->captain->profile_photo_path) }}"--}}
+{{--                                                 alt="{{ $team->captain->name }}"--}}
+{{--                                                 class="player-avatar">--}}
+{{--                                        @else--}}
                                             <div class="player-avatar bg-volleyball-blue text-white d-flex align-items-center justify-content-center">
                                                 <i class="fas fa-user"></i>
                                             </div>
@@ -218,7 +229,7 @@
             height: 50px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--volleyball-orange);
+            //border: 3px solid var(--volleyball-orange);
         }
 
         .user-avatar {

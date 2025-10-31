@@ -61,10 +61,21 @@
                                                     <!-- Аватар -->
                                                     <div class="user-avatar me-3">
                                                         @if($rosterEntry->user->profile_photo_path)
-                                                            <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
-                                                                 alt="{{ $rosterEntry->user->name }}"
-                                                                 class="player-avatar">
+                                                            <div class="photo-modal-trigger player-avatar"
+                                                                 data-photo="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
+                                                                 data-name="{{ $rosterEntry->user->name }}"
+                                                                 data-profile-url="{{ route('users.show', $rosterEntry->user) }}"
+                                                                 title="Посмотреть фото">
+                                                                <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
+                                                                     alt="{{ $rosterEntry->user->name }}"
+                                                                     class="w-100 h-100 player-avatar">
+                                                            </div>
                                                         @else
+{{--                                                        @if($rosterEntry->user->profile_photo_path)--}}
+{{--                                                            <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
+{{--                                                                 alt="{{ $rosterEntry->user->name }}"--}}
+{{--                                                                 class="player-avatar">--}}
+{{--                                                        @else--}}
                                                             <div class="player-avatar bg-volleyball-blue text-white d-flex align-items-center justify-content-center">
                                                                 <i class="fas fa-user"></i>
                                                             </div>
@@ -151,10 +162,21 @@
                                         <div class="d-flex align-items-center">
                                             <div class="user-avatar me-3">
                                                 @if($rosterEntry->user->profile_photo_path)
-                                                    <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
-                                                         alt="{{ $rosterEntry->user->name }}"
-                                                         class="player-avatar-sm">
+                                                    <div class="photo-modal-trigger player-avatar-sm"
+                                                         data-photo="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
+                                                         data-name="{{ $rosterEntry->user->name }}"
+                                                         data-profile-url="{{ route('users.show', $rosterEntry->user) }}"
+                                                         title="Посмотреть фото">
+                                                        <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
+                                                             alt="{{ $rosterEntry->user->name }}"
+                                                             class="w-100 h-100 player-avatar-sm">
+                                                    </div>
                                                 @else
+{{--                                                @if($rosterEntry->user->profile_photo_path)--}}
+{{--                                                    <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
+{{--                                                         alt="{{ $rosterEntry->user->name }}"--}}
+{{--                                                         class="player-avatar-sm">--}}
+{{--                                                @else--}}
                                                     <div class="player-avatar-sm bg-secondary text-white d-flex align-items-center justify-content-center">
                                                         <i class="fas fa-user"></i>
                                                     </div>

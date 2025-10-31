@@ -170,6 +170,17 @@
                                     <small class="text-muted">Капитан:</small>
                                     <div class="d-flex align-items-center mt-1">
                                         <div class="user-avatar-xs me-2">
+{{--                                            @if($team->captain->profile_photo_path)--}}
+{{--                                                <div class="photo-modal-trigger player-avatar-xs"--}}
+{{--                                                     data-photo="{{ asset('storage/' . $team->captain->profile_photo_path) }}"--}}
+{{--                                                     data-name="{{ $team->captain->name }}"--}}
+{{--                                                     data-profile-url="{{ route('users.show', $team->captain) }}"--}}
+{{--                                                     title="Посмотреть фото">--}}
+{{--                                                    <img src="{{ asset('storage/' . $team->captain->profile_photo_path) }}"--}}
+{{--                                                         alt="{{ $team->captain->name }}"--}}
+{{--                                                         class="w-100 h-100">--}}
+{{--                                                </div>--}}
+{{--                                            @else--}}
                                             @if($team->captain->profile_photo_path)
                                                 <img src="{{ asset('storage/' . $team->captain->profile_photo_path) }}"
                                                      alt="{{ $team->captain->name }}"

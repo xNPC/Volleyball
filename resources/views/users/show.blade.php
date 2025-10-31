@@ -17,6 +17,17 @@
                     <div class="card-body text-center">
                         <!-- Аватар -->
                         <div class="user-avatar mx-auto mb-4">
+{{--                            @if($user->profile_photo_path)--}}
+{{--                                <div class="photo-modal-trigger player-avatar-large"--}}
+{{--                                     data-photo="{{ asset('storage/' . $user->profile_photo_path) }}"--}}
+{{--                                     data-name="{{ $user->name }}"--}}
+{{--                                     data-profile-url="{{ route('users.show', $user) }}"--}}
+{{--                                     title="Посмотреть фото">--}}
+{{--                                    <img src="{{ asset('storage/' . $user->profile_photo_path) }}"--}}
+{{--                                         alt="{{ $user->name }}"--}}
+{{--                                         class="w-100 h-100 player-avatar-large">--}}
+{{--                                </div>--}}
+{{--                            @else--}}
                             @if($user->profile_photo_path)
                                 <img src="{{ asset('storage/' . $user->profile_photo_path) }}"
                                      alt="{{ $user->name }}"

@@ -15,19 +15,19 @@
                         <span class="visually-hidden">Загрузка...</span>
                     </div>
                 </div>
-                <img id="modalPhoto" src="" alt="" class="img-fluid rounded"
+                <img id="modalPhoto" src="" alt="" class="img-fluid"
                      style="max-height: 70vh; object-fit: contain;"
                      onload="document.getElementById('photoLoading').classList.add('d-none')"
                      onerror="document.getElementById('photoLoading').classList.add('d-none')">
             </div>
-            <div class="modal-footer border-top-0 justify-content-center">
+{{--            <div class="modal-footer border-top-0 justify-content-center">--}}
 {{--                <button type="button" class="btn btn-volleyball" data-bs-dismiss="modal">--}}
 {{--                    <i class="fas fa-times me-2"></i>Закрыть--}}
 {{--                </button>--}}
 {{--                <a id="profileLink" href="#" class="btn btn-outline-primary">--}}
 {{--                    <i class="fas fa-external-link-alt me-2"></i>Профиль игрока--}}
 {{--                </a>--}}
-            </div>
+{{--            </div>--}}
         </div>
     </div>
 </div>
@@ -54,17 +54,22 @@
 
     .modal-content {
         //border: 3px solid var(--volleyball-orange);
-        //border-radius: 15px;
+        border-radius: 0;
         overflow: hidden;
     }
 
     .modal-header {
         background: linear-gradient(135deg, var(--volleyball-blue) 0%, var(--volleyball-orange) 100%);
         color: white;
+        border-radius: 0;
     }
 
     .modal-header .btn-close {
         filter: invert(1);
+    }
+
+    #modalPhoto {
+        border-radius: 0;
     }
 
     #photoModalLabel {
