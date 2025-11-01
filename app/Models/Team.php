@@ -19,6 +19,15 @@ class Team extends Model
         'deleted_at'
     ];
 
+    /**
+     * Группы, в которых состоит команда
+     */
+    public function stageGroups()
+    {
+        return $this->belongsToMany(StageGroup::class, 'stage_group_team')
+            ->withTimestamps();
+    }
+
     public function groups()
     {
         return $this->belongsToMany(StageGroup::class, 'group_teams', 'team_id', 'group_id')
@@ -67,7 +76,7 @@ class Team extends Model
 
     public function scopeWithApprovedApplicationForTournament($query, $tournamentId)
     {
-        return $query->whereHas('applications', function ($q) use ($tournamentId) {
+        return $query->whereHas('tournamentApplications', function($q) use ($tournamentId) {
             $q->where('tournament_id', $tournamentId)
                 ->where('status', 'approved');
         });

@@ -214,6 +214,7 @@ use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
+use Orchid\Screen\Fields\Select;
 use Orchid\Screen\TD;
 use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
@@ -229,17 +230,36 @@ class GroupScreen extends Screen
      */
     public function query(Tournament $tournament, TournamentStage $stage): iterable
     {
-        $stage->load(['groups.teams' => function ($query) use ($tournament) {
-            $query->withApprovedApplicationForTournament($tournament->id);
+        // Загружаем этап с группами
+        $stage->load(['groups' => function ($query) {
+            $query->orderBy('order');
         }]);
 
-        $availableTeams = Team::withApprovedApplicationForTournament($tournament->id)->get();
+        // Получаем команды с approved заявками на этот турнир
+        $availableTeams = Team::whereHas('tournamentApplications', function ($query) use ($tournament) {
+            $query->where('tournament_id', $tournament->id)
+                ->where('status', 'approved');
+        })->get();
+
+        // Для каждой группы загружаем команды
+        $groupsData = [];
+        foreach ($stage->groups as $group) {
+            $teamsInGroup = $group->teams()
+                ->whereHas('tournamentApplications', function ($query) use ($tournament) {
+                    $query->where('tournament_id', $tournament->id)
+                        ->where('status', 'approved');
+                })
+                ->get();
+
+            $groupsData[$group->id] = $teamsInGroup;
+        }
 
         return [
             'stage' => $stage,
             'tournament' => $tournament,
             'groups' => $stage->groups,
             'availableTeams' => $availableTeams,
+            'groupsData' => $groupsData,
         ];
     }
 
@@ -268,8 +288,7 @@ class GroupScreen extends Screen
 
             Button::make('Назад к этапам')
                 ->icon('arrow-left')
-                ->method('backToStages')
-                ->canSee(isset($this->tournament)),
+                ->method('backToStages'),
         ];
     }
 
@@ -318,18 +337,23 @@ class GroupScreen extends Screen
                     Input::make('group_id')
                         ->type('hidden'),
 
-                    \Orchid\Screen\Fields\Select::make('team_id')
+                    Select::make('team_id')
                         ->title('Выберите команду')
                         ->empty('Не выбрано')
-                        ->fromModel(Team::class, 'name')
+                        ->fromQuery(
+                            Team::whereHas('tournamentApplications', function ($query) {
+                                $query->where('tournament_id', $this->tournament->id)
+                                    ->where('status', 'approved');
+                            }),
+                            'name'
+                        )
                         ->required()
                         ->help('Выберите команду для добавления в группу'),
                 ])
             ])
                 ->title('Добавить команду в группу')
                 ->applyButton('Добавить')
-                ->closeButton('Отмена')
-                ->async('asyncGetGroupData'),
+                ->closeButton('Отмена'),
 
             Layout::tabs($tabs),
         ];
@@ -340,9 +364,11 @@ class GroupScreen extends Screen
      */
     private function buildGroupTab(StageGroup $group): Layout
     {
+        $teamsCount = isset($this->groupsData[$group->id]) ? $this->groupsData[$group->id]->count() : 0;
+
         return Layout::columns([
             // Левая колонка - команды в группе
-            Layout::table('groups.' . $group->id . '.teams', [
+            Layout::table('groupsData.' . $group->id, [
                 TD::make('name', 'Команда')
                     ->sort()
                     ->render(function (Team $team) {
@@ -361,7 +387,7 @@ class GroupScreen extends Screen
                                 'team_id' => $team->id,
                             ]);
                     }),
-            ])->title('Команды в группе (' . $group->teams->count() . ')'),
+            ])->title('Команды в группе (' . $teamsCount . ')'),
 
             // Правая колонка - управление группой
             Layout::rows([
@@ -398,18 +424,6 @@ class GroupScreen extends Screen
                 ])->autoWidth(),
             ]),
         ]);
-    }
-
-    /**
-     * Async метод для получения данных группы
-     */
-    public function asyncGetGroupData(int $group_id): array
-    {
-        $group = StageGroup::findOrFail($group_id);
-
-        return [
-            'group_id' => $group->id,
-        ];
     }
 
     /**
@@ -452,6 +466,11 @@ class GroupScreen extends Screen
      */
     public function removeTeamFromGroup(Request $request)
     {
+        $request->validate([
+            'group_id' => 'required|exists:stage_groups,id',
+            'team_id' => 'required|exists:teams,id',
+        ]);
+
         $group = StageGroup::findOrFail($request->input('group_id'));
         $group->teams()->detach($request->input('team_id'));
 
@@ -478,6 +497,10 @@ class GroupScreen extends Screen
      */
     public function deleteGroup(Request $request)
     {
+        $request->validate([
+            'group_id' => 'required|exists:stage_groups,id',
+        ]);
+
         $group = StageGroup::findOrFail($request->input('group_id'));
         $group->teams()->detach();
         $group->delete();
