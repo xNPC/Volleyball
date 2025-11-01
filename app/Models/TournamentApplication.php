@@ -75,4 +75,20 @@ class TournamentApplication extends Model
             'group_id'
         )->withPivot('position');
     }
+
+    /**
+     * Scope для approved заявок
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    /**
+     * Scope для заявок конкретного турнира
+     */
+    public function scopeForTournament($query, $tournamentId)
+    {
+        return $query->where('tournament_id', $tournamentId);
+    }
 }

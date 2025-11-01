@@ -205,9 +205,11 @@
 
 namespace App\Orchid\Screens\Tournament;
 
+use App\Models\GroupTeam;
 use App\Models\StageGroup;
 use App\Models\Team;
 use App\Models\Tournament;
+use App\Models\TournamentApplication;
 use App\Models\TournamentStage;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
@@ -223,6 +225,9 @@ use Orchid\Support\Facades\Toast;
 
 class GroupScreen extends Screen
 {
+    public $stage;
+    public $groups;
+    public $tournament;
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -230,26 +235,25 @@ class GroupScreen extends Screen
      */
     public function query(Tournament $tournament, TournamentStage $stage): iterable
     {
-        // Загружаем этап с группами
-        $stage->load(['groups' => function ($query) {
-            $query->orderBy('order');
-        }]);
+        // Загружаем этап с группами и их заявками
+        $stage->load(['groups.teams.team']);
 
-        // Получаем команды с approved заявками на этот турнир
-        $availableTeams = Team::whereHas('tournamentApplications', function ($query) use ($tournament) {
-            $query->where('tournament_id', $tournament->id)
-                ->where('status', 'approved');
-        })->get();
+        // Получаем approved заявки на этот турнир с командами
+        $availableApplications = TournamentApplication::with('team')
+            ->where('tournament_id', $tournament->id)
+            ->where('status', 'approved')
+            ->get();
 
-        // Для каждой группы загружаем команды
+        // Для каждой группы собираем команды через заявки
         $groupsData = [];
         foreach ($stage->groups as $group) {
-            $teamsInGroup = $group->teams()
-                ->whereHas('tournamentApplications', function ($query) use ($tournament) {
-                    $query->where('tournament_id', $tournament->id)
-                        ->where('status', 'approved');
-                })
-                ->get();
+            $teamsInGroup = collect();
+
+            foreach ($group->teams as $application) {
+                if ($application->team) {
+                    $teamsInGroup->push($application->team);
+                }
+            }
 
             $groupsData[$group->id] = $teamsInGroup;
         }
@@ -258,7 +262,7 @@ class GroupScreen extends Screen
             'stage' => $stage,
             'tournament' => $tournament,
             'groups' => $stage->groups,
-            'availableTeams' => $availableTeams,
+            'availableApplications' => $availableApplications,
             'groupsData' => $groupsData,
         ];
     }
@@ -270,7 +274,7 @@ class GroupScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Группы этапа: ' . $this->stage->name;
+        return 'Группы этапа: ' . $this->stage->name . ', турнира: ' . $this->tournament->name;
     }
 
     /**
@@ -306,11 +310,11 @@ class GroupScreen extends Screen
         }
 
         // Если групп нет, показываем заглушку
-        if (empty($tabs)) {
-            $tabs['Нет групп'] = Layout::view('orchid.empty-groups', [
-                'message' => 'Группы еще не созданы. Добавьте первую группу используя кнопку выше.'
-            ]);
-        }
+//        if (empty($tabs)) {
+//            $tabs['Нет групп'] = Layout::view('orchid.empty-groups', [
+//                'message' => 'Группы еще не созданы. Добавьте первую группу используя кнопку выше.'
+//            ]);
+//        }
 
         return [
             Layout::modal('createGroupModal', [
@@ -332,28 +336,26 @@ class GroupScreen extends Screen
                 ->applyButton('Создать')
                 ->closeButton('Отмена'),
 
-            Layout::modal('addTeamModal', [
-                Layout::rows([
-                    Input::make('group_id')
-                        ->type('hidden'),
+            Layout::modal('addTeamModal', [Layout::rows([
+                Input::make('group_id')
+                    ->type('hidden'),
 
-                    Select::make('team_id')
-                        ->title('Выберите команду')
-                        ->empty('Не выбрано')
-                        ->fromQuery(
-                            Team::whereHas('tournamentApplications', function ($query) {
-                                $query->where('tournament_id', $this->tournament->id)
-                                    ->where('status', 'approved');
-                            }),
-                            'name'
-                        )
-                        ->required()
-                        ->help('Выберите команду для добавления в группу'),
-                ])
-            ])
+                Select::make('application_id')
+                    ->title('Выберите команду')
+                    ->empty('Не выбрано')
+                    ->fromQuery(
+                        TournamentApplication::with('team')
+                            ->where('tournament_id', $this->tournament->id)
+                            ->where('status', 'approved'),
+                        'team.name'
+                    )
+                    ->required()
+                    ->help('Выберите команду для добавления в группу'),
+            ])])
                 ->title('Добавить команду в группу')
                 ->applyButton('Добавить')
-                ->closeButton('Отмена'),
+                ->closeButton('Отмена')
+                ->async('asyncGetGroupData'),
 
             Layout::tabs($tabs),
         ];
@@ -362,7 +364,7 @@ class GroupScreen extends Screen
     /**
      * Строит layout для вкладки группы
      */
-    private function buildGroupTab(StageGroup $group): Layout
+    private function buildGroupTab(StageGroup $group)//: Layout
     {
         $teamsCount = isset($this->groupsData[$group->id]) ? $this->groupsData[$group->id]->count() : 0;
 
@@ -378,13 +380,23 @@ class GroupScreen extends Screen
                 TD::make('actions', 'Действия')
                     ->alignRight()
                     ->render(function (Team $team) use ($group) {
+                        // Находим application_id для этой команды в этой группе
+                        $application = TournamentApplication::where('team_id', $team->id)
+                            ->where('tournament_id', $this->tournament->id)
+                            ->where('status', 'approved')
+                            ->first();
+
+                        if (!$application) {
+                            return 'Нет заявки';
+                        }
+
                         return Button::make('Убрать')
                             ->icon('trash')
                             ->type(Color::DANGER)
                             ->confirm('Вы уверены, что хотите убрать команду из группы?')
                             ->method('removeTeamFromGroup', [
                                 'group_id' => $group->id,
-                                'team_id' => $team->id,
+                                'application_id' => $application->id,
                             ]);
                     }),
             ])->title('Команды в группе (' . $teamsCount . ')'),
@@ -427,6 +439,16 @@ class GroupScreen extends Screen
     }
 
     /**
+     * Async метод для получения данных модального окна
+     */
+    public function asyncGetGroupData(int $group_id): array
+    {
+        return [
+            'group_id' => $group_id,
+        ];
+    }
+
+    /**
      * Создание новой группы
      */
     public function createGroup(TournamentStage $stage, Request $request)
@@ -452,11 +474,20 @@ class GroupScreen extends Screen
     {
         $request->validate([
             'group_id' => 'required|exists:stage_groups,id',
-            'team_id' => 'required|exists:teams,id',
+            'application_id' => 'required|exists:tournament_applications,id',
         ]);
 
-        $group = StageGroup::findOrFail($request->input('group_id'));
-        $group->teams()->syncWithoutDetaching([$request->input('team_id')]);
+        // Проверяем, что заявка approved и принадлежит текущему турниру
+        $application = TournamentApplication::where('id', $request->input('application_id'))
+            ->where('tournament_id', $this->tournament->id)
+            ->where('status', 'approved')
+            ->firstOrFail();
+
+        // Добавляем связь через GroupTeam
+        GroupTeam::firstOrCreate([
+            'group_id' => $request->input('group_id'),
+            'application_id' => $request->input('application_id'),
+        ]);
 
         Toast::info('Команда добавлена в группу');
     }
@@ -468,11 +499,12 @@ class GroupScreen extends Screen
     {
         $request->validate([
             'group_id' => 'required|exists:stage_groups,id',
-            'team_id' => 'required|exists:teams,id',
+            'application_id' => 'required|exists:tournament_applications,id',
         ]);
 
-        $group = StageGroup::findOrFail($request->input('group_id'));
-        $group->teams()->detach($request->input('team_id'));
+        GroupTeam::where('group_id', $request->input('group_id'))
+            ->where('application_id', $request->input('application_id'))
+            ->delete();
 
         Toast::info('Команда убрана из группы');
     }
@@ -502,7 +534,11 @@ class GroupScreen extends Screen
         ]);
 
         $group = StageGroup::findOrFail($request->input('group_id'));
-        $group->teams()->detach();
+
+        // Удаляем все связи с командами
+        GroupTeam::where('group_id', $group->id)->delete();
+
+        // Удаляем группу
         $group->delete();
 
         Toast::info('Группа удалена');
@@ -513,6 +549,6 @@ class GroupScreen extends Screen
      */
     public function backToStages(Tournament $tournament)
     {
-        return redirect()->route('platform.tournament.stages', $tournament);
+        return redirect()->route('platform.tournaments.edit', $tournament);
     }
 }

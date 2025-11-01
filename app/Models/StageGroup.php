@@ -43,4 +43,19 @@ class StageGroup extends Model
     {
         return $this->hasMany(Mmatch::class);
     }
+
+    /**
+     * Команды через заявки
+     */
+    public function teamApplications()
+    {
+        return $this->hasManyThrough(
+            TournamentApplication::class,
+            GroupTeam::class,
+            'group_id', // Внешний ключ в group_teams
+            'id', // Внешний ключ в tournament_applications
+            'id', // Локальный ключ в stage_groups
+            'application_id' // Локальный ключ в group_teams
+        );
+    }
 }
