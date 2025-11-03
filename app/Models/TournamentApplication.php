@@ -91,4 +91,24 @@ class TournamentApplication extends Model
     {
         return $query->where('tournament_id', $tournamentId);
     }
+
+    /**
+     * Scope для заявок, не находящихся в группах определенного этапа
+     */
+    public function scopeNotInStageGroups($query, $stageId)
+    {
+        return $query->whereDoesntHave('groups', function ($q) use ($stageId) {
+            $q->where('stage_id', $stageId);
+        });
+    }
+
+    /**
+     * Scope для заявок, не находящихся в конкретной группе
+     */
+    public function scopeNotInGroup($query, $groupId)
+    {
+        return $query->whereDoesntHave('groups', function ($q) use ($groupId) {
+            $q->where('stage_groups.id', $groupId);
+        });
+    }
 }

@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class GroupTeam extends Model
 {
+    protected $table = 'group_teams'; // Явно указываем таблицу
 
     protected $fillable = [
         'group_id',
-        'team_id',
+        'application_id', // Добавляем это поле
         'position',
     ];
 
@@ -21,5 +22,10 @@ class GroupTeam extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function application()
+    {
+        return $this->belongsTo(TournamentApplication::class, 'application_id');
     }
 }

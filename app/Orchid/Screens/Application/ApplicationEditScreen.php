@@ -120,8 +120,8 @@ class ApplicationEditScreen extends Screen
                         CheckBox::make('application.is_complete')
                             ->title('Заявка завершена')
                             ->help('Будьте внимательны! Если Заявка будет завершена, вы не сможете больше ее изменять!')
-                            ->sendTrueOrFalse()
-                            ->canSee(!$this->application->is_complete),
+                            ->sendTrueOrFalse(),
+                            //->disabled($this->application->is_complete),
 
                         Button::make('Сохранить')
                             ->icon('check')

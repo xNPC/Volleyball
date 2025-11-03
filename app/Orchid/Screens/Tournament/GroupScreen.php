@@ -238,12 +238,6 @@ class GroupScreen extends Screen
         // Загружаем этап с группами и их заявками
         $stage->load(['groups.teams.team']);
 
-        // Получаем approved заявки на этот турнир с командами
-        $availableApplications = TournamentApplication::with('team')
-            ->where('tournament_id', $tournament->id)
-            ->where('status', 'approved')
-            ->get();
-
         // Для каждой группы собираем команды через заявки
         $groupsData = [];
         foreach ($stage->groups as $group) {
@@ -262,7 +256,6 @@ class GroupScreen extends Screen
             'stage' => $stage,
             'tournament' => $tournament,
             'groups' => $stage->groups,
-            'availableApplications' => $availableApplications,
             'groupsData' => $groupsData,
         ];
     }
@@ -336,22 +329,25 @@ class GroupScreen extends Screen
                 ->applyButton('Создать')
                 ->closeButton('Отмена'),
 
-            Layout::modal('addTeamModal', [Layout::rows([
-                Input::make('group_id')
-                    ->type('hidden'),
+            Layout::modal('addTeamModal', [
+                Layout::rows([
+                    Input::make('group_id')
+                        ->type('hidden'),
 
-                Select::make('application_id')
-                    ->title('Выберите команду')
-                    ->empty('Не выбрано')
-                    ->fromQuery(
-                        TournamentApplication::with('team')
-                            ->where('tournament_id', $this->tournament->id)
-                            ->where('status', 'approved'),
-                        'team.name'
-                    )
-                    ->required()
-                    ->help('Выберите команду для добавления в группу'),
-            ])])
+                    Select::make('application_id')
+                        ->title('Выберите команду')
+                        ->empty('Не выбрано')
+                        ->fromQuery(
+                            TournamentApplication::with('team')
+                                ->where('tournament_id', $this->tournament->id)
+                                ->where('status', 'approved')
+                                ->notInStageGroups($this->stage->id), // Используем scope
+                            'team.name'
+                        )
+                        ->required()
+                        ->help('Выберите команду для добавления в группу. Показываются только команды, не добавленные в другие группы этого этапа.'),
+                ])
+            ])
                 ->title('Добавить команду в группу')
                 ->applyButton('Добавить')
                 ->closeButton('Отмена')
@@ -483,8 +479,8 @@ class GroupScreen extends Screen
             ->where('status', 'approved')
             ->firstOrFail();
 
-        // Добавляем связь через GroupTeam
-        GroupTeam::firstOrCreate([
+        // Добавляем связь через GroupTeam с указанием application_id
+        GroupTeam::create([
             'group_id' => $request->input('group_id'),
             'application_id' => $request->input('application_id'),
         ]);
