@@ -82,6 +82,11 @@ class PlatformProvider extends OrchidServiceProvider
 //                ])
                 ->route('platform.applications.list'),
 
+            Menu::make('Управление играми')
+                ->icon('controller')
+                ->route('platform.tournament.games.management'),
+                //->permission('platform.tournaments'),
+
             Menu::make('Get Started')
                 ->icon('bs.book')
                 ->title('Navigation')

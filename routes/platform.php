@@ -17,6 +17,8 @@ use App\Orchid\Screens\PlatformScreen;
 use App\Orchid\Screens\Role\RoleEditScreen;
 use App\Orchid\Screens\Role\RoleListScreen;
 use App\Orchid\Screens\Team\TeamListScreen;
+use App\Orchid\Screens\Tournament\GamesListScreen;
+use App\Orchid\Screens\Tournament\GamesManagementScreen;
 use App\Orchid\Screens\User\UserEditScreen;
 use App\Orchid\Screens\User\UserListScreen;
 use App\Orchid\Screens\User\UserProfileScreen;
@@ -105,6 +107,13 @@ Route::screen('organizations', OrganizationListScreen::class)
  * Работа с турнирами
  *
  */
+// Управление играми
+Route::screen('tournament/games/management', GamesManagementScreen::class)
+    ->name('platform.tournament.games.management');
+
+Route::screen('tournament/{tournament}/stage/{stage}/group/{group}/games/list', GamesListScreen::class)
+    ->name('platform.tournament.games.list');
+
 // Для экрана групп
 Route::screen('tournament/{tournament}/stage/{stage}/groups', GroupScreen::class)
     ->name('platform.tournament.stage.groups');

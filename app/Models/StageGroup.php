@@ -39,9 +39,9 @@ class StageGroup extends Model
         )->withPivot('position');
     }
 
-    public function matches()
+    public function games()
     {
-        return $this->hasMany(Mmatch::class);
+        return $this->hasMany(Game::class, 'group_id'); // Указываем правильный внешний ключ
     }
 
     /**

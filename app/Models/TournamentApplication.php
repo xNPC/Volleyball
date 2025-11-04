@@ -111,4 +111,19 @@ class TournamentApplication extends Model
             $q->where('stage_groups.id', $groupId);
         });
     }
+
+    public function homeGames()
+    {
+        return $this->hasMany(Game::class, 'home_application_id');
+    }
+
+    public function awayGames()
+    {
+        return $this->hasMany(Game::class, 'away_application_id');
+    }
+
+    public function games()
+    {
+        return $this->homeGames->merge($this->awayGames);
+    }
 }
