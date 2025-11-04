@@ -423,7 +423,7 @@ class GroupScreen extends Screen
             // Правая колонка - управление группой
             Layout::rows([
                 \Orchid\Screen\Fields\Label::make('info')
-                    ->title('Управление группой')
+                    ->title('Название')
                     ->value($group->name),
 
                 Group::make([
@@ -453,7 +453,8 @@ class GroupScreen extends Screen
                             'group_id' => $group->id,
                         ]),
                 ])->autoWidth(),
-            ]),
+            ])
+                ->title('Управление группой'),
         ]);
     }
 
