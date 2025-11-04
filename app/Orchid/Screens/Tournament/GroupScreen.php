@@ -329,6 +329,28 @@ class GroupScreen extends Screen
                 ->applyButton('Создать')
                 ->closeButton('Отмена'),
 
+            Layout::modal('editGroupModal', [
+                Layout::rows([
+                    Input::make('group.id')
+                        ->type('hidden'),
+
+                    Input::make('group.name')
+                        ->title('Название группы')
+                        ->required()
+                        ->help('Укажите название группы'),
+
+                    Input::make('group.order')
+                        ->title('Порядок')
+                        ->type('number')
+                        ->min(1)
+                        ->help('Порядковый номер группы для сортировки'),
+                ])
+            ])
+                ->title('Редактировать группу')
+                ->applyButton('Сохранить')
+                ->closeButton('Отмена')
+                ->async('asyncGetGroupData'),
+
             Layout::modal('addTeamModal', [
                 Layout::rows([
                     Input::make('group_id')
@@ -362,7 +384,8 @@ class GroupScreen extends Screen
      */
     private function buildGroupTab(StageGroup $group)//: Layout
     {
-        $teamsCount = isset($this->groupsData[$group->id]) ? $this->groupsData[$group->id]->count() : 0;
+
+        $teamsCount = $group->teams->count();
 
         return Layout::columns([
             // Левая колонка - команды в группе
@@ -437,10 +460,23 @@ class GroupScreen extends Screen
     /**
      * Async метод для получения данных модального окна
      */
+//    public function asyncGetGroupData(int $group_id): array
+//    {
+//        return [
+//            'group_id' => $group_id,
+//        ];
+//    }
     public function asyncGetGroupData(int $group_id): array
     {
+        $group = StageGroup::findOrFail($group_id);
+
         return [
-            'group_id' => $group_id,
+            'group' => [
+                'id' => $group->id,
+                'name' => $group->name,
+                'order' => $group->order,
+            ],
+            'group_id' => $group->id,
         ];
     }
 
@@ -508,16 +544,37 @@ class GroupScreen extends Screen
     /**
      * Обновление группы
      */
-    public function updateGroup(StageGroup $group, Request $request)
+//    public function updateGroup(StageGroup $group, Request $request)
+//    {
+//        $request->validate([
+//            'group.name' => 'required|string|max:255',
+//            'group.order' => 'required|integer|min:1',
+//        ]);
+//
+//        $group->update($request->input('group'));
+//
+//        Toast::info('Группа обновлена');
+//    }
+    /**
+     * Обновление группы
+     */
+    public function updateGroup(Request $request)
     {
-        $request->validate([
-            'group.name' => 'required|string|max:255',
-            'group.order' => 'required|integer|min:1',
-        ]);
+        try {
+            $request->validate([
+                'group.id' => 'required|exists:stage_groups,id',
+                'group.name' => 'required|string|max:255',
+                'group.order' => 'required|integer|min:1',
+            ]);
 
-        $group->update($request->input('group'));
+            $group = StageGroup::findOrFail($request->input('group.id'));
+            $group->update($request->input('group'));
 
-        Toast::info('Группа обновлена');
+            Toast::info('Группа успешно обновлена');
+
+        } catch (\Exception $e) {
+            Toast::error('Ошибка при обновлении группы: ' . $e->getMessage());
+        }
     }
 
     /**
