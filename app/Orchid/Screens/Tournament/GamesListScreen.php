@@ -3,7 +3,6 @@
 namespace App\Orchid\Screens\Tournament;
 
 use App\Models\Game;
-use App\Models\GameSet;
 use App\Models\StageGroup;
 use App\Models\Tournament;
 use App\Models\TournamentApplication;
@@ -11,45 +10,59 @@ use App\Models\TournamentStage;
 use App\Models\User;
 use App\Models\Venue;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
-use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Matrix;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\TD;
-use Orchid\Support\Color;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Toast;
 
 class GamesListScreen extends Screen
 {
+//    public Tournament $tournament;
+//    public TournamentStage $stage;
+//    public StageGroup $group;
+
+    public $tournament;
+    public $stage;
+    public $group;
+    public $teams;
+
     /**
      * Fetch data to be displayed on the screen.
      */
     public function query(Tournament $tournament, TournamentStage $stage, StageGroup $group): iterable
     {
-        // Загружаем игры с отношениями
+        $this->tournament = $tournament;
+        $this->stage = $stage;
+        $this->group = $group;
+
+        // Загружаем игры с минимальными отношениями
         $games = Game::where('group_id', $group->id)
             ->with([
                 'homeApplication.team',
                 'awayApplication.team',
-                'venue',
-                'sets',
-                'firstReferee',
-                'secondReferee'
+                'venue'
             ])
+            ->orderBy('scheduled_time')
             ->get();
 
-        // Загружаем команды группы
-        $teams = $group->teams()->with('team')->get();
+        // Загружаем команды только из текущей группы через промежуточную таблицу group_teams
+        $teams = TournamentApplication::whereHas('groups', function ($query) use ($group) {
+            $query->where('stage_groups.id', $group->id);
+        })
+            ->with('team')
+            ->get();
+
+        // Сохраняем teams для использования в getTeamsOptions
+        $this->teams = $teams;
 
         return [
-            'tournament' => $tournament,
-            'stage' => $stage,
-            'group' => $group,
             'games' => $games,
             'teams' => $teams,
         ];
@@ -60,15 +73,7 @@ class GamesListScreen extends Screen
      */
     public function name(): ?string
     {
-//        $tournament = $this->tournament;
-//        $stage = $this->stage;
-//        $group = $this->group;
-//
-//        if ($tournament && $stage && $group) {
-//            return "Игры: {$tournament->name} - {$stage->name} - {$group->name}";
-//        }
-
-        return 'Управление играми';
+        return "Игры: {$this->tournament->name} - {$this->stage->name} - {$this->group->name}";
     }
 
     /**
@@ -77,18 +82,13 @@ class GamesListScreen extends Screen
     public function commandBar(): iterable
     {
         return [
+
             ModalToggle::make('Добавить игру')
                 ->icon('plus')
                 ->modal('createGameModal')
                 ->method('createGame'),
 
-            Button::make('Сгенерировать все игры')
-                ->icon('magic')
-                ->method('generateAllGames')
-                ->confirm('Сгенерировать все игры между командами этой группы?'),
-                //->canSee(!$this->group->games()->exists()),
-
-            Button::make('Назад к выбору')
+            Link::make('Назад к выбору')
                 ->icon('arrow-left')
                 ->route('platform.tournament.games.management'),
         ];
@@ -100,149 +100,104 @@ class GamesListScreen extends Screen
     public function layout(): iterable
     {
         return [
+
+            // Модальное окно создания игры
+//            Layout::modal('createGameModal', [
+//                Layout::rows([
+//                    Select::make('game.home_application_id')
+//                        ->title('Хозяева')
+//                        ->required()
+//                        ->options($this->getTeamsOptions())
+//                        ->help('Команда хозяев'),
+//
+//                    Select::make('game.away_application_id')
+//                        ->title('Гости')
+//                        ->required()
+//                        ->options($this->getTeamsOptions())
+//                        ->help('Команда гостей'),
+//
+//                    DateTimer::make('game.scheduled_time')
+//                        ->title('Дата и время')
+//                        ->required()
+//                        ->enableTime()
+//                        ->format('Y-m-d H:i'),
+//
+//                    Select::make('game.first_referee_id')
+//                        ->title('Первый судья')
+//                        ->empty('Не выбран')
+//                        ->fromModel(User::class, 'name'),
+//
+//                    Select::make('game.second_referee_id')
+//                        ->title('Второй судья')
+//                        ->empty('Не выбран')
+//                        ->fromModel(User::class, 'name'),
+//                ])
+//            ])
+//                ->title('Создать игру')
+//                ->applyButton('Создать')
+//                ->closeButton('Отмена'),
+
             // Модальное окно создания игры
             Layout::modal('createGameModal', [
                 Layout::rows([
-                    Select::make('game.home_application_id')
-                        ->title('Хозяева')
+                    // Команды в одну строку
+                    Group::make([
+                        Select::make('game.home_application_id')
+                            ->title('Хозяева')
+                            ->required()
+                            ->options($this->getTeamsOptions())
+                            ->help('Команда хозяев'),
+
+                        Select::make('game.away_application_id')
+                            ->title('Гости')
+                            ->required()
+                            ->options($this->getTeamsOptions())
+                            ->help('Команда гостей'),
+                    ]),
+
+                    // Дата и время в одну строку
+                    Group::make([
+                        DateTimer::make('game.scheduled_date')
+                            ->title('Дата игры')
+                            ->required()
+                            ->format('Y-m-d')
+                            ->value(now()->format('Y-m-d')),
+
+                        DateTimer::make('game.scheduled_time')
+                            ->title('Время игры')
+                            ->required()
+                            ->enableTime()
+                            ->noCalendar()
+                            ->format('H:i')
+                            ->value('18:00'),
+                    ]),
+
+                    // Зал
+                    Select::make('game.venue_id')
+                        ->title('Зал проведения')
                         ->required()
-                        ->options($this->getTeamsOptions()),
+                        ->fromModel(Venue::class, 'name')
+                        ->help('По умолчанию - домашний зал команды хозяев'),
 
-                    Select::make('game.away_application_id')
-                        ->title('Гости')
-                        ->required()
-                        ->options($this->getTeamsOptions()),
+                    // Судьи в одну строку
+                    Group::make([
+                        Select::make('game.first_referee_id')
+                            ->title('Первый судья')
+                            ->empty('Не выбран')
+                            ->fromModel(User::class, 'name'),
 
-                    DateTimer::make('game.scheduled_time')
-                        ->title('Дата и время')
-                        ->required()
-                        ->enableTime()
-                        ->format('Y-m-d H:i:s'),
-
-                    Select::make('game.first_referee_id')
-                        ->title('Первый судья')
-                        ->empty('Не выбран')
-                        ->fromModel(User::class, 'name'),
-
-                    Select::make('game.second_referee_id')
-                        ->title('Второй судья')
-                        ->empty('Не выбран')
-                        ->fromModel(User::class, 'name'),
+                        Select::make('game.second_referee_id')
+                            ->title('Второй судья')
+                            ->empty('Не выбран')
+                            ->fromModel(User::class, 'name'),
+                    ]),
                 ])
             ])
                 ->title('Создать игру')
                 ->applyButton('Создать')
                 ->closeButton('Отмена'),
 
-            // Модальное окно редактирования игры
-            Layout::modal('editGameModal', [
-                Layout::rows([
-                    Input::make('game.id')
-                        ->type('hidden'),
-
-                    Select::make('game.home_application_id')
-                        ->title('Хозяева')
-                        ->required()
-                        ->options($this->getTeamsOptions()),
-
-                    Select::make('game.away_application_id')
-                        ->title('Гости')
-                        ->required()
-                        ->options($this->getTeamsOptions()),
-
-                    Select::make('game.venue_id')
-                        ->title('Место проведения')
-                        ->required()
-                        ->fromModel(Venue::class, 'name'),
-
-                    DateTimer::make('game.scheduled_time')
-                        ->title('Дата и время')
-                        ->required()
-                        ->enableTime()
-                        ->format('Y-m-d H:i:s'),
-
-                    Select::make('game.status')
-                        ->title('Статус')
-                        ->required()
-                        ->options([
-                            'scheduled' => 'Запланирована',
-                            'live' => 'В прямом эфире',
-                            'completed' => 'Завершена',
-                            'cancelled' => 'Отменена',
-                        ]),
-
-                    Select::make('game.first_referee_id')
-                        ->title('Первый судья')
-                        ->empty('Не выбран')
-                        ->fromModel(User::class, 'name'),
-
-                    Select::make('game.second_referee_id')
-                        ->title('Второй судья')
-                        ->empty('Не выбран')
-                        ->fromModel(User::class, 'name'),
-                ])
-            ])
-                ->title('Редактировать игру')
-                ->applyButton('Сохранить')
-                ->closeButton('Отмена')
-                ->async('asyncGetGame'),
-
-            // Модальное окно для ввода результата
-            Layout::modal('scoreGameModal', [
-                Layout::rows([
-                    Input::make('game.id')
-                        ->type('hidden'),
-
-                    Group::make([
-                        Input::make('game.home_score')
-                            ->title('Счет хозяев')
-                            ->type('number')
-                            ->min(0)
-                            ->value(0),
-
-                        Input::make('game.away_score')
-                            ->title('Счет гостей')
-                            ->type('number')
-                            ->min(0)
-                            ->value(0),
-                    ]),
-
-                    Matrix::make('game.sets')
-                        ->title('Сеты')
-                        ->columns([
-                            'set_number' => 'Сет',
-                            'home_score' => 'Хозяева',
-                            'away_score' => 'Гости',
-                        ])
-                        ->fields([
-                            'set_number' => Input::make('set_number')
-                                ->type('number')
-                                ->min(1)
-                                ->max(5)
-                                ->readonly(),
-                            'home_score' => Input::make('home_score')
-                                ->type('number')
-                                ->min(0),
-                            'away_score' => Input::make('away_score')
-                                ->type('number')
-                                ->min(0),
-                        ])
-                        ->maxRows(5),
-                ])
-            ])
-                ->title('Внести результат')
-                ->applyButton('Сохранить')
-                ->closeButton('Отмена')
-                ->async('asyncGetGame'),
-
-            // Таблица игр
             Layout::table('games', [
-//                TD::make('scheduled_time', 'Дата и время')
-//                    ->sort()
-//                    ->render(function (Game $game) {
-//                        return $game->scheduled_time->format('d.m.Y H:i');
-//                    }),
-
                 TD::make('teams', 'Команды')
                     ->render(function (Game $game) {
                         $homeTeam = $game->homeApplication->team->name ?? 'Неизвестно';
@@ -250,64 +205,19 @@ class GamesListScreen extends Screen
                         return "{$homeTeam} vs {$awayTeam}";
                     }),
 
-                TD::make('venue', 'Место')
+                TD::make('date', 'Дата игры')
                     ->render(function (Game $game) {
-                        return $game->venue->name ?? '-';
+                        return $game->scheduled_time->format('d.m.Y');
                     }),
 
-                TD::make('score', 'Счет')
+                TD::make('time', 'Время игры')
                     ->render(function (Game $game) {
-                        if ($game->status === 'completed') {
-                            $score = "{$game->home_score} - {$game->away_score}";
-                            if ($game->sets->count() > 0) {
-                                $sets = $game->sets->map(function($set) {
-                                    return "{$set->home_score}:{$set->away_score}";
-                                })->implode(', ');
-                                return "{$score}<br><small>Сеты: {$sets}</small>";
-                            }
-                            return $score;
-                        }
-                        return '<span class="text-muted">-</span>';
+                        return $game->scheduled_time->format('H:i');
                     }),
 
-                TD::make('status', 'Статус')
+                TD::make('venue', 'Зал')
                     ->render(function (Game $game) {
-                        $statuses = [
-                            'scheduled' => ['label' => 'Запланирована', 'color' => Color::SECONDARY],
-                            'live' => ['label' => 'В прямом эфире', 'color' => Color::WARNING],
-                            'completed' => ['label' => 'Завершена', 'color' => Color::SUCCESS],
-                            'cancelled' => ['label' => 'Отменена', 'color' => Color::DANGER],
-                        ];
-
-                        $status = $statuses[$game->status] ?? $statuses['scheduled'];
-
-                        return \Orchid\Screen\Fields\Label::make()
-                            ->value($status['label'])
-                            ->type($status['color']);
-                    }),
-
-                TD::make('actions', 'Действия')
-                    ->alignRight()
-                    ->render(function (Game $game) {
-                        return Group::make([
-                            ModalToggle::make('Редактировать')
-                                ->icon('pencil')
-                                ->modal('editGameModal')
-                                ->method('updateGame')
-                                ->asyncParameters(['game' => $game->id]),
-
-                            ModalToggle::make('Результат')
-                                ->icon('clipboard-check')
-                                ->modal('scoreGameModal')
-                                ->method('updateGameScore')
-                                ->asyncParameters(['game' => $game->id])
-                                ->canSee($game->status !== 'completed'),
-
-                            Button::make('Удалить')
-                                ->icon('trash')
-                                ->confirm('Удалить эту игру?')
-                                ->method('deleteGame', ['game' => $game->id]),
-                        ])->autoWidth();
+                        return $game->venue->name ?? 'Не указан';
                     }),
             ])->title('Список игр'),
         ];
@@ -318,192 +228,48 @@ class GamesListScreen extends Screen
      */
     private function getTeamsOptions(): array
     {
-        $teams = $this->teams ?? collect();
-
-        return $teams->mapWithKeys(function ($application) {
+        return $this->teams->mapWithKeys(function ($application) {
             return [$application->id => $application->team->name];
         })->toArray();
     }
 
-    /**
-     * Async метод для получения данных игры
-     */
-    public function asyncGetGame(int $game): array
+    public function createGame(Request $request)
     {
-        $game = Game::with(['sets'])->findOrFail($game);
-
-        // Подготавливаем сеты
-        $sets = [];
-        for ($i = 1; $i <= 5; $i++) {
-            $set = $game->sets->firstWhere('set_number', $i);
-            $sets[] = [
-                'set_number' => $i,
-                'home_score' => $set->home_score ?? 0,
-                'away_score' => $set->away_score ?? 0,
-            ];
-        }
-
-        return [
-            'game' => [
-                'id' => $game->id,
-                'home_application_id' => $game->home_application_id,
-                'away_application_id' => $game->away_application_id,
-                'venue_id' => $game->venue_id,
-                'scheduled_time' => $game->scheduled_time->format('Y-m-d H:i:s'),
-                'status' => $game->status,
-                'home_score' => $game->home_score,
-                'away_score' => $game->away_score,
-                'first_referee_id' => $game->first_referee_id,
-                'second_referee_id' => $game->second_referee_id,
-            ],
-            'game.sets' => $sets,
-        ];
-    }
-
-    /**
-     * Создание игры
-     */
-    public function createGame(Tournament $tournament, TournamentStage $stage, StageGroup $group, Request $request)
-    {
-        $request->validate([
-            'game.home_application_id' => 'required|exists:tournament_applications,id',
-            'game.away_application_id' => 'required|exists:tournament_applications,id|different:game.home_application_id',
-            'game.scheduled_time' => 'required|date',
-        ]);
-
         try {
-            // Получаем домашний зал команды хозяев
-            $homeApplication = TournamentApplication::with(['team.venue'])->find($request->input('game.home_application_id'));
-            $venueId = $homeApplication->team->venue->id ?? Venue::first()->id;
+            $request->validate([
+                'game.home_application_id' => 'required|exists:tournament_applications,id',
+                'game.away_application_id' => 'required|exists:tournament_applications,id|different:game.home_application_id',
+                'game.scheduled_date' => 'required|date',
+                'game.scheduled_time' => 'required',
+                'game.venue_id' => 'required|exists:venues,id',
+            ]);
+
+            // Объединяем дату и время
+            $scheduledDateTime = $request->input('game.scheduled_date') . ' ' . $request->input('game.scheduled_time');
+
+            // Если зал не выбран, используем домашний зал команды хозяев
+            $venueId = $request->input('game.venue_id');
+            if (!$venueId) {
+                $homeApplication = TournamentApplication::with(['team.venue'])->find($request->input('game.home_application_id'));
+                $venueId = $homeApplication->team->venue->id ?? Venue::first()->id;
+            }
 
             Game::create([
-                'stage_id' => $stage->id,
-                'group_id' => $group->id,
+                'stage_id' => $this->stage->id,
+                'group_id' => $this->group->id,
                 'home_application_id' => $request->input('game.home_application_id'),
                 'away_application_id' => $request->input('game.away_application_id'),
                 'venue_id' => $venueId,
-                'scheduled_time' => $request->input('game.scheduled_time'),
+                'scheduled_time' => $scheduledDateTime,
                 'first_referee_id' => $request->input('game.first_referee_id'),
                 'second_referee_id' => $request->input('game.second_referee_id'),
                 'status' => 'scheduled',
             ]);
 
-            Toast::success('Игра успешно создана');
+            Toast::success('Игра успешно создана!');
+
         } catch (\Exception $e) {
             Toast::error('Ошибка при создании игры: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Генерация всех игр между командами группы
-     */
-    public function generateAllGames(Tournament $tournament, TournamentStage $stage, StageGroup $group)
-    {
-        try {
-            $teams = $group->teams;
-
-            if ($teams->count() < 2) {
-                Toast::error('Для генерации игр нужно минимум 2 команды в группе');
-                return;
-            }
-
-            $gameCount = 0;
-            $baseDate = now()->startOfDay()->addHours(10);
-
-            // Создаем игры между всеми командами
-            for ($i = 0; $i < $teams->count(); $i++) {
-                for ($j = $i + 1; $j < $teams->count(); $j++) {
-                    $homeTeam = $teams[$i];
-                    $awayTeam = $teams[$j];
-
-                    // Получаем домашний зал
-                    $venueId = $homeTeam->team->venue->id ?? Venue::first()->id;
-
-                    Game::create([
-                        'stage_id' => $stage->id,
-                        'group_id' => $group->id,
-                        'home_application_id' => $homeTeam->id,
-                        'away_application_id' => $awayTeam->id,
-                        'venue_id' => $venueId,
-                        'scheduled_time' => $baseDate->copy()->addHours($gameCount * 2),
-                        'status' => 'scheduled',
-                    ]);
-
-                    $gameCount++;
-                }
-            }
-
-            Toast::success("Сгенерировано {$gameCount} игр");
-        } catch (\Exception $e) {
-            Toast::error('Ошибка при генерации игр: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Обновление игры
-     */
-    public function updateGame(Request $request)
-    {
-        $request->validate([
-            'game.id' => 'required|exists:games,id',
-            'game.home_application_id' => 'required|exists:tournament_applications,id',
-            'game.away_application_id' => 'required|exists:tournament_applications,id|different:game.home_application_id',
-            'game.venue_id' => 'required|exists:venues,id',
-            'game.scheduled_time' => 'required|date',
-            'game.status' => 'required|in:scheduled,live,completed,cancelled',
-        ]);
-
-        try {
-            $game = Game::findOrFail($request->input('game.id'));
-            $game->update($request->input('game'));
-
-            Toast::success('Игра обновлена');
-        } catch (\Exception $e) {
-            Toast::error('Ошибка при обновлении игры: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Обновление счета игры
-     */
-    public function updateGameScore(Request $request)
-    {
-        $request->validate([
-            'game.id' => 'required|exists:games,id',
-            'game.home_score' => 'required|integer|min:0',
-            'game.away_score' => 'required|integer|min:0',
-        ]);
-
-        try {
-            $game = Game::findOrFail($request->input('game.id'));
-
-            // Обновляем основную информацию
-            $game->update([
-                'home_score' => $request->input('game.home_score'),
-                'away_score' => $request->input('game.away_score'),
-                'status' => 'completed',
-            ]);
-
-            // Обновляем сеты
-            $sets = $request->input('game.sets', []);
-            foreach ($sets as $setData) {
-                if (!empty($setData['home_score']) || !empty($setData['away_score'])) {
-                    GameSet::updateOrCreate(
-                        [
-                            'game_id' => $game->id,
-                            'set_number' => $setData['set_number'],
-                        ],
-                        [
-                            'home_score' => $setData['home_score'] ?? 0,
-                            'away_score' => $setData['away_score'] ?? 0,
-                        ]
-                    );
-                }
-            }
-
-            Toast::success('Результат сохранен');
-        } catch (\Exception $e) {
-            Toast::error('Ошибка при сохранении результата: ' . $e->getMessage());
         }
     }
 
@@ -513,10 +279,11 @@ class GamesListScreen extends Screen
     public function deleteGame(Request $request)
     {
         try {
-            $game = Game::findOrFail($request->input('game'));
+            $game = Game::findOrFail($request->input('game_id'));
             $game->delete();
 
             Toast::info('Игра удалена');
+
         } catch (\Exception $e) {
             Toast::error('Ошибка при удалении игры: ' . $e->getMessage());
         }
