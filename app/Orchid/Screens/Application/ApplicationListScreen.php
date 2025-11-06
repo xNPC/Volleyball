@@ -18,9 +18,23 @@ class ApplicationListScreen extends Screen
      */
     public function query(): iterable
     {
+        $user = auth()->user();
+
+        // Если есть разрешение platform.applications - показываем все заявки
+        if ($user->hasAccess('platform.applications')) {
+            $applications = TournamentApplication::with('tournament', 'team', 'venue')->get();
+        }
+        // Иначе показываем только заявки, где пользователь является капитаном команды
+        else {
+            $applications = TournamentApplication::with('tournament', 'team', 'venue')
+                ->whereHas('team', function($query) use ($user) {
+                    $query->where('captain_id', $user->id);
+                })
+                ->get();
+        }
 
         return [
-            'applications' => TournamentApplication::with('tournament', 'team', 'venue')->get()
+            'applications' => $applications
         ];
     }
 
