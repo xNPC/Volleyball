@@ -60,6 +60,13 @@ class ApplicationEditScreen extends Screen
         return $this->application->exists ? 'Редактирование заявки' : 'Подача заявки';
     }
 
+    public function permission(): ?iterable
+    {
+        return [
+            //'platform.applications'
+        ];
+    }
+
     public function layout(): array
     {
         return [

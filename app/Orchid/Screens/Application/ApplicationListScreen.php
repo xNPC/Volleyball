@@ -18,6 +18,7 @@ class ApplicationListScreen extends Screen
      */
     public function query(): iterable
     {
+
         return [
             'applications' => TournamentApplication::with('tournament', 'team', 'venue')->get()
         ];
