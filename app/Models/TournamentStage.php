@@ -23,8 +23,8 @@ class TournamentStage extends Model
 
     protected $casts = [
         'configuration' => 'array',
-        'start_date' => 'date:Y-m-d',
-        'end_date' => 'date:Y-m-d',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     protected $dates = [
