@@ -20,6 +20,16 @@
             --court-green: #2E8B57;
         }
 
+        .bg-volleyball-orange {
+            background-color: var(--volleyball-orange);
+        }
+
+        .player-avatar-large {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--volleyball-orange);
+        }
+
         .volleyball-bg {
             background: linear-gradient(135deg, var(--volleyball-blue) 0%, var(--volleyball-orange) 100%);
         }
@@ -221,11 +231,11 @@
                         <i class="fas fa-users me-1"></i>Команды
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="#schedule">
-                        <i class="fas fa-calendar-alt me-1"></i>Расписание
-                    </a>
-                </li>
+{{--                <li class="nav-item">--}}
+{{--                    <a class="nav-link fw-semibold" href="#schedule">--}}
+{{--                        <i class="fas fa-calendar-alt me-1"></i>Расписание--}}
+{{--                    </a>--}}
+{{--                </li>--}}
             </ul>
             <!-- Поиск в навигации -->
 {{--            <form action="{{ route('users.index') }}" method="GET" class="d-flex me-3">--}}
@@ -291,31 +301,71 @@
 </main>
 
 <!-- Footer -->
+<!-- Footer -->
 <footer class="volleyball-bg text-white py-4 mt-5">
     <div class="container">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <h5 class="fw-bold">
                     <i class="fas fa-volleyball-ball me-2"></i>{{ config('app.name', 'Laravel') }}
                 </h5>
-                <p>Платформа для организации и проведения волейбольных турниров</p>
+                <p class="mb-3">Платформа для организации и проведения волейбольных турниров</p>
+{{--                <div class="d-flex gap-3">--}}
+{{--                    <a href="#" class="text-white"><i class="fab fa-telegram fa-lg"></i></a>--}}
+{{--                    <a href="#" class="text-white"><i class="fab fa-vk fa-lg"></i></a>--}}
+{{--                    <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>--}}
+{{--                </div>--}}
             </div>
-            <div class="col-md-3">
-                <h6>Разделы</h6>
+            <div class="col-md-4">
+                <h6 class="fw-bold mb-3">Навигация</h6>
                 <ul class="list-unstyled">
-                    <li><a href="#tournaments" class="text-white text-decoration-none">Турниры</a></li>
-                    <li><a href="#teams" class="text-white text-decoration-none">Команды</a></li>
-                    <li><a href="#schedule" class="text-white text-decoration-none">Расписание</a></li>
+                    <li class="mb-2">
+                        <a href="{{ route('home') }}" class="text-white text-decoration-none">
+                            <i class="fas fa-home me-2"></i>Главная
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/tournaments" class="text-white text-decoration-none">
+                            <i class="fas fa-trophy me-2"></i>Турниры
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{{ route('users.index') }}" class="text-white text-decoration-none">
+                            <i class="fas fa-users me-2"></i>Игроки
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{{ route('teams.index') }}" class="text-white text-decoration-none">
+                            <i class="fas fa-users me-2"></i>Команды
+                        </a>
+                    </li>
+{{--                    <li class="mb-2">--}}
+{{--                        <a href="#schedule" class="text-white text-decoration-none">--}}
+{{--                            <i class="fas fa-calendar-alt me-2"></i>Расписание--}}
+{{--                        </a>--}}
+{{--                    </li>--}}
                 </ul>
             </div>
-            <div class="col-md-3">
-                <h6>Контакты</h6>
-                <div class="d-flex gap-3">
-                    <a href="#" class="text-white"><i class="fab fa-telegram fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-vk fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
-                </div>
-            </div>
+{{--            <div class="col-md-4">--}}
+{{--                <h6 class="fw-bold mb-3">Контакты</h6>--}}
+{{--                <ul class="list-unstyled">--}}
+{{--                    <li class="mb-2">--}}
+{{--                        <i class="fas fa-phone me-2"></i>--}}
+{{--                        <a href="tel:+79999999999" class="text-white text-decoration-none">+7 (999) 999-99-99</a>--}}
+{{--                    </li>--}}
+{{--                    <li class="mb-2">--}}
+{{--                        <i class="fas fa-envelope me-2"></i>--}}
+{{--                        <a href="mailto:info@volleyball.ru" class="text-white text-decoration-none">info@volleyball.ru</a>--}}
+{{--                    </li>--}}
+{{--                    <li class="mb-2">--}}
+{{--                        <i class="fas fa-map-marker-alt me-2"></i>--}}
+{{--                        <span>г. Москва, ул. Спортивная, 1</span>--}}
+{{--                    </li>--}}
+{{--                </ul>--}}
+{{--            </div>--}}
+        </div>
+        <div class="text-center mt-4 pt-3 border-top border-white-50">
+            <small>&copy; 2025 {{ config('app.name', 'Laravel') }}. Все права защищены.</small>
         </div>
     </div>
 </footer>

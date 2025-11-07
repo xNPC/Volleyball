@@ -66,4 +66,9 @@ class TournamentStage extends Model
         }
     }
 
+    public function games()
+    {
+        return $this->hasMany(Game::class, 'stage_id');
+    }
+
 }

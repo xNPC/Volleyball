@@ -46,4 +46,9 @@ class Venue extends Model
     {
         return "{$this->name}, {$this->address}";
     }
+
+    public function games()
+    {
+        return $this->hasMany(Game::class);
+    }
 }

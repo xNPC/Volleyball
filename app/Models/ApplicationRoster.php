@@ -70,4 +70,9 @@ class ApplicationRoster extends Model
             'tournament_id' // Local key on applications table
         );
     }
+
+    public function applicationRosters()
+    {
+        return $this->hasMany(ApplicationRoster::class);
+    }
 }

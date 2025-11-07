@@ -1,7 +1,7 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\HomePage;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\StageController;
 use App\Http\Controllers\GroupController;
@@ -13,7 +13,8 @@ use App\Http\Controllers\TournamentTeamController;
 //    return view('welcome');
 //});
 
-Route::get('/', HomePage::class)->name('home');
+//Route::get('/', HomePage::class)->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Турниры
 Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index');

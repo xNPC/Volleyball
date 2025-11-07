@@ -122,5 +122,34 @@ class Team extends Model
         return $this->hasMany(TournamentApplication::class);
     }
 
+    public function gamesAsHome()
+    {
+        return $this->hasManyThrough(
+            Game::class,
+            TournamentApplication::class,
+            'team_id',
+            'home_application_id',
+            'id',
+            'id'
+        );
+    }
+
+    public function gamesAsAway()
+    {
+        return $this->hasManyThrough(
+            Game::class,
+            TournamentApplication::class,
+            'team_id',
+            'away_application_id',
+            'id',
+            'id'
+        );
+    }
+
+    public function players()
+    {
+        return $this->hasMany(Player::class);
+    }
+
 
 }

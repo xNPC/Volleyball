@@ -111,6 +111,7 @@
             color: var(--volleyball-blue);
             font-weight: 600;
             border: none;
+            border-radius: 0;
             padding: 12px 20px;
         }
 
