@@ -34,6 +34,11 @@ class PlatformProvider extends OrchidServiceProvider
     public function menu(): array
     {
         return [
+            Menu::make('Перейти на сайт')
+                ->slug('home')
+                ->icon('house')
+                ->route('home'),
+
             Menu::make('Организации')
                 ->slug('organizations')
                 ->icon('building')
