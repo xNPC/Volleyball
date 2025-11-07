@@ -67,12 +67,14 @@ class TeamListScreen extends Screen
      */
     public function layout(): iterable
     {
-        return [
-            Layout::tabs([
-                'Мои команды' => new TeamListTable('user_teams'),
-                'Все команды' => new TeamListTable('teams')
-            ])
+        $tabs['Мои команды'] = new TeamListTable('user_teams');
 
+        if (auth()->user()->hasAccess('platform.teams.edit'))
+            $tabs['Все команды'] = new TeamListTable('teams');
+
+
+        return [
+            Layout::tabs($tabs),
         ];
     }
 

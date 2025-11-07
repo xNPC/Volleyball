@@ -18,6 +18,13 @@ class OrganizationListScreen extends Screen
         return 'Список организаций';
     }
 
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.organizations'
+        ];
+    }
+
     public function query(): array
     {
         return [

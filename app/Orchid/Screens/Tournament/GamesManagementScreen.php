@@ -8,6 +8,13 @@ use Orchid\Screen\Screen;
 
 class GamesManagementScreen extends Screen
 {
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.games.edit',
+            'platform.games.result'
+        ];
+    }
     /**
      * Query data.
      */

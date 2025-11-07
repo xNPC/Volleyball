@@ -16,6 +16,13 @@ class VenueListScreen extends Screen
 {
     public $organization;
     public $venue;
+
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.organizations'
+        ];
+    }
     /**
      * Fetch data to be displayed on the screen.
      *

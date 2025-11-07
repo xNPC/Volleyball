@@ -43,7 +43,8 @@ class PlatformProvider extends OrchidServiceProvider
 //                        ->icon('building')
 //                        ->route('platform.organization.list'),
 //                ])
-                ->route('platform.organization.list'),
+                ->route('platform.organization.list')
+                ->permission('platform.organizations'),
 
 
             Menu::make('Турниры')
@@ -54,7 +55,8 @@ class PlatformProvider extends OrchidServiceProvider
 //                        ->icon('trophy')
 //                        ->route('platform.tournaments.list'),
 //                ]),
-            ->route('platform.tournaments.list'),
+            ->route('platform.tournaments.list')
+            ->permission('platform.tournaments'),
 
             Menu::make('Команды')
                 ->slug('teams')
@@ -84,8 +86,8 @@ class PlatformProvider extends OrchidServiceProvider
 
             Menu::make('Управление играми')
                 ->icon('controller')
-                ->route('platform.tournament.games.management'),
-                //->permission('platform.tournaments'),
+                ->route('platform.tournament.games.management')
+                ->permission(['platform.games.result', 'platform.games.edit']),
 
 //            Menu::make('Get Started')
 //                ->icon('bs.book')
@@ -154,16 +156,19 @@ class PlatformProvider extends OrchidServiceProvider
 
             ItemPermission::group('Команды')
                 ->addPermission('platform.teams.create', 'Создание')
-                ->addPermission('platform.teams.edit', 'Редактирование всех'),
+                ->addPermission('platform.teams.edit', 'Редактирование всех')
+                ->addPermission('platform.teams.delete', 'Удаление'),
 
             ItemPermission::group('Заявки')
-                ->addPermission('platform.applications', 'Управление заявками'),
+                ->addPermission('platform.applications.edit', 'Управление заявками')
+                ->addPermission('platform.applications.delete', 'Удаление заявок'),
 
             ItemPermission::group('Игры')
-                ->addPermission('platform.games', 'Управление играми'),
+                ->addPermission('platform.games.edit', 'Управление играми')
+                ->addPermission('platform.games.result', 'Внесение результатов'),
 
-            ItemPermission::group('Разобрать')
-                ->addPermission('platform.1', '1')
+//            ItemPermission::group('Разобрать')
+//                ->addPermission('platform.1', '1')
         ];
     }
 }

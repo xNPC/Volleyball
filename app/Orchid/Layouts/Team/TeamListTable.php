@@ -73,6 +73,7 @@ class TeamListTable extends Table
                                 'team' => $team
                             ])
                             ->icon('trash')
+                            ->canSee(auth()->user()->hasAccess('platform.teams.delete'))
                         ->confirm('Вместе с командой удалится вся ее история - заявки, игры и т.д., Вы точно хотите удалить команду?')
                     ])
                 ),

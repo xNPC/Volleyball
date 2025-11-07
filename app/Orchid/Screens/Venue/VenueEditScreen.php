@@ -19,6 +19,14 @@ class VenueEditScreen extends Screen
      *
      * @return array
      */
+
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.organizations'
+        ];
+    }
+
     public function query(Venue $venue): iterable
     {
         return [

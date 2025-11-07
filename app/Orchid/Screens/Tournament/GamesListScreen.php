@@ -10,7 +10,6 @@ use App\Models\TournamentApplication;
 use App\Models\TournamentStage;
 use App\Models\User;
 use App\Models\Venue;
-use App\Orchid\Layouts\GameFilters;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
@@ -33,6 +32,7 @@ class GamesListScreen extends Screen
     public $stage;
     public $group;
     public $teams;
+    //public $game;
 
     /**
      * Fetch data to be displayed on the screen.
@@ -91,13 +91,14 @@ class GamesListScreen extends Screen
             ModalToggle::make('Добавить игру')
                 ->icon('plus')
                 ->modal('createGameModal')
-                ->method('createGame'),
+                ->method('createGame')
+                ->canSee(auth()->user()->hasAccess('platform.games.edit')),
 
             Button::make('Сгенерировать все игры')
                 ->icon('magic')
                 ->method('generateAllGames')
                 ->confirm('Сгенерировать все игры между командами этой группы? Каждая команда сыграет с каждой по одному разу.')
-                ->canSee(!$this->group->games()->exists()),
+                ->canSee(!$this->group->games()->exists() and auth()->user()->hasAccess('platform.games.edit')),
 
             Link::make('Назад к выбору')
                 ->icon('arrow-left')
@@ -250,14 +251,14 @@ class GamesListScreen extends Screen
                     // Общий счет
                     Group::make([
                         Input::make('game.home_score')
-                            ->title('Счет хозяев')
+                            ->title('Хозяева')
                             ->type('number')
                             ->min(0)
                             ->required()
                             ->help('Общий счет команды хозяев'),
 
                         Input::make('game.away_score')
-                            ->title('Счет гостей')
+                            ->title('Гости')
                             ->type('number')
                             ->min(0)
                             ->required()
@@ -268,10 +269,6 @@ class GamesListScreen extends Screen
                     Matrix::make('game.sets')
                         ->title('Результаты по сетам')
                         ->columns([
-//                            'set_number' => 'Сет',
-//                            'home_score' => 'Хозяева',
-//                            'away_score' => 'Гости',
-
                             'Сет' => 'set_number',
                             'Хозяева' => 'home_score',
                             'Гости' => 'away_score',
@@ -345,19 +342,24 @@ class GamesListScreen extends Screen
                                     ->icon('pencil')
                                     ->modal('editGameModal')
                                     ->method('updateGame')
-                                    ->asyncParameters(['game' => $game->id]),
+                                    ->asyncParameters(['game' => $game->id])
+                                    ->canSee(auth()->user()->hasAccess('platform.games.edit')),
 
                                 ModalToggle::make('Внести результат')
                                     ->icon('clipboard-check')
                                     ->modal('scoreGameModal')
                                     ->method('updateGameScore')
-                                    ->asyncParameters(['game' => $game->id]),
+                                    ->modalTitle(fn() => '' . ($game->homeApplication->team->name ?? 'Хозяева') . ' vs ' . ($game->awayApplication->team->name ?? 'Гости'))
+                                    ->asyncParameters([
+                                        'game' => $game->id,
+                                    ]),
                                     //->canSee(!$game->isCompleted()),
 
                                 Button::make('Удалить')
                                     ->icon('trash')
                                     ->method('deleteGame', ['game_id' => $game->id])
-                                    ->confirm('Вы уверены, что хотите удалить эту игру?'),
+                                    ->confirm('Вы уверены, что хотите удалить эту игру?')
+                                    ->canSee(auth()->user()->hasAccess('platform.games.edit')),
                             ]);
                     }),
             ])->title('Список игр'),

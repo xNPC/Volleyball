@@ -15,6 +15,13 @@ class OrganizationEditScreen extends Screen
 {
     public $organization;
 
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.organizations'
+        ];
+    }
+
     /**
      * Fetch data to be displayed on the screen.
      *

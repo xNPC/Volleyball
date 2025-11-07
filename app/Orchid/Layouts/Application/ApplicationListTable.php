@@ -55,7 +55,8 @@ class ApplicationListTable extends Table
                             ->icon('pencil')
                             ->route('platform.applications.edit', $application),
                         Button::make('Удалить')
-                            ->icon('trash'),
+                            ->icon('trash')
+                        ->canSee(auth()->user()->hasAccess('platform.applications.delete')),
                     ])
                 )
         ];

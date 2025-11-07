@@ -24,6 +24,14 @@ class TournamentListScreen extends Screen
      *
      * @return array
      */
+
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.tournaments'
+        ];
+    }
+
     public function query(): iterable
     {
         return [

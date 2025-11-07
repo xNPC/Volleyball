@@ -228,6 +228,13 @@ class GroupScreen extends Screen
     public $stage;
     public $groups;
     public $tournament;
+
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.tournaments'
+        ];
+    }
     /**
      * Fetch data to be displayed on the screen.
      *

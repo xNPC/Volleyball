@@ -49,7 +49,7 @@ class ApplicationEditScreen extends Screen
                     ->modal('addPlayer')
                     ->method('addPlayer')
                     ->icon('plus')
-                    ->canSee($this->application->exists)
+                    ->canSee($this->application->exists and (auth()->user()->hasAccess('platform.applications.edit') or !$this->application->is_complete))
         ];
     }
 
@@ -122,7 +122,7 @@ class ApplicationEditScreen extends Screen
                             ->options(
                                 TournamentApplication::STATUS,
                             )
-                            ->canSee($this->application->exists),
+                            ->canSee($this->application->exists and auth()->user()->hasAccess('platform.applications.edit')),
 
                         CheckBox::make('application.is_complete')
                             ->title('Заявка завершена')
@@ -133,7 +133,11 @@ class ApplicationEditScreen extends Screen
                         Button::make('Сохранить')
                             ->icon('check')
                             ->type(Color::SUCCESS)
-                            ->method('createOrUpdateApplication'),
+                            ->method('createOrUpdateApplication')
+                            ->canSee(request()->route()->getName() == 'platform.applications.create'
+                                or auth()->user()->hasAccess('platform.applications.edit')
+                                or !$this->application->is_complete
+                            ),
 
                     ])
                 ],
@@ -161,12 +165,20 @@ class ApplicationEditScreen extends Screen
                                         ->modal('editPlayer')
                                         ->method('editPlayer')
                                         ->asyncParameters(['roster' => $roster->id])
-                                        ->icon('pencil'),
+                                        ->icon('pencil')
+                                        ->canSee(request()->route()->getName() == 'platform.applications.create'
+                                            or auth()->user()->hasAccess('platform.applications.edit')
+                                            or !$this->application->is_complete
+                                        ),
 
                                     Button::make('Удалить')
                                         ->icon('trash')
                                         ->method('removePlayer', ['id' => $roster->id])
                                         ->confirm('Вы уверены, что хотите удалить игрока из заявки?')
+                                        ->canSee(request()->route()->getName() == 'platform.applications.create'
+                                            or auth()->user()->hasAccess('platform.applications.edit')
+                                            or !$this->application->is_complete
+                                        ),
                             ])
                         )
                 ])
