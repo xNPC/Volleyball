@@ -21,7 +21,7 @@ class ApplicationListScreen extends Screen
         $user = auth()->user();
 
         // Если есть разрешение platform.applications - показываем все заявки
-        if ($user->hasAccess('platform.applications')) {
+        if ($user->hasAccess('platform.applications.edit')) {
             $applications = TournamentApplication::with('tournament', 'team', 'venue')->get();
         }
         // Иначе показываем только заявки, где пользователь является капитаном команды

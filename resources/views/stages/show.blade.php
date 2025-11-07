@@ -31,62 +31,161 @@
             </div>
         </div>
 
-        <!-- Группы этапа -->
-        <div class="row">
-            <div class="col-12">
-                <h3 class="fw-bold mb-4" style="color: var(--volleyball-blue);">
-                    <i class="fas fa-table me-2"></i>Группы этапа
-                </h3>
-
-                @foreach($stage->groups as $group)
-                    <div class="card card-volleyball mb-4">
-                        <div class="card-header bg-transparent border-bottom-0">
-                            <h4 class="fw-bold mb-0" style="color: var(--volleyball-orange);">
-                                <i class="fas fa-users me-2"></i>{{ $group->name }}
-                            </h4>
+        <!-- Табы групп -->
+        @if($stage->groups->count() > 0)
+            <div class="row">
+                <div class="col-12">
+                    <div class="card card-volleyball">
+                        <div class="card-header bg-transparent border-bottom-0 p-0">
+                            <ul class="nav nav-tabs" id="groupsTab" role="tablist">
+                                @foreach($groupsWithStandings as $index => $group)
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link {{ $index === 0 ? 'active' : '' }}"
+                                                id="group-{{ $group->id }}-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#group-{{ $group->id }}"
+                                                type="button"
+                                                role="tab">
+                                            <i class="fas fa-users me-2"></i>{{ $group->name }}
+                                        </button>
+                                    </li>
+                                @endforeach
+                            </ul>
                         </div>
                         <div class="card-body">
-                            <!-- Таблица команд -->
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Команда</th>
-                                        <th class="text-center">Очки</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach($group->teams as $index => $team)
-                                        <tr class="@if($index < 2) table-success @elseif($index >= count($group->teams) - 2) table-danger @endif">
-                                            <td class="fw-bold">{{ $index + 1 }}</td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="team-logo me-3">
-                                                        <i class="fas fa-volleyball-ball"></i>
-                                                    </div>
-                                                    <span class="fw-semibold">{{ $team->name }}</span>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-primary fs-6">{{ $team->points }}</span>
-                                            </td>
-                                            <td class="text-end">
-                                                <a href="{{ route('groups.show', $group) }}"
-                                                   class="btn btn-sm btn-volleyball">
-                                                    <i class="fas fa-eye me-1"></i>Подробнее
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                    </tbody>
-                                </table>
+                            <div class="tab-content" id="groupsTabContent">
+                                @foreach($groupsWithStandings as $index => $group)
+                                    <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
+                                         id="group-{{ $group->id }}"
+                                         role="tabpanel">
+
+                                        <!-- Внутренние табы для группы -->
+                                        <ul class="nav nav-pills mb-4" id="group-{{ $group->id }}-subtab" role="tablist">
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link active"
+                                                        id="table-{{ $group->id }}-tab"
+                                                        data-bs-toggle="pill"
+                                                        data-bs-target="#table-{{ $group->id }}"
+                                                        type="button">
+                                                    <i class="fas fa-table me-2"></i>Турнирная таблица
+                                                </button>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link"
+                                                        id="games-{{ $group->id }}-tab"
+                                                        data-bs-toggle="pill"
+                                                        data-bs-target="#games-{{ $group->id }}"
+                                                        type="button">
+                                                    <i class="fas fa-volleyball-ball me-2"></i>Игры группы
+                                                </button>
+                                            </li>
+                                        </ul>
+
+                                        <div class="tab-content">
+                                            <!-- Турнирная таблица -->
+                                            <div class="tab-pane fade show active" id="table-{{ $group->id }}">
+                                                @include('partials.group-table', ['group' => $group])
+                                            </div>
+
+                                            <!-- Игры группы -->
+                                            <div class="tab-pane fade" id="games-{{ $group->id }}">
+                                                @include('partials.group-games', ['group' => $group])
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
-                @endforeach
+                </div>
             </div>
-        </div>
+        @else
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>В этом этапе пока нет групп.
+            </div>
+        @endif
     </div>
+
+    <style>
+        .nav-tabs .nav-link {
+            color: var(--volleyball-blue);
+            font-weight: 600;
+            border: none;
+            padding: 12px 20px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: var(--volleyball-orange);
+            color: white;
+            border: none;
+        }
+
+        .nav-pills .nav-link {
+            color: var(--volleyball-blue);
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--volleyball-blue);
+            color: white;
+        }
+
+        .tournament-table {
+            font-size: 0.85rem;
+        }
+
+        .tournament-table th {
+            background: var(--volleyball-blue);
+            color: white;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: 600;
+            padding: 8px 4px;
+        }
+
+        .tournament-table td {
+            padding: 6px 4px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .team-name {
+            text-align: left !important;
+            font-weight: 600;
+        }
+
+        .result-cell {
+            background: #f8f9fa;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .result-cell:hover {
+            background: #e9ecef;
+        }
+
+        .win-score {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .lose-score {
+            color: #dc3545;
+        }
+
+        .current-team {
+            background: rgba(255, 107, 53, 0.1);
+            font-weight: bold;
+        }
+
+        .qualification-zone {
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .relegation-zone {
+            background: rgba(220, 53, 69, 0.1);
+        }
+    </style>
 </x-app-layout>
