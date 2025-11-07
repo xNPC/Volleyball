@@ -35,4 +35,23 @@ class StageController extends Controller
         return view('stages.show', compact('tournament', 'stage', 'groupsWithStandings'));
     }
 
+    private function getGameDetailsFromCollection($games, $team1Id, $team2Id)
+    {
+        $game = $games->first(function($game) use ($team1Id, $team2Id) {
+            return ($game->home_application_id == $team1Id && $game->away_application_id == $team2Id) ||
+                ($game->home_application_id == $team2Id && $game->away_application_id == $team1Id);
+        });
+
+        if (!$game || $game->sets->isEmpty()) {
+            return null;
+        }
+
+        $setsDetails = [];
+        foreach ($game->sets as $set) {
+            $setsDetails[] = "{$set->home_score}:{$set->away_score}";
+        }
+
+        return "Сеты: " . implode(', ', $setsDetails);
+    }
+
 }

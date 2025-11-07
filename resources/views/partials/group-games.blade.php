@@ -54,7 +54,7 @@
                             <div class="col-12 text-center">
                                 <small class="text-muted">
                                     <i class="fas fa-map-marker-alt me-1"></i>
-                                    {{ $game->venue->name }}
+                                    {{ $game->venue->name }}, {{ $game->venue->address }}
                                 </small>
                             </div>
                         </div>
