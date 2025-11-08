@@ -22,13 +22,12 @@ class TeamListScreen extends Screen
      */
     public function query(): iterable
     {
-        static $teams;
+        $teams = collect();
+        $userTeams = Team::with('captain')->where('captain_id', auth()->user()->id)->get();
 
-        if(auth()->user()->hasAccess('platform.teams.edit'))
-
+        if (auth()->user()->hasAccess('platform.teams.edit')) {
             $teams = Team::with('captain')->paginate();
-
-        $userTeams = Team::with('captain')->where('captain_id', '=', auth()->user()->id)->get();
+        }
 
         return [
             'teams' => $teams,
@@ -80,6 +79,12 @@ class TeamListScreen extends Screen
 
     public function remove(Team $team)
     {
+        // Проверяем права: либо пользователь имеет доступ к удалению, либо это его команда
+        if (!auth()->user()->hasAccess('platform.teams.delete') &&
+            $team->captain_id !== auth()->user()->id) {
+            abort(403, 'У вас нет прав для удаления этой команды');
+        }
+
         $team->delete();
 
         Toast::info('Команда успешно удалена');

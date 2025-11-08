@@ -30,15 +30,16 @@ class TeamListTable extends Table
 
     public function isSee(): bool
     {
-        $isSee = false;
+        if ($this->target === 'teams') {
+            return auth()->user()->hasAccess('platform.teams.edit');
+        }
 
-        if ($this->target == 'teams')
-            $isSee = auth()->user()->hasAccess('platform.teams.edit');
+        if ($this->target === 'user_teams') {
+            // Всегда показываем таблицу "Мои команды"
+            return true;
+        }
 
-        if($this->target == 'user_teams')
-            $isSee = true;
-
-        return $isSee;
+        return false;
     }
 
     public function iconNotFound(): string
