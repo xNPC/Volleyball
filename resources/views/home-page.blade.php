@@ -194,10 +194,10 @@
                                             </div>
                                         </div>
                                         <h5 class="fw-bold text-dark mb-2">{{ $user->name }}</h5>
-                                        <p class="text-muted mb-2">
-                                            <i class="fas fa-volleyball-ball me-1"></i>
-                                            {{ $user->position }}
-                                        </p>
+{{--                                        <p class="text-muted mb-2">--}}
+{{--                                            <i class="fas fa-volleyball-ball me-1"></i>--}}
+{{--                                            {{ $user->position }}--}}
+{{--                                        </p>--}}
                                         <p class="text-muted mb-3">
                                             <i class="fas fa-cake-candles me-1"></i>
                                             Исполняется {{ (int)$user->age }} лет
