@@ -41,83 +41,83 @@
         </div>
 
         <!-- Состав команды -->
-        <div class="row">
-            @foreach($groupedRoster as $jerseyNumber => $players)
-                <div class="col-lg-6 mb-4">
-                    <div class="card card-volleyball h-100">
-                        <div class="card-header bg-transparent border-bottom-0">
-                            <h4 class="fw-bold mb-0" style="color: var(--volleyball-blue);">
+{{--        <div class="row">--}}
+{{--            @foreach($groupedRoster as $jerseyNumber => $players)--}}
+{{--                <div class="col-lg-6 mb-4">--}}
+{{--                    <div class="card card-volleyball h-100">--}}
+{{--                        <div class="card-header bg-transparent border-bottom-0">--}}
+{{--                            <h4 class="fw-bold mb-0" style="color: var(--volleyball-blue);">--}}
 {{--                                <i class="fas fa-{{ $role === 'captain' ? 'crown' : ($role === 'coach' ? 'whistle' : 'user') }} me-2"></i>--}}
-                                #{{ $jerseyNumber }}
-                            </h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                @foreach($players as $rosterEntry)
-                                    <div class="col-12">
-                                        <div class="player-card card border">
-                                            <div class="card-body py-3">
-                                                <div class="d-flex align-items-center">
-                                                    <!-- Аватар -->
-                                                    <div class="user-avatar me-3">
-                                                        @if($rosterEntry->user->profile_photo_path)
-                                                            <div class="photo-modal-trigger player-avatar"
-                                                                 data-photo="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
-                                                                 data-name="{{ $rosterEntry->user->name }}"
-                                                                 data-profile-url="{{ route('users.show', $rosterEntry->user) }}"
-                                                                 title="Посмотреть фото">
-                                                                <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
-                                                                     alt="{{ $rosterEntry->user->name }}"
-                                                                     class="w-100 h-100 player-avatar">
-                                                            </div>
-                                                        @else
+{{--                                #{{ $jerseyNumber }}--}}
+{{--                            </h4>--}}
+{{--                        </div>--}}
+{{--                        <div class="card-body">--}}
+{{--                            <div class="row g-3">--}}
+{{--                                @foreach($players as $rosterEntry)--}}
+{{--                                    <div class="col-12">--}}
+{{--                                        <div class="player-card card border">--}}
+{{--                                            <div class="card-body py-3">--}}
+{{--                                                <div class="d-flex align-items-center">--}}
+{{--                                                    <!-- Аватар -->--}}
+{{--                                                    <div class="user-avatar me-3">--}}
+{{--                                                        @if($rosterEntry->user->profile_photo_path)--}}
+{{--                                                            <div class="photo-modal-trigger player-avatar"--}}
+{{--                                                                 data-photo="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
+{{--                                                                 data-name="{{ $rosterEntry->user->name }}"--}}
+{{--                                                                 data-profile-url="{{ route('users.show', $rosterEntry->user) }}"--}}
+{{--                                                                 title="Посмотреть фото">--}}
+{{--                                                                <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
+{{--                                                                     alt="{{ $rosterEntry->user->name }}"--}}
+{{--                                                                     class="w-100 h-100 player-avatar">--}}
+{{--                                                            </div>--}}
+{{--                                                        @else--}}
 {{--                                                        @if($rosterEntry->user->profile_photo_path)--}}
 {{--                                                            <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
 {{--                                                                 alt="{{ $rosterEntry->user->name }}"--}}
 {{--                                                                 class="player-avatar">--}}
 {{--                                                        @else--}}
-                                                            <div class="player-avatar bg-volleyball-blue text-white d-flex align-items-center justify-content-center">
-                                                                <i class="fas fa-user"></i>
-                                                            </div>
-                                                        @endif
-                                                    </div>
+{{--                                                            <div class="player-avatar bg-volleyball-blue text-white d-flex align-items-center justify-content-center">--}}
+{{--                                                                <i class="fas fa-user"></i>--}}
+{{--                                                            </div>--}}
+{{--                                                        @endif--}}
+{{--                                                    </div>--}}
 
-                                                    <!-- Информация -->
-                                                    <div class="flex-grow-1">
-                                                        <h6 class="fw-bold mb-1">{{ $rosterEntry->user->name }}</h6>
-                                                        <div class="player-meta">
-                                                            @if($rosterEntry->position)
-                                                                <span class="badge bg-secondary me-2">{{ $rosterEntry::POSITIONS[$rosterEntry->position] }}</span>
-                                                            @endif
-                                                            @if($rosterEntry->jersey_number)
-                                                                <span class="badge bg-info me-2">#{{ $rosterEntry->jersey_number }}</span>
-                                                            @endif
-                                                            <small class="text-muted">
-                                                                <i class="fas fa-envelope me-1"></i>
-                                                                {{ $rosterEntry->user->email }}
-                                                            </small>
-                                                        </div>
-                                                    </div>
+{{--                                                    <!-- Информация -->--}}
+{{--                                                    <div class="flex-grow-1">--}}
+{{--                                                        <h6 class="fw-bold mb-1">{{ $rosterEntry->user->name }}</h6>--}}
+{{--                                                        <div class="player-meta">--}}
+{{--                                                            @if($rosterEntry->position)--}}
+{{--                                                                <span class="badge bg-secondary me-2">{{ $rosterEntry::POSITIONS[$rosterEntry->position] }}</span>--}}
+{{--                                                            @endif--}}
+{{--                                                            @if($rosterEntry->jersey_number)--}}
+{{--                                                                <span class="badge bg-info me-2">#{{ $rosterEntry->jersey_number }}</span>--}}
+{{--                                                            @endif--}}
+{{--                                                            <small class="text-muted">--}}
+{{--                                                                <i class="fas fa-envelope me-1"></i>--}}
+{{--                                                                {{ $rosterEntry->user->email }}--}}
+{{--                                                            </small>--}}
+{{--                                                        </div>--}}
+{{--                                                    </div>--}}
 
-                                                    <!-- Действия -->
-                                                    <div class="ms-3">
-                                                        <a href="{{ route('users.show', $rosterEntry->user) }}"
-                                                           class="btn btn-sm btn-outline-primary"
-                                                           title="Профиль игрока">
-                                                            <i class="fas fa-external-link-alt"></i>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
+{{--                                                    <!-- Действия -->--}}
+{{--                                                    <div class="ms-3">--}}
+{{--                                                        <a href="{{ route('users.show', $rosterEntry->user) }}"--}}
+{{--                                                           class="btn btn-sm btn-outline-primary"--}}
+{{--                                                           title="Профиль игрока">--}}
+{{--                                                            <i class="fas fa-external-link-alt"></i>--}}
+{{--                                                        </a>--}}
+{{--                                                    </div>--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+{{--                                @endforeach--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            @endforeach--}}
+{{--        </div>--}}
 
         <!-- Если состав пустой -->
         @if($roster->count() === 0)
@@ -150,7 +150,7 @@
                                 <th>Игрок</th>
                                 <th>Позиция</th>
                                 <th>Номер</th>
-                                <th>Email</th>
+{{--                                <th>Email</th>--}}
                                 <th>Дата регистрации</th>
                                 <th>Действия</th>
                             </tr>
@@ -206,9 +206,9 @@
                                             <span class="text-muted">-</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <small>{{ $rosterEntry->user->email }}</small>
-                                    </td>
+{{--                                    <td>--}}
+{{--                                        <small>{{ $rosterEntry->user->email }}</small>--}}
+{{--                                    </td>--}}
                                     <td>
                                         <small class="text-muted">{{ $rosterEntry->user->created_at->format('d.m.Y') }}</small>
                                     </td>
