@@ -33,11 +33,26 @@ class ApplicationListTable extends Table
             //TD::make('venue.name', 'Домашний зал'),
             TD::make('status', 'Статус')
                 ->render(function ($application) {
-                    return $application::STATUS[$application->status];
+                    $statusText = $application::STATUS[$application->status] ?? 'Неизвестно';
+                    $color = match($application->status) {
+                        'pending' => 'warning',    // в ожидании - оранжевый
+                        'approved' => 'success',   // утверждена - зеленый
+                        'rejected' => 'danger',    // отклонена - красный
+                        default => 'secondary'
+                    };
+
+                    return "<span class='badge bg-{$color}'>{$statusText}</span>";
                 }),
+
             TD::make('is_complete', 'Завершена')
                 ->render(function ($application) {
-                    return $application::IS_COMPLETE[$application->is_complete];
+                    $completeText = $application::IS_COMPLETE[$application->is_complete] ?? 'Неизвестно';
+
+                    if ($application->is_complete) {
+                        return "<span class='badge bg-success fw-bold'>{$completeText}</span>";
+                    } else {
+                        return "<span class='badge bg-secondary'>{$completeText}</span>";
+                    }
                 }),
             TD::make('created_at', 'Дата создания')
                 ->render(function ($application) {
