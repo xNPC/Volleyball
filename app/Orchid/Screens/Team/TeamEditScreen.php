@@ -83,12 +83,12 @@ class TeamEditScreen extends Screen
                             ->icon('check')
                             ->type(Color::SUCCESS),
 
-                        Button::make('Удалить')
-                            ->method('remove')
-                            ->icon('trash')
-                            ->type(Color::DANGER)
-                            ->canSee($this->team->exists)
-                            ->confirm('Вместе с командой удалится вся ее история - заявки, игры и т.д., Вы точно хотите удалить команду?')
+//                        Button::make('Удалить')
+//                            ->method('remove')
+//                            ->icon('trash')
+//                            ->type(Color::DANGER)
+//                            ->canSee($this->team->exists)
+//                            ->confirm('Вместе с командой удалится вся ее история - заявки, игры и т.д., Вы точно хотите удалить команду?')
                     ])
                         ->autoWidth()
                 ]),
@@ -103,20 +103,29 @@ class TeamEditScreen extends Screen
     public function createOrUpdateTeam(Request $request)
     {
         $teamId = $request->input('team.id');
+        $user = auth()->user();
 
         $validated = $request->validate([
             'team.name' => 'required|string|max:255',
-            'team.captain_id' => 'required|integer|exists:users,id',
+            'team.captain_id' => 'integer|exists:users,id',
             'team.description' => 'nullable|string|max:2500',
         ]);
 
-        Team::updateOrCreate([
-            'id' => $teamId
-        ],
-            $validated['team']);
+        $teamData = $validated['team'];
+
+        // Автоматически назначаем капитаном, если нет прав
+        if (!$user->hasAccess('platform.teams.edit')) {
+            $teamData['captain_id'] = $user->id;
+
+            // Проверяем доступ к редактированию существующей команды
+            if ($teamId && Team::where('id', $teamId)->where('captain_id', '!=', $user->id)->exists()) {
+                abort(403, 'Доступ запрещен');
+            }
+        }
+
+        Team::updateOrCreate(['id' => $teamId], $teamData);
 
         Toast::info('Успешно сохранено');
-
         return redirect()->route('platform.teams.list');
     }
 
