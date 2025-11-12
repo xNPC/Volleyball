@@ -8,6 +8,7 @@ use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Layout;
 use Orchid\Screen\Screen;
+use Orchid\Support\Facades\Toast;
 
 class ApplicationListScreen extends Screen
 {
@@ -72,5 +73,12 @@ class ApplicationListScreen extends Screen
         return [
             ApplicationListTable::class
         ];
+    }
+
+    public function remove(TournamentApplication $application)
+    {
+        $application->delete();
+
+        Toast::info('Успешно удалено');
     }
 }
