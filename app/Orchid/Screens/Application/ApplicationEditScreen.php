@@ -8,6 +8,7 @@ use App\Models\Venue;
 use App\Orchid\Layouts\Application\AddPlayerLayout;
 use App\Orchid\Layouts\Application\TournamentsListener;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\ModalToggle;
@@ -32,7 +33,9 @@ class ApplicationEditScreen extends Screen
     {
         return [
             'application' => $application,
-            'roster' => $application->roster,
+            'roster' => $application->roster()
+                ->orderByRaw('CAST(jersey_number AS UNSIGNED) ASC')
+                ->get(),
         ];
     }
 
@@ -101,7 +104,7 @@ class ApplicationEditScreen extends Screen
                 ->async('asyncGetPlayer')
                 ->title('Редактирование игрока'),
 
-            Layout::columns([
+            Layout::split([
 
                 [
 
@@ -147,14 +150,34 @@ class ApplicationEditScreen extends Screen
 //
                 //Layout::rows([
                 Layout::table('application.roster', [
+                    TD::make('photo_preview', '')
+                        ->render(fn($roster) =>
+                        $roster->player->profile_photo_path
+                            ? '<img src="' . asset('storage/' . $roster->player->profile_photo_path) . '" alt="Фото" class="" style="width: 40px; height: 40px; object-fit: cover;">'
+                            : '<span class="badge bg-danger">X</span>'
+                        )
+                        ->alignCenter(),
                     TD::make('user_id', 'Ф.И.О.')
                         ->render(fn($user) => $user->player->name),
+                    TD::make('birthday', 'Дата рождения')
+                        ->render(function($roster) {
+                            if (!$roster->player->birthday) {
+                                return '<span class="badge bg-danger">X</span>';
+                            }
+
+                            $birthDate = \Carbon\Carbon::parse($roster->player->birthday);
+                            $age = $birthDate->age;
+
+                            return $birthDate->format('d.m.Y') . '<br><small class="text-muted">(' . $age . ' лет)</small>';
+                    })
+                    ->alignCenter(),
                     TD::make('jersey_number', 'Номер'),
                     TD::make('position', 'Амплуа')
                         ->render(function ($roster) {
                             $positions = ApplicationRoster::POSITIONS;
                             return $positions[$roster->position] ?? $roster->position;
                         }),
+
 
                     TD::make('actions', 'Действия')
                         ->render(fn ($roster)  =>
@@ -184,7 +207,8 @@ class ApplicationEditScreen extends Screen
                 ])
                 ->title('Состав'),
 
-            ]),
+            ])
+            ->ratio('40/60'),
 
         ];
     }

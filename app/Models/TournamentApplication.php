@@ -63,7 +63,8 @@ class TournamentApplication extends Model
 
     public function roster()
     {
-        return $this->hasMany(ApplicationRoster::class, 'application_id');
+        return $this->hasMany(ApplicationRoster::class, 'application_id')
+            ->orderByRaw('CAST(jersey_number AS UNSIGNED) ASC');
     }
 
     public function groups()
