@@ -193,6 +193,29 @@
         .photo-modal-trigger:hover .player-avatar-xs {
             box-shadow: 0 0 0 1px var(--volleyball-orange);
         }
+        /* Кастомизация пагинации Bootstrap 5 */
+        .page-link {
+            color: var(--volleyball-blue);
+            border: 1px solid var(--bs-border-color);
+            transition: all 0.3s ease;
+        }
+
+        .page-link:hover {
+            color: white;
+            background-color: var(--volleyball-blue);
+            border-color: var(--volleyball-blue);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--volleyball-orange);
+            border-color: var(--volleyball-orange);
+            color: white;
+        }
+
+        .page-item.disabled .page-link {
+            color: var(--bs-secondary-color);
+            background-color: var(--bs-body-bg);
+        }
     </style>
 
     @livewireStyles
