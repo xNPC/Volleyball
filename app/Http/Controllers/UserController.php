@@ -30,7 +30,8 @@ class UserController extends Controller
                 $query->whereNotNull('email_verified_at');
             })
             ->orderBy('name')
-            ->paginate(12)
+            ->paginate(2)
+            ->onEachSide(1)
             ->withQueryString();
 
         // Передаем статистику в шаблон
