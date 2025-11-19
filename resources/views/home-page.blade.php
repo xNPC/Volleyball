@@ -89,7 +89,10 @@
                                             <span class="fw-bold @if($match['winner'] === 'team1') text-success @endif">
                                                 {{ $match['team1_name'] }}
                                             </span>
-                                            <span class="badge bg-dark">{{ $match['score'] }}</span>
+{{--                                            <span class="badge bg-dark">--}}
+                                            <span class="fs-4 fw-bold text-primary">
+                                                {{ $match['score'] }}
+                                            </span>
                                             <span class="fw-bold @if($match['winner'] === 'team2') text-success @endif">
                                                 {{ $match['team2_name'] }}
                                             </span>
