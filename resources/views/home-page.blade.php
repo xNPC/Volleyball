@@ -97,22 +97,27 @@
                                         <!-- Основная строка с командами и счетом -->
                                         <div class="match-grid mb-2">
                                             <div class="team team-left text-end">
-                    <span class="fw-bold @if($match['winner'] === 'team1') text-success @endif">
-                        {{ $match['team1_name'] }}
-                    </span>
+                                                <span class="fw-bold @if($match['winner'] === 'team1') text-success @endif">
+                                                    {{ $match['team1_name'] }}
+                                                </span>
                                             </div>
 
                                             <div class="score">
-                    <span class="fs-4 fw-bold text-primary">
-                        {{ $match['score'] }}
-                    </span>
+                                                <span class="fs-4 fw-bold text-primary">
+                                                    {{ $match['score'] }}
+                                                </span>
                                             </div>
 
                                             <div class="team team-right text-start">
-                    <span class="fw-bold @if($match['winner'] === 'team2') text-success @endif">
-                        {{ $match['team2_name'] }}
-                    </span>
+                                                <span class="fw-bold @if($match['winner'] === 'team2') text-success @endif">
+                                                    {{ $match['team2_name'] }}
+                                                </span>
                                             </div>
+                                        </div>
+
+                                        <div class="text-muted small mb-1 text-center">
+                                            <i class="fas fa-clock me-1"></i>{{ $match['time'] }} •
+                                            <i class="fas fa-calendar me-1"></i>{{ $match['date'] }}
                                         </div>
 
                                         <!-- Дополнительная информация -->
