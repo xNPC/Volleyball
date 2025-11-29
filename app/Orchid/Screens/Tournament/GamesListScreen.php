@@ -56,7 +56,7 @@ class GamesListScreen extends Screen
             //->defaultSort('scheduled_time')
             ->orderBy('scheduled_time')
             //->get()
-            ->paginate();
+            ->paginate(100);
 
         // Загружаем команды только из текущей группы через промежуточную таблицу group_teams
         $teams = TournamentApplication::whereHas('groups', function ($query) use ($group) {
