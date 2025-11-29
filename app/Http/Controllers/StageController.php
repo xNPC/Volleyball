@@ -22,7 +22,7 @@ class StageController extends Controller
         $stage->load([
             'groups.teams.team',
             'groups.games' => function($query) {
-                $query->with(['sets', 'homeApplication.team', 'awayApplication.team']);
+                $query->with(['sets', 'homeApplication.team', 'awayApplication.team'])->orderBy('scheduled_time', 'asc');
             }
         ]);
 

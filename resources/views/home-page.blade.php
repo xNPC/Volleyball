@@ -49,19 +49,28 @@
                             <div class="card-body p-0">
                                 @forelse($upcomingMatches as $match)
                                     <div class="border-bottom p-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="fw-bold">{{ $match['team1_name'] }}</span>
-                                            <span class="badge bg-secondary">VS</span>
-                                            <span class="fw-bold">{{ $match['team2_name'] }}</span>
+                                        <div class="match-grid mb-2">
+                                            <div class="team team-left text-end">
+                                                <span class="fw-bold">{{ $match['team1_name'] }}</span>
+                                            </div>
+
+                                            <div class="vs-badge">
+                                                <span class="vs-text">VS</span>
+                                            </div>
+
+                                            <div class="team team-right text-start">
+                                                <span class="fw-bold">{{ $match['team2_name'] }}</span>
+                                            </div>
                                         </div>
-                                        <div class="text-muted small">
+
+                                        <div class="text-muted small mb-1 text-center">
                                             <i class="fas fa-clock me-1"></i>{{ $match['time'] }} •
                                             <i class="fas fa-calendar me-1"></i>{{ $match['date'] }}
                                         </div>
-                                        <div class="text-muted small">
+                                        <div class="text-muted small mb-1 text-center">
                                             <i class="fas fa-map-marker-alt me-1"></i>{{ $match['location'] ?? 'Не указано' }}
                                         </div>
-                                        <div class="text-muted small">
+                                        <div class="text-muted small text-center">
                                             <i class="fas fa-trophy me-1"></i>{{ $match['tournament'] }}
                                         </div>
                                     </div>
@@ -85,19 +94,37 @@
                             <div class="card-body p-0">
                                 @forelse($pastMatches as $match)
                                     <div class="border-bottom p-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="fw-bold @if($match['winner'] === 'team1') text-success @endif">
-                                                {{ $match['team1_name'] }}
-                                            </span>
-                                            <span class="badge bg-dark">{{ $match['score'] }}</span>
-                                            <span class="fw-bold @if($match['winner'] === 'team2') text-success @endif">
-                                                {{ $match['team2_name'] }}
-                                            </span>
+                                        <!-- Основная строка с командами и счетом -->
+                                        <div class="match-grid mb-2">
+                                            <div class="team team-left text-end">
+                                                <span class="fw-bold @if($match['winner'] === 'team1') text-success @endif">
+                                                    {{ $match['team1_name'] }}
+                                                </span>
+                                            </div>
+
+                                            <div class="score">
+                                                <span class="fs-4 fw-bold text-primary">
+                                                    {{ $match['score'] }}
+                                                </span>
+                                            </div>
+
+                                            <div class="team team-right text-start">
+                                                <span class="fw-bold @if($match['winner'] === 'team2') text-success @endif">
+                                                    {{ $match['team2_name'] }}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div class="text-muted small mb-1">
+
+                                        <div class="text-muted small mb-1 text-center">
+                                            <i class="fas fa-clock me-1"></i>{{ $match['time'] }} •
+                                            <i class="fas fa-calendar me-1"></i>{{ $match['date'] }}
+                                        </div>
+
+                                        <!-- Дополнительная информация -->
+                                        <div class="text-muted small mb-1 text-center">
                                             {{ $match['sets'] }}
                                         </div>
-                                        <div class="text-muted small">
+                                        <div class="text-muted small text-center">
                                             <i class="fas fa-trophy me-1"></i>{{ $match['tournament'] }}
                                         </div>
                                     </div>
@@ -227,6 +254,42 @@
         }
         .bg-volleyball-blue {
             background-color: var(--volleyball-blue);
+        }
+
+        .match-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .team-left {
+            text-align: right;
+        }
+
+        .team-right {
+            text-align: left;
+        }
+
+        .score {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .vs-badge {
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .vs-text {
+            display: inline-block;
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
         }
     </style>
 </x-app-layout>

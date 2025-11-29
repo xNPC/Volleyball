@@ -82,6 +82,8 @@ class HomeController extends Controller
                     'team1_name' => $game->homeApplication->team->name ?? 'TBA',
                     'team2_name' => $game->awayApplication->team->name ?? 'TBA',
                     'score' => $game->home_score . ':' . $game->away_score,
+                    'date' => $game->scheduled_time->format('d.m.Y'),
+                    'time' => $game->scheduled_time->format('H:i'),
                     'sets' => $setsString ? 'Сеты: ' . $setsString : 'Сеты не указаны',
                     'winner' => $winner,
                     'location' => $game->venue ? ($game->venue->name . ($game->venue->address ? ', ' . $game->venue->address : '')) : 'Не указано',
