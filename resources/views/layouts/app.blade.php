@@ -378,6 +378,11 @@
                             <i class="fas fa-users me-2"></i>Команды
                         </a>
                     </li>
+                    <li class="mb-2">
+                        <a href="https://1liga42.ru" class="text-white text-decoration-none">
+                            <i class="fas fa-book-open me-2"></i>История 1 лиги
+                        </a>
+                    </li>
 {{--                    <li class="mb-2">--}}
 {{--                        <a href="#schedule" class="text-white text-decoration-none">--}}
 {{--                            <i class="fas fa-calendar-alt me-2"></i>Расписание--}}
