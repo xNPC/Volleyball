@@ -71,4 +71,12 @@ class TournamentStage extends Model
         return $this->hasMany(Game::class, 'stage_id');
     }
 
+    /**
+     * Отношение с конфигурацией плейофф
+     */
+    public function playoffConfig()
+    {
+        return $this->hasOne(PlayoffConfig::class, 'stage_id');
+    }
+
 }

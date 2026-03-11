@@ -1,19 +1,27 @@
 @props(['bracket', 'stage'])
 
 <div class="playoff-bracket-container">
-    @foreach($bracket as $roundIndex => $round)
-        <div class="bracket-round" data-round="{{ $round['round_number'] }}">
+    @forelse($bracket as $roundIndex => $round)
+        <div class="bracket-round" data-round="{{ $round['round_number'] ?? $roundIndex + 1 }}">
             <div class="round-header">
-                <h4 class="round-title">{{ $round['round_name'] }}</h4>
-                <span class="round-badge">{{ count($round['matches']) }} матчей</span>
+                <h4 class="round-title">{{ $round['round_name'] ?? 'Раунд ' . ($roundIndex + 1) }}</h4>
+                <span class="round-badge">{{ count($round['matches'] ?? []) }} матчей</span>
             </div>
 
             <div class="matches-container">
-                @foreach($round['matches'] as $match)
-                    <div class="match-series-card" data-match="{{ $match['match_number'] }}">
+                @forelse(($round['matches'] ?? []) as $match)
+                    @php
+                        $winner = $match['winner'] ?? null;
+                        $homeTeamName = $match['home_team']->team->name ?? $match['home_team']['team']['name'] ?? 'TBD';
+                        $awayTeamName = $match['away_team']->team->name ?? $match['away_team']['team']['name'] ?? 'TBD';
+                        $homeWins = $match['home_wins'] ?? 0;
+                        $awayWins = $match['away_wins'] ?? 0;
+                    @endphp
+
+                    <div class="match-series-card" data-match="{{ $match['match_number'] ?? $loop->index + 1 }}">
                         <div class="match-header">
-                            <span class="match-number">Матч #{{ $match['match_number'] }}</span>
-                            @if($match['status'] === 'completed')
+                            <span class="match-number">Матч #{{ $match['match_number'] ?? $loop->index + 1 }}</span>
+                            @if(($match['status'] ?? 'scheduled') === 'completed')
                                 <span class="badge bg-success">Завершен</span>
                             @else
                                 <span class="badge bg-warning">Ожидание</span>
@@ -22,56 +30,66 @@
 
                         <div class="series-info">
                             <div class="series-stats">
-                                <div class="team-stat {{ $match['winner'] === 'home' ? 'winner' : '' }}">
-                                    <span class="team-name">{{ $match['home_team']?->team->name ?? 'TBD' }}</span>
-                                    <span class="team-wins">{{ $match['home_wins'] }}</span>
+                                <div class="team-stat {{ $winner === 'home' ? 'winner' : '' }}">
+                                    <span class="team-name">{{ $homeTeamName }}</span>
+                                    <span class="team-wins">{{ $homeWins }}</span>
                                 </div>
                                 <div class="vs-divider">:</div>
-                                <div class="team-stat {{ $match['winner'] === 'away' ? 'winner' : '' }}">
-                                    <span class="team-wins">{{ $match['away_wins'] }}</span>
-                                    <span class="team-name">{{ $match['away_team']?->team->name ?? 'TBD' }}</span>
+                                <div class="team-stat {{ $winner === 'away' ? 'winner' : '' }}">
+                                    <span class="team-wins">{{ $awayWins }}</span>
+                                    <span class="team-name">{{ $awayTeamName }}</span>
                                 </div>
                             </div>
 
-                            @if($round['type'] === 'series')
+                            @if(($round['type'] ?? 'single_match') === 'series' || !empty($match['games']))
                                 <div class="games-list">
-                                    @foreach($match['games'] as $game)
-                                        <div class="game-item {{ $game['status'] === 'completed' ? 'completed' : '' }}">
-                                            <span class="game-number">Игра {{ $game['game_number'] }}</span>
-                                            @if($game['status'] === 'completed')
+                                    @forelse(($match['games'] ?? []) as $game)
+                                        <div class="game-item {{ ($game['status'] ?? '') === 'completed' ? 'completed' : '' }}">
+                                            <span class="game-number">Игра {{ $game['game_number'] ?? $loop->index + 1 }}</span>
+                                            @if(($game['status'] ?? '') === 'completed')
                                                 <span class="game-score">
-                                                    {{ $game['home_score'] }}:{{ $game['away_score'] }}
+                                                    {{ $game['home_score'] ?? 0 }}:{{ $game['away_score'] ?? 0 }}
                                                 </span>
                                                 @if(!empty($game['sets']))
                                                     <span class="game-sets">
-                                                        ({{ collect($game['sets'])->map(fn($s) => "{$s['home_score']}:{$s['away_score']}")->implode(', ') }})
+                                                        ({{ collect($game['sets'])->map(fn($s) => ($s['home_score'] ?? 0) . ':' . ($s['away_score'] ?? 0))->implode(', ') }})
                                                     </span>
                                                 @endif
                                             @else
                                                 <span class="game-status">vs</span>
                                             @endif
                                         </div>
-                                    @endforeach
+                                    @empty
+                                        <div class="game-item">
+                                            <span class="game-number">Игра 1</span>
+                                            <span class="game-status">Ожидание</span>
+                                        </div>
+                                    @endforelse
                                 </div>
                             @endif
                         </div>
 
-                        @if(isset($match['next_match']))
+                        @if(!empty($match['next_match']))
                             <div class="next-match-info">
                                 <small>→ Победитель идет в:
-                                    @if($match['next_match']['type'] === 'champion')
+                                    @if(($match['next_match']['type'] ?? '') === 'champion')
                                         <strong>Чемпион</strong>
                                     @else
-                                        Матч {{ $match['next_match']['match'] }} ({{ $match['next_match']['position'] === 'home' ? 'хозяева' : 'гости' }})
+                                        Матч {{ $match['next_match']['match'] ?? '?' }}
+                                        ({{ ($match['next_match']['position'] ?? '') === 'home' ? 'хозяева' : 'гости' }})
                                     @endif
                                 </small>
                             </div>
                         @endif
                     </div>
-                @endforeach
+                @empty
+                    <div class="alert alert-info">Нет матчей в этом раунде</div>
+                @endforelse
             </div>
         </div>
-    @endforeach
+    @empty
+        <div class="alert alert-info w-100">Сетка плейофф еще не сгенерирована</div>
+    @endforelse
 </div>
 
 <style>
@@ -80,6 +98,7 @@
         gap: 40px;
         overflow-x: auto;
         padding: 20px;
+        min-height: 500px;
     }
 
     .bracket-round {
@@ -150,17 +169,21 @@
         padding: 5px 10px;
         border-radius: 5px;
         background: #f8f9fa;
+        min-width: 120px;
     }
 
     .team-stat.winner {
         background: rgba(40, 167, 69, 0.1);
         font-weight: bold;
+        border-left: 3px solid #28a745;
     }
 
     .team-wins {
         font-size: 1.5rem;
         font-weight: bold;
         color: var(--volleyball-orange);
+        min-width: 30px;
+        text-align: center;
     }
 
     .vs-divider {

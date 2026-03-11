@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TournamentStage;
 use App\Models\Tournament;
 use App\Services\GroupStandingsService;
+use App\Services\PlayoffBracketGenerator;
 use App\Services\PlayoffConfigurator;
 use Illuminate\Http\Request;
 
@@ -36,22 +37,27 @@ class StageController extends Controller
 
             return view('stages.show', compact('tournament', 'stage', 'groupsWithStandings'));
         } else {
-            $stage->load('playoffConfig');
+            // Для плейофф - генерируем сетку для каждой группы
+            $groupsWithBrackets = collect();
 
-            if (!$stage->playoffConfig) {
-                // Создаем конфигурацию по умолчанию
-                $teamsCount = $this->getQualifiedTeamsCount($stage);
-                $configurator = app(PlayoffConfigurator::class);
-                $config = $configurator->createConfig($teamsCount, ['format_type' => 'single_elimination']);
+            foreach ($stage->groups as $group) {
+                $teams = $group->teams;
 
-                $stage->playoffConfig()->create($config);
-                $stage->load('playoffConfig');
+                // Проверяем, есть ли конфигурация для этой группы
+                $groupConfig = null;
+                if ($stage->playoffConfig && isset($stage->playoffConfig->bracket_structure[$group->id])) {
+                    $groupConfig = $stage->playoffConfig->bracket_structure[$group->id];
+                }
+
+                // Генерируем сетку для группы
+                $bracketGenerator = app(PlayoffBracketGenerator::class);
+                $bracket = $bracketGenerator->generateBracket($stage, $teams, $groupConfig);
+
+                $group->bracket = $bracket;
+                $groupsWithBrackets->push($group);
             }
 
-            $bracketGenerator = app(PlayoffBracketGenerator::class);
-            $bracket = $bracketGenerator->generateBracket($stage);
-
-            return view('stages.playoff', compact('tournament', 'stage', 'bracket'));
+            return view('stages.playoff', compact('tournament', 'stage', 'groupsWithBrackets'));
         }
     }
 

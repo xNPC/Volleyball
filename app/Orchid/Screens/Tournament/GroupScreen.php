@@ -252,9 +252,16 @@ class GroupScreen extends Screen
 
             foreach ($group->teams as $application) {
                 if ($application->team) {
-                    $teamsInGroup->push($application->team);
+                    //$teamsInGroup->push($application->team);
+                    // Добавляем позицию команды
+                    $teamWithPosition = $application->team;
+                    $teamWithPosition->position = $application->pivot->position ?? null;
+                    $teamsInGroup->push($teamWithPosition);
                 }
             }
+
+            // Сортируем команды по позиции
+            $teamsInGroup = $teamsInGroup->sortBy('position')->values();
 
             $groupsData[$group->id] = $teamsInGroup;
         }
@@ -375,6 +382,13 @@ class GroupScreen extends Screen
                         )
                         ->required()
                         ->help('Выберите команду для добавления в группу. Показываются только команды, не добавленные в другие группы этого этапа.'),
+
+                    Input::make('position')
+                        ->title('Позиция')
+                        ->type('number')
+                        ->min(1)
+                        ->value(1)
+                        ->help('Укажите позицию команды в группе, для формирования сетки плейоффа'),
                 ])
             ])
                 ->title('Добавить команду в группу')
@@ -403,6 +417,19 @@ class GroupScreen extends Screen
                         return $team->name;
                     }),
 
+//                TD::make('position', 'Позиция')
+//                    ->render(function ($team) {
+//                        return $team->position ?? 'N/A';
+//                    }),
+
+                TD::make('position', 'Позиция')
+                    ->render(function ($team) {
+                        return Input::make("teams.{$team->id}.position")
+                            ->value($team->position)
+                            ->type('number')
+                            ;
+                    })->width('90px'),
+
                 TD::make('actions', 'Действия')
                     ->alignRight()
                     ->render(function (Team $team) use ($group) {
@@ -416,13 +443,23 @@ class GroupScreen extends Screen
                             return 'Нет заявки';
                         }
 
-                        return Button::make('Убрать')
-                            ->icon('trash')
-                            ->type(Color::DANGER)
-                            ->confirm('Вы уверены, что хотите убрать команду из группы?')
-                            ->method('removeTeamFromGroup', [
-                                'group_id' => $group->id,
-                                'application_id' => $application->id,
+                        return
+                            Group::make([
+                                Button::make('Сохранить')
+                                    ->icon('floppy')
+                                    ->method('updatePositions', [
+                                        'group_id' => $group->id,
+                                        'pos' => "teams.{$team->id}.position",
+                                        'application_id' => $application->id,
+                                    ]),
+                                Button::make('Убрать')
+                                ->icon('trash')
+                                ->type(Color::DANGER)
+                                ->confirm('Вы уверены, что хотите убрать команду из группы?')
+                                ->method('removeTeamFromGroup', [
+                                    'group_id' => $group->id,
+                                    'application_id' => $application->id,
+                                ])
                             ]);
                     }),
             ])->title('Команды в группе (' . $teamsCount . ')'),
@@ -515,6 +552,7 @@ class GroupScreen extends Screen
         $request->validate([
             'group_id' => 'required|exists:stage_groups,id',
             'application_id' => 'required|exists:tournament_applications,id',
+            'position' => 'required|integer|min:0|max:99',
         ]);
 
         // Проверяем, что заявка approved и принадлежит текущему турниру
@@ -527,6 +565,7 @@ class GroupScreen extends Screen
         GroupTeam::create([
             'group_id' => $request->input('group_id'),
             'application_id' => $request->input('application_id'),
+            'position' => $request->input('position'),
         ]);
 
         Toast::info('Команда добавлена в группу');
@@ -611,5 +650,23 @@ class GroupScreen extends Screen
     public function backToStages(Tournament $tournament)
     {
         return redirect()->route('platform.tournaments.edit', $tournament);
+    }
+
+    public function updatePositions(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required|exists:stage_groups,id',
+            'application_id' => 'required|exists:tournament_applications,id',
+            //'position' => 'required|integer|min:0|max:99',
+        ]);
+
+        GroupTeam::where('group_id', $request->input('group_id'))
+            ->where('application_id', $request->input('application_id'))
+            ->update([
+                //'position' => $request->input('position')
+                'position' => $request->input('pos')
+            ]);
+
+        Toast::info('Позиции успешно обновлены' . $request->input('position'));
     }
 }
