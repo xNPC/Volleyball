@@ -396,6 +396,34 @@ class GroupScreen extends Screen
                 ->closeButton('Отмена')
                 ->async('asyncGetGroupData'),
 
+            Layout::modal('editPositionModal', [
+                Layout::rows([
+                    Input::make('group_id')
+                        ->type('hidden'),
+
+                    Input::make('application_id')
+                        ->type('hidden'),
+
+                    Input::make('team_id')
+                        ->type('hidden'),
+
+                    \Orchid\Screen\Fields\Label::make('team_name')
+                        ->title('Команда'),
+
+                    Input::make('position')
+                        ->title('Позиция')
+                        ->type('number')
+                        ->min(1)
+                        ->max(99)
+                        ->required()
+                        ->help('Укажите позицию команды в группе (1-99)'),
+                ])
+            ])
+                ->title('Редактировать позицию команды')
+                ->applyButton('Сохранить')
+                ->closeButton('Отмена')
+                ->async('asyncGetPositionData'),
+
             Layout::tabs($tabs),
         ];
     }
@@ -403,9 +431,8 @@ class GroupScreen extends Screen
     /**
      * Строит layout для вкладки группы
      */
-    private function buildGroupTab(StageGroup $group)//: Layout
+    private function buildGroupTab(StageGroup $group)
     {
-
         $teamsCount = $group->teams->count();
 
         return Layout::columns([
@@ -417,17 +444,9 @@ class GroupScreen extends Screen
                         return $team->name;
                     }),
 
-//                TD::make('position', 'Позиция')
-//                    ->render(function ($team) {
-//                        return $team->position ?? 'N/A';
-//                    }),
-
                 TD::make('position', 'Позиция')
                     ->render(function ($team) {
-                        return Input::make("teams.{$team->id}.position")
-                            ->value($team->position)
-                            ->type('number')
-                            ;
+                        return $team->position ?? '<span class="text-muted">не указана</span>';
                     })->width('90px'),
 
                 TD::make('actions', 'Действия')
@@ -445,26 +464,29 @@ class GroupScreen extends Screen
 
                         return
                             Group::make([
-                                Button::make('Сохранить')
-                                    ->icon('floppy')
-                                    ->method('updatePositions', [
+                                ModalToggle::make('Редактировать')
+                                    ->icon('pencil')
+                                    ->type(Color::PRIMARY)
+                                    ->modal('editPositionModal')
+                                    ->method('updatePosition')
+                                    ->asyncParameters([
                                         'group_id' => $group->id,
-                                        'pos' => "teams.{$team->id}.position",
-                                        'application_id' => $application->id,
+                                        'team_id' => $team->id,
                                     ]),
+
                                 Button::make('Убрать')
-                                ->icon('trash')
-                                ->type(Color::DANGER)
-                                ->confirm('Вы уверены, что хотите убрать команду из группы?')
-                                ->method('removeTeamFromGroup', [
-                                    'group_id' => $group->id,
-                                    'application_id' => $application->id,
-                                ])
-                            ]);
+                                    ->icon('trash')
+                                    ->type(Color::DANGER)
+                                    ->confirm('Вы уверены, что хотите убрать команду из группы?')
+                                    ->method('removeTeamFromGroup', [
+                                        'group_id' => $group->id,
+                                        'application_id' => $application->id,
+                                    ])
+                            ])->autoWidth();
                     }),
             ])->title('Команды в группе (' . $teamsCount . ')'),
 
-            // Правая колонка - управление группой
+            // Правая колонка - управление группой (без изменений)
             Layout::rows([
                 \Orchid\Screen\Fields\Label::make('info')
                     ->title('Название')
@@ -497,20 +519,10 @@ class GroupScreen extends Screen
                             'group_id' => $group->id,
                         ]),
                 ])->autoWidth(),
-            ])
-                ->title('Управление группой'),
+            ])->title('Управление группой'),
         ]);
     }
 
-    /**
-     * Async метод для получения данных модального окна
-     */
-//    public function asyncGetGroupData(int $group_id): array
-//    {
-//        return [
-//            'group_id' => $group_id,
-//        ];
-//    }
     public function asyncGetGroupData(int $group_id): array
     {
         $group = StageGroup::findOrFail($group_id);
@@ -591,20 +603,6 @@ class GroupScreen extends Screen
     /**
      * Обновление группы
      */
-//    public function updateGroup(StageGroup $group, Request $request)
-//    {
-//        $request->validate([
-//            'group.name' => 'required|string|max:255',
-//            'group.order' => 'required|integer|min:1',
-//        ]);
-//
-//        $group->update($request->input('group'));
-//
-//        Toast::info('Группа обновлена');
-//    }
-    /**
-     * Обновление группы
-     */
     public function updateGroup(Request $request)
     {
         try {
@@ -652,21 +650,59 @@ class GroupScreen extends Screen
         return redirect()->route('platform.tournaments.edit', $tournament);
     }
 
-    public function updatePositions(Request $request)
+    /**
+     * Async метод для получения данных позиции
+     */
+    public function asyncGetPositionData(int $group_id, int $team_id): array
+    {
+        $group = StageGroup::with(['teams' => function($query) use ($team_id) {
+            $query->where('team_id', $team_id);
+        }])->findOrFail($group_id);
+
+        $team = Team::findOrFail($team_id);
+
+        // Находим application для этой команды
+        $application = TournamentApplication::where('team_id', $team_id)
+            ->where('tournament_id', $this->tournament->id)
+            ->where('status', 'approved')
+            ->first();
+
+        // Получаем текущую позицию из pivot таблицы
+        $position = null;
+        if ($application) {
+            $groupTeam = GroupTeam::where('group_id', $group_id)
+                ->where('application_id', $application->id)
+                ->first();
+            $position = $groupTeam ? $groupTeam->position : null;
+        }
+
+        return [
+            'group_id' => $group_id,
+            'team_id' => $team_id,
+            'application_id' => $application ? $application->id : null,
+            'team_name' => $team->name,
+            'position' => $position,
+        ];
+    }
+
+    /**
+     * Обновление позиции команды в группе
+     */
+    public function updatePosition(Request $request)
     {
         $request->validate([
             'group_id' => 'required|exists:stage_groups,id',
             'application_id' => 'required|exists:tournament_applications,id',
-            //'position' => 'required|integer|min:0|max:99',
+            'team_id' => 'required|exists:teams,id',
+            'position' => 'required|integer|min:1|max:99',
         ]);
 
-        GroupTeam::where('group_id', $request->input('group_id'))
-            ->where('application_id', $request->input('application_id'))
-            ->update([
-                //'position' => $request->input('position')
-                'position' => $request->input('pos')
-            ]);
+        GroupTeam::where('group_id', $request->group_id)
+            ->where('application_id', $request->application_id)
+            ->update(['position' => $request->position]);
 
-        Toast::info('Позиции успешно обновлены' . $request->input('position'));
+        Toast::info('Позиция успешно обновлена');
     }
+
+
 }
