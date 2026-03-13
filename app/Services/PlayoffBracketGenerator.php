@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\TournamentStage;
 use App\Models\StageGroup;
 use App\Models\Game;
+use App\Models\PlayoffConfig;
 use Illuminate\Support\Collection;
 
 class PlayoffBracketGenerator
@@ -12,100 +13,161 @@ class PlayoffBracketGenerator
     /**
      * Генерирует полную структуру плейофф
      */
-    public function generateBracket(TournamentStage $stage, Collection $teams = null, array $groupConfig = null): array
+    public function generateBracket(TournamentStage $stage, Collection $teams = null, $groupId = null): array
     {
-        $config = $stage->playoffConfig ? $stage->playoffConfig->toArray() : [];
-
-        if ($groupConfig) {
-            $config = array_merge($config, $groupConfig);
-        }
+        \Log::info('PlayoffBracketGenerator::generateBracket', [
+            'stage_id' => $stage->id,
+            'teams_count' => $teams ? $teams->count() : 0,
+            'group_id' => $groupId
+        ]);
 
         if (!$teams || $teams->isEmpty()) {
+            \Log::warning('No teams provided to bracket generator');
             return [];
         }
 
+        // Логируем первую команду для проверки
+        $firstTeam = $teams->first();
+        \Log::info('First team data', [
+            'id' => $firstTeam->id,
+            'name' => $firstTeam->name,
+            'position' => $firstTeam->position ?? null
+        ]);
+
+        $config = $stage->playoffConfig ? $stage->playoffConfig->toArray() : [];
+
         // Сортируем команды по позиции (посеву)
-        $seededTeams = $teams->sortBy('pivot.position')->values();
+        $seededTeams = $teams->sortBy('position')->values();
 
-        // Получаем ID группы из первой команды
-        $groupId = $teams->first()->pivot->group_id ?? null;
-
-        // Получаем игры ТОЛЬКО для этой группы
+        // Получаем игры для этой группы
         $games = collect();
         if ($groupId) {
             $games = Game::where('group_id', $groupId)
                 ->with(['sets', 'homeApplication.team', 'awayApplication.team'])
                 ->get();
+            \Log::info('Games found', ['count' => $games->count()]);
         }
 
-        // Используем конфигурацию из playoffConfig для определения структуры
-        $structure = $this->buildStructureFromConfig(count($seededTeams), $config);
+        // Получаем настройки из конфига
+        $seedingRules = $config['seeding_rules'] ?? [];
+        $specialByes = $seedingRules['special_byes'] ?? [];
+        $reverseSeeding = $seedingRules['reverse'] ?? false;
+        $matchups = $config['matchups'] ?? [];
+        $roundsConfig = $config['rounds_config'] ?? [];
 
-        // Генерируем сетку с определением победителей
-        $bracket = $this->generateBracketWithWinners($structure, $seededTeams, $games, $groupId, $config);
+        // Генерируем сетку
+        $bracket = $this->generateCustomBracket(
+            $seededTeams,
+            $games,
+            $groupId,
+            $specialByes,
+            $reverseSeeding,
+            $matchups,
+            $roundsConfig
+        );
 
         return $bracket;
     }
 
     /**
-     * Генерирует сетку с определением победителей
+     * Генерирует кастомную сетку с учетом BYE
      */
-    private function generateBracketWithWinners(array $structure, Collection $seededTeams, Collection $games, ?int $groupId, array $config): array
-    {
+    private function generateCustomBracket(
+        Collection $seededTeams,
+        Collection $games,
+        ?int $groupId,
+        array $specialByes,
+        bool $reverseSeeding,
+        array $matchups,
+        array $roundsConfig
+    ): array {
         $bracket = [];
-        $winners = []; // Хранилище победителей по матчам
+        $winners = []; // Хранилище победителей по раундам и матчам
 
-        foreach ($structure['rounds'] as $roundIndex => $round) {
-            $roundNumber = $round['number'] ?? $roundIndex + 1;
+        // ВРЕМЕННОЕ! УБРАТЬ!!!
+
+        // Определяем раунды из matchups
+        $rounds = array_keys($matchups);
+        if (empty($rounds)) {
+            return $this->generateStandardBracket($seededTeams, $games, $groupId, $specialByes, $reverseSeeding);
+        }
+
+        // Проходим по каждому раунду
+        foreach ($rounds as $roundNumber) {
+            $roundMatches = $matchups[$roundNumber] ?? [];
+
+            // Получаем название раунда из конфига
+            $roundName = $roundsConfig[$roundNumber]['name'] ?? $this->getRoundNameByMatchCount(count($roundMatches));
+
             $roundData = [
-                'round_number' => $roundNumber,
-                'round_name' => $round['name'] ?? "Раунд {$roundNumber}",
+                'round_number' => (int)$roundNumber,
+                'round_name' => $roundName,
                 'matches' => [],
                 'status' => 'pending',
             ];
 
-            // Определяем количество матчей в раунде
-            $matchesCount = $round['matches'] ?? count($round['matchups'] ?? []);
-
-            for ($matchIndex = 0; $matchIndex < $matchesCount; $matchIndex++) {
+            // Обрабатываем каждый матч в раунде
+            foreach ($roundMatches as $matchIndex => $matchConfig) {
                 $matchNumber = $matchIndex + 1;
-
-                // Получаем конфигурацию матча из структуры
-                $matchConfig = $round['matchups'][$matchIndex] ?? [];
 
                 // Определяем команды для этого матча
                 $homeTeam = null;
                 $awayTeam = null;
+                $homePos = null;
+                $awayPos = null;
 
-                if ($roundNumber === 1) {
-                    // Первый раунд - берем команды по позициям из конфига
-                    $homePosition = $matchConfig['home_position'] ?? $matchConfig['home'] ?? ($matchIndex * 2 + 1);
-                    $awayPosition = $matchConfig['away_position'] ?? $matchConfig['away'] ?? ($matchIndex * 2 + 2);
+                if ($roundNumber == 1) {
+                    $homePos = $matchConfig['home'] ?? $matchConfig['home_position'] ?? null;
+                    $awayPos = $matchConfig['away'] ?? $matchConfig['away_position'] ?? null;
 
-                    // Преобразуем "position:1" в число
-                    if (is_string($homePosition) && strpos($homePosition, 'position:') === 0) {
-                        $homePosition = (int) str_replace('position:', '', $homePosition);
+                    // Находим команды
+                    $homeTeam = null;
+                    $awayTeam = null;
+
+                    foreach ($seededTeams as $team) {
+                        if ($team->position == $homePos) {
+                            $homeTeam = $team;
+                        }
+                        if ($team->position == $awayPos) {
+                            $awayTeam = $team;
+                        }
                     }
-                    if (is_string($awayPosition) && strpos($awayPosition, 'position:') === 0) {
-                        $awayPosition = (int) str_replace('position:', '', $awayPosition);
+
+                    // Проверяем BYE
+                    $homeBye = $this->findByeForPosition($homePos, $specialByes);
+                    $awayBye = $this->findByeForPosition($awayPos, $specialByes);
+
+                    // Если есть BYE, команда не участвует в матче, но должна быть в следующем раунде
+                    if ($homeBye) {
+                        $winners[$homeBye['round']][$matchNumber] = [
+                            'team' => $homeTeam,
+                            'from_match' => $matchNumber,
+                            'round' => $homeBye['round'],
+                        ];
+                        $homeTeam = null; // Не показываем в этом матче
                     }
 
-                    $homeTeam = $seededTeams->firstWhere('pivot.position', $homePosition);
-                    $awayTeam = $seededTeams->firstWhere('pivot.position', $awayPosition);
+                    if ($awayBye) {
+                        $winners[$awayBye['round']][$matchNumber] = [
+                            'team' => $awayTeam,
+                            'from_match' => $matchNumber,
+                            'round' => $awayBye['round'],
+                        ];
+                        $awayTeam = null; // Не показываем в этом матче
+                    }
                 } else {
-                    // Последующие раунды - берем победителей из предыдущих матчей
-                    $homeFromMatch = $matchConfig['home_from'] ?? ($matchIndex * 2 + 1);
-                    $awayFromMatch = $matchConfig['away_from'] ?? ($matchIndex * 2 + 2);
+                    // Последующие раунды - берем победителей из предыдущего раунда
+                    $homeFrom = $matchConfig['home_from'] ?? null;
+                    $awayFrom = $matchConfig['away_from'] ?? null;
 
-                    // Получаем победителей из предыдущего раунда
-                    $homeWinner = $winners[$roundNumber - 1][$homeFromMatch] ?? null;
-                    $awayWinner = $winners[$roundNumber - 1][$awayFromMatch] ?? null;
-
-                    if ($homeWinner) {
-                        $homeTeam = $homeWinner['team'];
+                    if ($homeFrom && isset($winners[$roundNumber - 1][$homeFrom])) {
+                        $homeTeam = $winners[$roundNumber - 1][$homeFrom]['team'];
+                        $homePos = $homeTeam->position ?? null;
                     }
-                    if ($awayWinner) {
-                        $awayTeam = $awayWinner['team'];
+
+                    if ($awayFrom && isset($winners[$roundNumber - 1][$awayFrom])) {
+                        $awayTeam = $winners[$roundNumber - 1][$awayFrom]['team'];
+                        $awayPos = $awayTeam->position ?? null;
                     }
                 }
 
@@ -113,14 +175,20 @@ class PlayoffBracketGenerator
                 $game = $this->findGameInGroup($games, $homeTeam, $awayTeam, $groupId);
 
                 // Определяем победителя матча
-                $winner = $this->determineMatchWinner($game, $homeTeam, $awayTeam);
-
-                // Сохраняем победителя для следующих раундов
-                if (!isset($winners[$roundNumber])) {
-                    $winners[$roundNumber] = [];
+                $winner = null;
+                if ($game && $homeTeam && $awayTeam) {
+                    if ($game->home_score > $game->away_score) {
+                        $winner = $homeTeam;
+                    } elseif ($game->away_score > $game->home_score) {
+                        $winner = $awayTeam;
+                    }
                 }
 
+                // Сохраняем победителя для следующих раундов
                 if ($winner) {
+                    if (!isset($winners[$roundNumber])) {
+                        $winners[$roundNumber] = [];
+                    }
                     $winners[$roundNumber][$matchNumber] = [
                         'team' => $winner,
                         'from_match' => $matchNumber,
@@ -128,30 +196,24 @@ class PlayoffBracketGenerator
                     ];
                 }
 
+                // Формируем данные матча
                 $matchData = [
                     'match_number' => $matchNumber,
-                    'match_config' => $matchConfig,
                     'home_team' => $homeTeam,
                     'away_team' => $awayTeam,
-                    'home_position' => $homeTeam->pivot->position ?? null,
-                    'away_position' => $awayTeam->pivot->position ?? null,
+                    'home_position' => $homePos,
+                    'away_position' => $awayPos,
                     'home_score' => $game->home_score ?? null,
                     'away_score' => $game->away_score ?? null,
-                    'home_wins' => 0,
-                    'away_wins' => 0,
                     'status' => $game->status ?? 'scheduled',
-                    'game_id' => $game->id ?? null,
+                    'game' => $game,
                     'sets' => [],
                     'winner' => $winner ? ($winner->id == $homeTeam?->id ? 'home' : 'away') : null,
-                    'winner_team' => $winner,
-                    'next_match' => $this->getNextMatchFromConfig($roundNumber, $matchNumber, $structure, $config),
+                    'next_match' => $this->findNextMatch($roundNumber, $matchNumber, $matchups),
                 ];
 
-                // Если есть игра, добавляем детали
+                // Добавляем сеты если есть
                 if ($game) {
-                    $matchData['home_wins'] = $game->home_score > $game->away_score ? 1 : 0;
-                    $matchData['away_wins'] = $game->away_score > $game->home_score ? 1 : 0;
-
                     foreach ($game->sets as $set) {
                         $matchData['sets'][] = [
                             'set_number' => $set->set_number,
@@ -168,6 +230,185 @@ class PlayoffBracketGenerator
         }
 
         return $bracket;
+    }
+
+    /**
+     * Генерирует стандартную сетку (для случаев без конфига)
+     */
+    private function generateStandardBracket(
+        Collection $seededTeams,
+        Collection $games,
+        ?int $groupId,
+        array $specialByes,
+        bool $reverseSeeding
+    ): array {
+        $teamCount = $seededTeams->count();
+        $rounds = ceil(log($teamCount, 2));
+        $bracket = [];
+        $winners = [];
+
+        // Создаем первый раунд
+        $firstRoundMatches = [];
+        for ($i = 0; $i < $teamCount / 2; $i++) {
+            $homePos = $i + 1;
+            $awayPos = $teamCount - $i;
+
+            $homeBye = $this->findByeForPosition($homePos, $specialByes);
+            $awayBye = $this->findByeForPosition($awayPos, $specialByes);
+
+            $homeTeam = !$homeBye ? $seededTeams->firstWhere('pivot.position', $homePos) : null;
+            $awayTeam = !$awayBye ? $seededTeams->firstWhere('pivot.position', $awayPos) : null;
+
+            $firstRoundMatches[] = [
+                'home' => $homePos,
+                'away' => $awayPos,
+                'home_team' => $homeTeam,
+                'away_team' => $awayTeam,
+                'home_bye' => $homeBye,
+                'away_bye' => $awayBye,
+            ];
+        }
+
+        if ($reverseSeeding) {
+            $firstRoundMatches = array_reverse($firstRoundMatches);
+        }
+
+        // Обрабатываем первый раунд
+        $round1Matches = [];
+        foreach ($firstRoundMatches as $matchIndex => $match) {
+            $matchNumber = $matchIndex + 1;
+
+            $game = $this->findGameInGroup($games, $match['home_team'], $match['away_team'], $groupId);
+            $winner = $this->determineMatchWinner($game, $match['home_team'], $match['away_team']);
+
+            if ($winner) {
+                $winners[1][$matchNumber] = ['team' => $winner];
+            }
+
+            $round1Matches[] = [
+                'match_number' => $matchNumber,
+                'home_team' => $match['home_team'],
+                'away_team' => $match['away_team'],
+                'home_position' => $match['home'],
+                'away_position' => $match['away'],
+                'home_score' => $game->home_score ?? null,
+                'away_score' => $game->away_score ?? null,
+                'status' => $game->status ?? 'scheduled',
+                'game' => $game,
+                'sets' => $game ? $game->sets : [],
+                'winner' => $winner ? ($winner->id == $match['home_team']?->id ? 'home' : 'away') : null,
+            ];
+        }
+
+        $bracket[] = [
+            'round_number' => 1,
+            'round_name' => $this->getRoundName($teamCount),
+            'matches' => $round1Matches,
+        ];
+
+        // Генерируем последующие раунды
+        $currentTeams = $teamCount / 2;
+        $currentRound = 2;
+
+        while ($currentTeams >= 2) {
+            $roundMatches = [];
+            $matchesInRound = $currentTeams / 2;
+
+            for ($i = 0; $i < $matchesInRound; $i++) {
+                $matchNumber = $i + 1;
+                $homeFrom = $i * 2 + 1;
+                $awayFrom = $i * 2 + 2;
+
+                $homeTeam = $winners[$currentRound - 1][$homeFrom]['team'] ?? null;
+                $awayTeam = $winners[$currentRound - 1][$awayFrom]['team'] ?? null;
+
+                $game = $this->findGameInGroup($games, $homeTeam, $awayTeam, $groupId);
+                $winner = $this->determineMatchWinner($game, $homeTeam, $awayTeam);
+
+                if ($winner) {
+                    $winners[$currentRound][$matchNumber] = ['team' => $winner];
+                }
+
+                $roundMatches[] = [
+                    'match_number' => $matchNumber,
+                    'home_team' => $homeTeam,
+                    'away_team' => $awayTeam,
+                    'home_score' => $game->home_score ?? null,
+                    'away_score' => $game->away_score ?? null,
+                    'status' => $game->status ?? 'scheduled',
+                    'game' => $game,
+                    'sets' => $game ? $game->sets : [],
+                    'winner' => $winner ? ($winner->id == $homeTeam?->id ? 'home' : 'away') : null,
+                ];
+            }
+
+            $bracket[] = [
+                'round_number' => $currentRound,
+                'round_name' => $this->getRoundName($currentTeams),
+                'matches' => $roundMatches,
+            ];
+
+            $currentTeams = $currentTeams / 2;
+            $currentRound++;
+        }
+
+        return $bracket;
+    }
+
+    /**
+     * Находит BYE для позиции
+     */
+    private function findByeForPosition(?int $position, array $specialByes): ?array
+    {
+        if (!$position) return null;
+
+        foreach ($specialByes as $bye) {
+            // Убеждаемся, что сравниваем числа
+            if (isset($bye['position']) && (int)$bye['position'] == $position) {
+                return $bye;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Находит следующий матч для победителя
+     */
+    private function findNextMatch(int $round, int $match, array $matchups): ?array
+    {
+        $nextRound = $round + 1;
+
+        // Проверяем, есть ли следующий раунд
+        if (!isset($matchups[$nextRound])) {
+            return ['type' => 'champion'];
+        }
+
+        // Вычисляем номер следующего матча (в плейофф обычно победители матчей 1-2 идут в матч 1 следующего раунда)
+        $nextMatchNumber = ceil($match / 2);
+        $position = ($match % 2 == 1) ? 'home' : 'away';
+
+        return [
+            'round' => $nextRound,
+            'match' => $nextMatchNumber,
+            'position' => $position,
+        ];
+    }
+
+    /**
+     * Ищет игру между командами
+     */
+    private function findGameInGroup(Collection $games, $homeTeam, $awayTeam, ?int $groupId): ?Game
+    {
+        if (!$homeTeam || !$awayTeam || !$groupId) {
+            return null;
+        }
+
+        return $games->first(function ($game) use ($homeTeam, $awayTeam, $groupId) {
+            if ($game->group_id != $groupId) return false;
+
+            return ($game->home_application_id == $homeTeam->id && $game->away_application_id == $awayTeam->id) ||
+                ($game->home_application_id == $awayTeam->id && $game->away_application_id == $homeTeam->id);
+        });
     }
 
     /**
@@ -189,161 +430,27 @@ class PlayoffBracketGenerator
     }
 
     /**
-     * Ищет игру между командами в конкретной группе
+     * Получает название раунда по количеству команд
      */
-    private function findGameInGroup(Collection $games, $homeTeam, $awayTeam, ?int $groupId): ?Game
+    private function getRoundName(int $teams): string
     {
-        if (!$homeTeam || !$awayTeam || !$groupId) {
-            return null;
-        }
-
-        return $games->first(function ($game) use ($homeTeam, $awayTeam, $groupId) {
-            // Проверяем, что игра принадлежит нужной группе
-            if ($game->group_id != $groupId) {
-                return false;
-            }
-
-            // Проверяем, что игра между этими командами
-            return ($game->home_application_id == $homeTeam->id && $game->away_application_id == $awayTeam->id) ||
-                ($game->home_application_id == $awayTeam->id && $game->away_application_id == $homeTeam->id);
-        });
-    }
-
-    /**
-     * Строит структуру на основе конфигурации
-     */
-    private function buildStructureFromConfig(int $teamCount, array $config): array
-    {
-        if (!empty($config['bracket_structure'])) {
-            return [
-                'rounds' => $config['bracket_structure'],
-                'total_rounds' => count($config['bracket_structure']),
-                'matchups' => $config['matchups'] ?? [],
-            ];
-        }
-
-        return $this->determineBracketStructure($teamCount, $config);
-    }
-
-    /**
-     * Определяет оптимальную структуру сетки (стандартная)
-     */
-    private function determineBracketStructure(int $teamCount, array $config = []): array
-    {
-        $structure = [
-            'rounds' => [],
-            'total_rounds' => 0,
-            'matchups' => [],
+        $names = [
+            2 => 'Финал',
+            4 => '1/2 финала',
+            8 => '1/4 финала',
+            16 => '1/8 финала',
+            32 => '1/16 финала',
         ];
 
-        $formatType = $config['format_type'] ?? 'single_elimination';
-
-        if ($formatType === 'single_elimination') {
-            $rounds = ceil(log($teamCount, 2));
-            $currentTeams = $teamCount;
-
-            // Создаем схему распределения команд
-            $matchups = $this->createSeedingMatchups($teamCount);
-
-            for ($i = 1; $i <= $rounds; $i++) {
-                $roundName = $this->getRoundName($currentTeams, $i, $rounds);
-
-                $structure['rounds'][] = [
-                    'number' => $i,
-                    'name' => $roundName,
-                    'teams' => $currentTeams,
-                    'matches' => floor($currentTeams / 2),
-                    'matchups' => $matchups[$i] ?? [],
-                ];
-
-                $currentTeams = floor($currentTeams / 2);
-            }
-
-            $structure['total_rounds'] = $rounds;
-            $structure['matchups'] = $matchups;
-        }
-
-        return $structure;
+        return $names[$teams] ?? "1/{$teams} финала";
     }
 
     /**
-     * Создает стандартную схему распределения команд
+     * Получает название раунда по количеству матчей
      */
-    private function createSeedingMatchups(int $teamCount): array
+    private function getRoundNameByMatchCount(int $matches): string
     {
-        $matchups = [];
-
-        // Создаем матчи первого раунда
-        $firstRoundMatches = [];
-        for ($i = 0; $i < $teamCount / 2; $i++) {
-            $firstRoundMatches[] = [
-                'home_position' => $i + 1,
-                'away_position' => $teamCount - $i,
-            ];
-        }
-        $matchups[1] = $firstRoundMatches;
-
-        // Создаем последующие раунды
-        $currentRound = 1;
-        $matchesCount = count($firstRoundMatches);
-
-        while ($matchesCount > 1) {
-            $nextRound = [];
-            for ($i = 0; $i < $matchesCount / 2; $i++) {
-                $nextRound[] = [
-                    'home_from' => $i * 2 + 1,
-                    'away_from' => $i * 2 + 2,
-                ];
-            }
-            $matchups[$currentRound + 1] = $nextRound;
-            $matchesCount = count($nextRound);
-            $currentRound++;
-        }
-
-        return $matchups;
-    }
-
-    /**
-     * Получает информацию о следующем матче из конфигурации
-     */
-    private function getNextMatchFromConfig(int $round, int $match, array $structure, array $config): ?array
-    {
-        if (!empty($config['next_matches']) && isset($config['next_matches'][$round][$match])) {
-            return $config['next_matches'][$round][$match];
-        }
-
-        if ($round === $structure['total_rounds']) {
-            return ['type' => 'champion'];
-        }
-
-        $nextRound = $round + 1;
-        $nextMatch = ceil($match / 2);
-        $position = ($match % 2 === 1) ? 'home' : 'away';
-
-        return [
-            'round' => $nextRound,
-            'match' => $nextMatch,
-            'position' => $position,
-        ];
-    }
-
-    /**
-     * Получает название раунда
-     */
-    private function getRoundName(int $teams, int $roundNumber, int $totalRounds): string
-    {
-        if ($roundNumber === $totalRounds) {
-            return 'Финал';
-        }
-
-        if ($roundNumber === $totalRounds - 1) {
-            return '1/2 финала';
-        }
-
-        if ($roundNumber === $totalRounds - 2) {
-            return '1/4 финала';
-        }
-
-        return "1/{$teams} финала";
+        $teams = $matches * 2;
+        return $this->getRoundName($teams);
     }
 }

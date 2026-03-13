@@ -1,3 +1,20 @@
+<!-- ВРЕМЕННО: Отладка bracket -->
+@php
+    echo "<!-- DEBUG: " . json_encode($bracket, JSON_PRETTY_PRINT) . " -->";
+@endphp
+@php
+    \Log::info('Bracket data for group', [
+        'group_id' => $group->id ?? 'null',
+        'bracket_rounds' => count($bracket),
+        'bracket_data' => json_encode($bracket, JSON_PRETTY_PRINT)
+    ]);
+@endphp
+
+@if(empty($bracket))
+    <div class="alert alert-warning">
+        Нет данных сетки для группы {{ $group->name ?? '?' }}
+    </div>
+@endif
 @props(['bracket', 'stage'])
 
 <div class="playoff-bracket-container">
@@ -12,8 +29,23 @@
                 @forelse(($round['matches'] ?? []) as $match)
                     @php
                         $winner = $match['winner'] ?? null;
-                        $homeTeamName = $match['home_team']->team->name ?? $match['home_team']['team']['name'] ?? 'TBD';
-                        $awayTeamName = $match['away_team']->team->name ?? $match['away_team']['team']['name'] ?? 'TBD';
+
+                        // Исправляем получение имени команды
+                        $homeTeamName = 'TBD';
+                        $awayTeamName = 'TBD';
+
+                        if (!empty($match['home_team']) && is_object($match['home_team'])) {
+                            $homeTeamName = $match['home_team']->name;
+                        } elseif (!empty($match['home_team']) && is_array($match['home_team'])) {
+                            $homeTeamName = $match['home_team']['name'] ?? 'TBD';
+                        }
+
+                        if (!empty($match['away_team']) && is_object($match['away_team'])) {
+                            $awayTeamName = $match['away_team']->name;
+                        } elseif (!empty($match['away_team']) && is_array($match['away_team'])) {
+                            $awayTeamName = $match['away_team']['name'] ?? 'TBD';
+                        }
+
                         $homeWins = $match['home_wins'] ?? 0;
                         $awayWins = $match['away_wins'] ?? 0;
                     @endphp

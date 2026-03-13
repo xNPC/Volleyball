@@ -19,6 +19,8 @@ use App\Orchid\Screens\Role\RoleListScreen;
 use App\Orchid\Screens\Team\TeamListScreen;
 use App\Orchid\Screens\Tournament\GamesListScreen;
 use App\Orchid\Screens\Tournament\GamesManagementScreen;
+use App\Orchid\Screens\Tournament\GroupPlayoffConfigScreen;
+use App\Orchid\Screens\Tournament\PlayoffConfigScreen;
 use App\Orchid\Screens\User\UserEditScreen;
 use App\Orchid\Screens\User\UserListScreen;
 use App\Orchid\Screens\User\UserProfileScreen;
@@ -114,9 +116,16 @@ Route::screen('tournament/games/management', GamesManagementScreen::class)
 Route::screen('tournament/{tournament}/stage/{stage}/group/{group}/games/list', GamesListScreen::class)
     ->name('platform.tournament.games.list');
 
+// routes/platform.php
+Route::screen('tournament/{tournament}/stage/{stage}/group/{group}/playoff-config', GroupPlayoffConfigScreen::class)
+    ->name('platform.tournament.groups.playoff-config');
+
+Route::screen('tournament/{tournament}/stage/{stage}/playoff-config', PlayoffConfigScreen::class)
+    ->name('platform.tournament.stages.playoff-config');
+
 // Для экрана групп
 Route::screen('tournament/{tournament}/stage/{stage}/groups', GroupScreen::class)
-    ->name('platform.tournament.stage.groups');
+    ->name('platform.tournament.stages.groups');
 
 Route::screen('tournament/{tournament}/stages/{stage}', GroupScreen::class)
     ->name('platform.tournament.groups');

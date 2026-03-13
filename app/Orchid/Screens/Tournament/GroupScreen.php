@@ -213,6 +213,7 @@ use App\Models\TournamentApplication;
 use App\Models\TournamentStage;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
@@ -296,6 +297,15 @@ class GroupScreen extends Screen
                 ->icon('plus')
                 ->modal('createGroupModal')
                 ->method('createGroup'),
+
+//            Link::make('Настройка плейофф')
+//                ->icon('graph')
+//                ->route('platform.tournament.groups.playoff-config', [
+//                    'tournament' => $this->tournament->id,
+//                    'stage' => $this->stage->id,
+//                    'group' => $this->group->id,
+//                ])
+//                ->canSee($this->stage->stage_type === 'playoff'), // Показывать только для плейофф
 
             Button::make('Назад к этапам')
                 ->icon('arrow-left')
@@ -510,6 +520,17 @@ class GroupScreen extends Screen
                         ->asyncParameters([
                             'group_id' => $group->id,
                         ]),
+
+                    // Добавляем кнопку настройки плейофф для этой группы
+                    Link::make('Настройка плейофф')
+                        ->icon('graph')
+                        ->type(Color::INFO)
+                        ->route('platform.tournament.groups.playoff-config', [
+                            'tournament' => $this->tournament->id,
+                            'stage' => $this->stage->id,
+                            'group' => $group->id,
+                        ])
+                        ->canSee($this->stage->stage_type === 'playoff'),
 
                     Button::make('Удалить группу')
                         ->icon('trash')

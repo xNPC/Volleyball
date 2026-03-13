@@ -20,38 +20,44 @@ class StageController extends Controller
 
     public function show(Tournament $tournament, TournamentStage $stage)
     {
+        // Загружаем группы с командами и играми
+        $stage->load([
+            'groups' => function($query) {
+                $query->orderBy('order');
+            },
+            'groups.teams.team',  // Это загружает команды через заявки
+            'groups.games' => function($query) {
+                $query->with(['sets', 'homeApplication.team', 'awayApplication.team']);
+            },
+            'playoffConfig'
+        ]);
+
         if ($stage->stage_type === 'group') {
-            // Загружаем группы с играми, командами и сетами
-            $stage->load([
-                'groups.teams.team',
-                'groups.games' => function ($query) {
-                    $query->with(['sets', 'homeApplication.team', 'awayApplication.team'])->orderBy('scheduled_time', 'asc');
-                }
-            ]);
-
-            // Рассчитываем статистику для каждой группы
-            $groupsWithStandings = $stage->groups->map(function ($group) {
-                $group->standings = $this->standingsService->calculateStandings($group);
-                return $group;
-            });
-
+            // Для группового этапа - рассчитываем статистику
+            $groupsWithStandings = $this->standingsService->calculateStandingsForStage($stage);
             return view('stages.show', compact('tournament', 'stage', 'groupsWithStandings'));
+
         } else {
             // Для плейофф - генерируем сетку для каждой группы
             $groupsWithBrackets = collect();
 
             foreach ($stage->groups as $group) {
-                $teams = $group->teams;
-
-                // Проверяем, есть ли конфигурация для этой группы
-                $groupConfig = null;
-                if ($stage->playoffConfig && isset($stage->playoffConfig->bracket_structure[$group->id])) {
-                    $groupConfig = $stage->playoffConfig->bracket_structure[$group->id];
+                // Собираем команды с их позициями
+                $teams = collect();
+                foreach ($group->teams as $application) {
+                    if ($application->team) {
+                        $team = $application->team;
+                        $team->position = $application->pivot->position ?? null;
+                        $teams->push($team);
+                    }
                 }
+
+                // Сортируем по позиции
+                $teams = $teams->sortBy('position')->values();
 
                 // Генерируем сетку для группы
                 $bracketGenerator = app(PlayoffBracketGenerator::class);
-                $bracket = $bracketGenerator->generateBracket($stage, $teams, $groupConfig);
+                $bracket = $bracketGenerator->generateBracket($stage, $teams, $group->id);
 
                 $group->bracket = $bracket;
                 $groupsWithBrackets->push($group);
