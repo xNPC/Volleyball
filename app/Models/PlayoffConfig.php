@@ -6,24 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class PlayoffConfig extends Model
 {
-    protected $table = 'playoff_configs';
-
     protected $fillable = [
         'stage_id',
         'group_id',
-        'format_type',
         'total_teams',
-        'bracket_structure',
-        'rounds_config',
-        'seeding_rules',
-        'matchups',
+        'bye_positions',     // массив позиций, которые проходят сразу в следующий раунд
+        'reverse_seeding',   // обратный посев
     ];
 
     protected $casts = [
-        'bracket_structure' => 'array',
-        'rounds_config' => 'array',
-        'seeding_rules' => 'array',
-        'matchups' => 'array',
+        'bye_positions' => 'array',
+        'reverse_seeding' => 'boolean',
     ];
 
     public function stage()

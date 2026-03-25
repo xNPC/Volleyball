@@ -25,7 +25,7 @@ class StageController extends Controller
             'groups' => function($query) {
                 $query->orderBy('order');
             },
-            'groups.teams.team',  // Это загружает команды через заявки
+            'groups.teams.team',
             'groups.games' => function($query) {
                 $query->with(['sets', 'homeApplication.team', 'awayApplication.team']);
             },
@@ -40,24 +40,26 @@ class StageController extends Controller
         } else {
             // Для плейофф - генерируем сетку для каждой группы
             $groupsWithBrackets = collect();
+            $bracketService = app(\App\Services\PlayoffBracketService::class);
 
             foreach ($stage->groups as $group) {
-                // Собираем команды с их позициями
-                $teams = collect();
-                foreach ($group->teams as $application) {
-                    if ($application->team) {
-                        $team = $application->team;
-                        $team->position = $application->pivot->position ?? null;
-                        $teams->push($team);
-                    }
+                // Получаем конфигурацию плейофф для этой группы
+                $config = \App\Models\PlayoffConfig::where('stage_id', $stage->id)
+                    ->where('group_id', $group->id)
+                    ->first();
+
+                // Если конфигурации нет, создаем пустую
+                if (!$config) {
+                    $config = [
+                        'bye_positions' => [],
+                        'reverse_seeding' => false,
+                    ];
+                } else {
+                    $config = $config->toArray();
                 }
 
-                // Сортируем по позиции
-                $teams = $teams->sortBy('position')->values();
-
                 // Генерируем сетку для группы
-                $bracketGenerator = app(PlayoffBracketGenerator::class);
-                $bracket = $bracketGenerator->generateBracket($stage, $teams, $group->id);
+                $bracket = $bracketService->generateBracket($group, $config);
 
                 $group->bracket = $bracket;
                 $groupsWithBrackets->push($group);
