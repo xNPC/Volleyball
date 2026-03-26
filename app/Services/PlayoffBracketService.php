@@ -83,38 +83,57 @@ class PlayoffBracketService
             ];
         }
 
-        // === РАУНД 2: BYE команды + победители 1-го раунда ===
+        // Раунд 2: BYE команды + победители 1-го раунда
         $round2Matches = [];
 
-        // Сортируем BYE команды
+// Сортируем BYE команды (сильнейшие BYE должны быть в разных полуфиналах)
         $sortedBye = $byePositions;
         if (!$reverseSeeding) {
-            $sortedBye = array_reverse($sortedBye);
+            //$sortedBye = array_reverse($sortedBye);
+            $sortedBye = $sortedBye;
         }
 
-        // Определяем, сколько матчей в полуфинале
-        $totalTeamsInSemifinal = count($byePositions) + count($winners[1] ?? []);
+// Получаем победителей 1-го раунда
+        $firstRoundWinners = $winners[1] ?? [];
+        $winnerCount = count($firstRoundWinners);
+        $winnerNumbers = array_keys($firstRoundWinners);
+
+// Определяем, сколько матчей в полуфинале
+        $totalTeamsInSemifinal = count($byePositions) + $winnerCount;
         $matchesInSemifinal = $totalTeamsInSemifinal / 2;
 
+// Формируем пары в зависимости от количества команд
         for ($i = 0; $i < $matchesInSemifinal; $i++) {
             $matchNumber = $i + 1;
             $homeTeam = null;
             $awayTeam = null;
 
-            // Определяем, кто участвует в этом матче
-            if (isset($sortedBye[$i])) {
-                $homeTeam = $teams->firstWhere('position', $sortedBye[$i]);
-            } else {
-                $winnerIndex = $i - count($sortedBye) + 1;
-                $homeTeam = $winners[1][$winnerIndex] ?? null;
-            }
-
-            $awayIndex = $matchesInSemifinal + $i;
-            if (isset($sortedBye[$awayIndex])) {
-                $awayTeam = $teams->firstWhere('position', $sortedBye[$awayIndex]);
-            } else {
-                $winnerIndex = $awayIndex - count($sortedBye) + 1;
-                $awayTeam = $winners[1][$winnerIndex] ?? null;
+            if ($winnerCount == 2) {
+                // Для 6 команд (победителей 2 + BYE 2)
+                if ($i == 0) {
+                    // Первый полуфинал: BYE1 (сильнейший) vs победитель матча 2 (слабая пара 4-5)
+                    if (isset($sortedBye[0])) {
+                        $homeTeam = $teams->firstWhere('position', $sortedBye[0]);
+                    }
+                    $awayTeam = $firstRoundWinners[2] ?? null; // победитель 4-5
+                } else {
+                    // Второй полуфинал: BYE2 (слабейший) vs победитель матча 1 (сильная пара 3-6)
+                    if (isset($sortedBye[1])) {
+                        $homeTeam = $teams->firstWhere('position', $sortedBye[1]);
+                    }
+                    $awayTeam = $firstRoundWinners[1] ?? null; // победитель 3-6
+                }
+            } elseif ($winnerCount == 4) {
+                // Для 8 команд (победителей 4)
+                if ($i == 0) {
+                    // Первый полуфинал: победитель матча 1 (1-8) vs победитель матча 4 (4-5)
+                    $homeTeam = $firstRoundWinners[1] ?? null;
+                    $awayTeam = $firstRoundWinners[4] ?? null;
+                } else {
+                    // Второй полуфинал: победитель матча 2 (2-7) vs победитель матча 3 (3-6)
+                    $homeTeam = $firstRoundWinners[2] ?? null;
+                    $awayTeam = $firstRoundWinners[3] ?? null;
+                }
             }
 
             // Если одна из команд отсутствует, это BYE в этом раунде
@@ -125,7 +144,6 @@ class PlayoffBracketService
 
             $game = $this->findGame($games, $homeTeam, $awayTeam);
 
-            // Определяем победителя
             $winner = $this->getWinner($game, $homeTeam, $awayTeam);
             if ($winner) {
                 $winners[2][$matchNumber] = $winner;
