@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\StageGroup;
 use App\Models\TournamentApplication;
+use App\Models\TournamentStage;
 use Illuminate\Support\Collection;
 
 class GroupStandingsService
@@ -181,5 +182,20 @@ class GroupStandingsService
             // При полном равенстве - по алфавиту
             return $a['team_name'] <=> $b['team_name'];
         })->values();
+    }
+
+    /**
+     * Рассчитывает таблицы для всех групп этапа
+     */
+    public function calculateStandingsForStage(TournamentStage $stage): Collection
+    {
+        $groupsWithStandings = collect();
+
+        foreach ($stage->groups as $group) {
+            $group->standings = $this->calculateStandings($group);
+            $groupsWithStandings->push($group);
+        }
+
+        return $groupsWithStandings;
     }
 }

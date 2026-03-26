@@ -149,9 +149,14 @@ class PlayoffBracketService
             'matches' => $round2Matches,
         ];
 
-        // === РАУНД 3: Финал ===
+        // === ФИНАЛЬНЫЙ РАУНД (финал + матч за 3-е место) ===
+        $finalRoundMatches = [];
+
+// Сначала ФИНАЛ
         $finalMatch = [
             'match_number' => 1,
+            'match_type' => 'final',
+            'title' => 'Финал',
             'home_team' => null,
             'away_team' => null,
             'home_score' => null,
@@ -176,19 +181,59 @@ class PlayoffBracketService
                 $finalMatch['home_score'] = $game['home_score'];
                 $finalMatch['away_score'] = $game['away_score'];
                 $finalMatch['sets'] = $game['sets'];
+                $finalMatch['status'] = $this->getMatchStatus($game, $finalMatch['home_team'], $finalMatch['away_team']);
 
                 $winner = $this->getWinner($game, $finalMatch['home_team'], $finalMatch['away_team']);
                 if ($winner) {
                     $finalMatch['winner'] = $winner['id'] == $finalMatch['home_team']['id'] ? 'home' : 'away';
                 }
             }
-            $finalMatch['status'] = $this->getMatchStatus($game, $finalMatch['home_team'], $finalMatch['away_team']);
+        }
+
+        $finalRoundMatches[] = $finalMatch;
+
+// Затем МАТЧ ЗА 3-Е МЕСТО
+        if (isset($winners[2][1]) && isset($winners[2][2])) {
+            // Проигравшие в полуфиналах
+            $loser1 = $this->getLoserFromMatch($round2Matches[0] ?? null);
+            $loser2 = $this->getLoserFromMatch($round2Matches[1] ?? null);
+
+            $thirdPlaceMatch = [
+                'match_number' => 2,
+                'match_type' => 'third_place',
+                'title' => 'Матч за 3-е место',
+                'home_team' => $loser1,
+                'away_team' => $loser2,
+                'home_score' => null,
+                'away_score' => null,
+                'sets' => [],
+                'winner' => null,
+                'status' => 'pending'
+            ];
+
+            // Ищем игру за 3-е место
+            if ($loser1 && $loser2) {
+                $game = $this->findGame($games, $loser1, $loser2);
+                if ($game) {
+                    $thirdPlaceMatch['home_score'] = $game['home_score'];
+                    $thirdPlaceMatch['away_score'] = $game['away_score'];
+                    $thirdPlaceMatch['sets'] = $game['sets'];
+                    $thirdPlaceMatch['status'] = $this->getMatchStatus($game, $loser1, $loser2);
+
+                    $winner = $this->getWinner($game, $loser1, $loser2);
+                    if ($winner) {
+                        $thirdPlaceMatch['winner'] = $winner['id'] == $loser1['id'] ? 'home' : 'away';
+                    }
+                }
+            }
+
+            $finalRoundMatches[] = $thirdPlaceMatch;
         }
 
         $bracket[] = [
             'round_number' => 3,
-            'round_name' => 'Финал',
-            'matches' => [$finalMatch],
+            'round_name' => 'Финальные матчи',
+            'matches' => $finalRoundMatches,
         ];
 
         return $bracket;
@@ -216,21 +261,6 @@ class PlayoffBracketService
         $games = Game::where('group_id', $group->id)
             ->with(['homeApplication.team', 'awayApplication.team', 'sets'])
             ->get();
-
-        // Отладка
-        \Log::info('Игры в группе ' . $group->id, [
-            'count' => $games->count(),
-            'games' => $games->map(function($game) {
-                return [
-                    'id' => $game->id,
-                    'home_team' => $game->homeApplication?->team?->name,
-                    'away_team' => $game->awayApplication?->team?->name,
-                    'home_score' => $game->home_score,
-                    'away_score' => $game->away_score,
-                    'status' => $game->status,
-                ];
-            })->toArray()
-        ]);
 
         return $games->map(function ($game) {
             return [
@@ -262,15 +292,6 @@ class PlayoffBracketService
             $match = ($game['home_team_id'] == $homeTeam['id'] && $game['away_team_id'] == $awayTeam['id']) ||
                 ($game['home_team_id'] == $awayTeam['id'] && $game['away_team_id'] == $homeTeam['id']);
 
-            if ($match) {
-                \Log::info('Найдена игра', [
-                    'home_team' => $game['home_team_name'],
-                    'away_team' => $game['away_team_name'],
-                    'home_score' => $game['home_score'],
-                    'away_score' => $game['away_score'],
-                ]);
-            }
-
             return $match;
         });
 
@@ -287,13 +308,6 @@ class PlayoffBracketService
         if ($game['home_score'] === null || $game['away_score'] === null) {
             return null;
         }
-
-        \Log::info('Определяем победителя', [
-            'home' => $homeTeam['name'],
-            'away' => $awayTeam['name'],
-            'home_score' => $game['home_score'],
-            'away_score' => $game['away_score'],
-        ]);
 
         if ($game['home_score'] > $game['away_score']) {
             return $homeTeam;
@@ -337,5 +351,24 @@ class PlayoffBracketService
 
         // Если игра запланирована
         return 'scheduled';
+    }
+
+    private function getLoserFromMatch(?array $match): ?array
+    {
+        if (!$match) return null;
+
+        $homeTeam = $match['home_team'] ?? null;
+        $awayTeam = $match['away_team'] ?? null;
+        $winner = $match['winner'] ?? null;
+
+        if (!$homeTeam || !$awayTeam) return null;
+
+        if ($winner === 'home') {
+            return $awayTeam;
+        } elseif ($winner === 'away') {
+            return $homeTeam;
+        }
+
+        return null;
     }
 }
