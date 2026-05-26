@@ -3,28 +3,53 @@
 namespace App\Services;
 
 use App\Models\StageGroup;
+use App\Models\Tournament;
 use App\Models\TournamentApplication;
 use App\Models\TournamentStage;
 use Illuminate\Support\Collection;
 
 class GroupStandingsService
 {
+    // Типы волейбола
+    const TYPE_INDOOR = 'indoor'; // Классический (до 5 партий)
+    const TYPE_BEACH = 'beach';   // Пляжный (до 3 партий)
+
+    /**
+     * Рассчитывает турнирную таблицу для группы
+     */
     public function calculateStandings(StageGroup $group): Collection
     {
         $teams = $group->teams->load('team');
         $games = $group->games()->with('sets')->get();
 
+        // Определяем тип турнира через группу -> этап -> турнир
+        $volleyballType = $this->getVolleyballType($group);
+
         $standings = collect();
 
         foreach ($teams as $teamApplication) {
-            $teamStats = $this->calculateTeamStats($teamApplication, $games, $teams);
+            $teamStats = $this->calculateTeamStats($teamApplication, $games, $teams, $volleyballType);
             $standings->push($teamStats);
         }
 
         return $this->sortStandings($standings);
     }
 
-    private function calculateTeamStats(TournamentApplication $team, $games, $teams): array
+    /**
+     * Определяет тип волейбола для группы (через цепочку: группа -> этап -> турнир)
+     */
+    private function getVolleyballType(StageGroup $group): string
+    {
+        // Пытаемся получить тип волейбола из турнира
+        if ($group->stage && $group->stage->tournament && isset($group->stage->tournament->volleyball_type)) {
+            return $group->stage->tournament->volleyball_type;
+        }
+
+        // Если не нашли - по умолчанию классический волейбол
+        return self::TYPE_INDOOR;
+    }
+
+    private function calculateTeamStats(TournamentApplication $team, $games, $teams, string $volleyballType): array
     {
         $stats = [
             'team' => $team,
@@ -48,7 +73,7 @@ class GroupStandingsService
         // Анализируем игры
         foreach ($games as $game) {
             if ($this->isTeamInGame($team, $game)) {
-                $this->processGame($team, $game, $stats);
+                $this->processGame($team, $game, $stats, $volleyballType);
             }
         }
 
@@ -70,7 +95,7 @@ class GroupStandingsService
             $game->away_application_id === $team->id;
     }
 
-    private function processGame(TournamentApplication $team, $game, array &$stats): void
+    private function processGame(TournamentApplication $team, $game, array &$stats, string $volleyballType): void
     {
         if ($game->home_score === null || $game->away_score === null) {
             return; // Пропускаем игры без результата
@@ -83,7 +108,7 @@ class GroupStandingsService
         $opponentScore = $isHome ? $game->away_score : $game->home_score;
 
         // Проверяем на техническое поражение
-        $isTechnicalDefeat = $this->isTechnicalDefeat($game, $isHome);
+        $isTechnicalDefeat = $this->isTechnicalDefeat($game, $isHome, $volleyballType);
 
         // Обновляем общую статистику
         $stats['games_played']++;
@@ -93,28 +118,18 @@ class GroupStandingsService
             $stats['points'] -= 1;
             $stats['games_lost']++;
             $resultClass = 'technical-defeat';
-        } elseif ($teamScore > $opponentScore) {
-            // Победа
-            $stats['games_won']++;
-
-            // Определяем количество очков за победу
-            if ($teamScore == 3 && $opponentScore == 2) {
-                $stats['points'] += 2; // Победа 3:2 = 2 очка
-            } else {
-                $stats['points'] += 3; // Победа 3:0 или 3:1 = 3 очка
-            }
-            $resultClass = 'win-score';
         } else {
-            // Поражение
-            $stats['games_lost']++;
+            // Подсчет очков в зависимости от типа волейбола
+            $pointsInfo = $this->calculatePoints($teamScore, $opponentScore, $volleyballType);
+            $stats['points'] += $pointsInfo['points'];
 
-            // Определяем количество очков за поражение
-            if ($teamScore == 2 && $opponentScore == 3) {
-                $stats['points'] += 1; // Поражение 2:3 = 1 очко
+            if ($pointsInfo['is_win']) {
+                $stats['games_won']++;
+                $resultClass = 'win-score';
             } else {
-                $stats['points'] += 0; // Поражение 0:3 или 1:3 = 0 очков
+                $stats['games_lost']++;
+                $resultClass = 'lose-score';
             }
-            $resultClass = 'lose-score';
         }
 
         // Сохраняем результат против оппонента
@@ -122,7 +137,7 @@ class GroupStandingsService
             'score' => $isHome ? "{$game->home_score}:{$game->away_score}" : "{$game->away_score}:{$game->home_score}",
             'class' => $resultClass,
             'is_home' => $isHome,
-            'is_technical' => $isTechnicalDefeat
+            'is_technical' => $isTechnicalDefeat ?? false
         ];
 
         // Анализируем сеты
@@ -138,22 +153,73 @@ class GroupStandingsService
         }
     }
 
-    private function isTechnicalDefeat($game, bool $isHome): bool
+    /**
+     * Подсчет очков в зависимости от типа волейбола
+     */
+    private function calculatePoints(int $teamScore, int $opponentScore, string $volleyballType): array
     {
-        // Проверяем все сеты на техническое поражение (0:25 в трех партиях)
+        if ($volleyballType === self::TYPE_BEACH) {
+            // Пляжный волейбол
+            if ($teamScore > $opponentScore) {
+                // Победа
+                if ($teamScore == 2 && $opponentScore == 0) {
+                    return ['points' => 3, 'is_win' => true]; // 2:0 - 3 очка
+                } elseif ($teamScore == 2 && $opponentScore == 1) {
+                    return ['points' => 2, 'is_win' => true]; // 2:1 - 2 очка
+                }
+            } else {
+                // Поражение
+                if ($teamScore == 1 && $opponentScore == 2) {
+                    return ['points' => 1, 'is_win' => false]; // 1:2 - 1 очко
+                } elseif ($teamScore == 0 && $opponentScore == 2) {
+                    return ['points' => 0, 'is_win' => false]; // 0:2 - 0 очков
+                }
+            }
+
+            // Fallback (если вдруг другие значения)
+            return ['points' => 0, 'is_win' => $teamScore > $opponentScore];
+
+        } else {
+            // Классический волейбол
+            if ($teamScore > $opponentScore) {
+                // Победа
+                if ($teamScore == 3 && $opponentScore == 2) {
+                    return ['points' => 2, 'is_win' => true]; // 3:2 - 2 очка
+                } else {
+                    return ['points' => 3, 'is_win' => true]; // 3:0 или 3:1 - 3 очка
+                }
+            } else {
+                // Поражение
+                if ($teamScore == 2 && $opponentScore == 3) {
+                    return ['points' => 1, 'is_win' => false]; // 2:3 - 1 очко
+                } else {
+                    return ['points' => 0, 'is_win' => false]; // 0:3 или 1:3 - 0 очков
+                }
+            }
+        }
+    }
+
+    private function isTechnicalDefeat($game, bool $isHome, string $volleyballType): bool
+    {
         $technicalSets = 0;
+
+        // Максимальное количество сетов для технического поражения
+        $maxSets = $volleyballType === self::TYPE_BEACH ? 2 : 3;
 
         foreach ($game->sets as $set) {
             $teamScore = $isHome ? $set->home_score : $set->away_score;
             $opponentScore = $isHome ? $set->away_score : $set->home_score;
 
-            if ($teamScore == 0 && $opponentScore == 25) {
+            // Проверяем на техническое поражение (0:21 для пляжного, 0:25 для классического)
+            $technicalScore = $volleyballType === self::TYPE_BEACH ? 21 : 25;
+
+            if ($teamScore == 0 && $opponentScore == $technicalScore) {
                 $technicalSets++;
             }
         }
 
-        // Если три технических сета - это техническое поражение
-        return $technicalSets >= 3;
+        // Если нужное количество технических сетов - это техническое поражение
+        return $technicalSets >= $maxSets;
     }
 
     private function sortStandings(Collection $standings): Collection
@@ -197,5 +263,23 @@ class GroupStandingsService
         }
 
         return $groupsWithStandings;
+    }
+
+    /**
+     * Рассчитывает очки для конкретного матча (для отображения)
+     */
+    public function calculateMatchPoints(int $homeScore, int $awayScore, ?string $volleyballType = null): array
+    {
+        $type = $volleyballType ?? self::TYPE_INDOOR;
+
+        $homePoints = $this->calculatePoints($homeScore, $awayScore, $type);
+        $awayPoints = $this->calculatePoints($awayScore, $homeScore, $type);
+
+        return [
+            'home_points' => $homePoints['points'],
+            'away_points' => $awayPoints['points'],
+            'home_win' => $homePoints['is_win'],
+            'away_win' => $awayPoints['is_win']
+        ];
     }
 }

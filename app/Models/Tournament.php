@@ -21,6 +21,7 @@ class Tournament extends Model
     protected $fillable = [
         'organization_id',
         'name',
+        'volleyball_type',
         'description',
         'start_date',
         'end_date',

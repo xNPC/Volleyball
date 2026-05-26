@@ -100,6 +100,7 @@ class TournamentEditScreen extends Screen
         $validated = $request->validate([
             'tournament.name' => 'required|string|max:255',
             'tournament.organization_id' => 'required|exists:organizations,id',
+            'tournament.volleyball_type' => 'required|in:indoor,beach',
             'tournament.description' => 'string',
             'tournament.start_date' => 'required|date',
             'tournament.end_date' => 'required|date|after_or_equal:tournament.start_date',

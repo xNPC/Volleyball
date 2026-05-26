@@ -41,6 +41,14 @@ class TournamentEditLayout extends Rows
                 ->required()
                 ->help('Выберите организацию, проводящую турнир'),
 
+            Select::make('tournament.volleyball_type')
+                ->title('Тип волейбола')
+                ->options([
+                    'indoor' => 'Классический (до 5 партий)',
+                    'beach' => 'Пляжный (до 3 партий)',
+                ])
+                ->required(),
+
             TextArea::make('tournament.description')
                 ->title('Описание')
                 ->rows(4),
