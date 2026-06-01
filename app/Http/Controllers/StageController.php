@@ -32,7 +32,7 @@ class StageController extends Controller
             'playoffConfig'
         ]);
 
-        if ($stage->stage_type === 'group') {
+        if ($stage->stage_type === 'group' or $stage->stage_type === 'qualification') {
             // Для группового этапа - рассчитываем статистику
             $groupsWithStandings = $this->standingsService->calculateStandingsForStage($stage);
             return view('stages.show', compact('tournament', 'stage', 'groupsWithStandings'));
