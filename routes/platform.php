@@ -42,6 +42,10 @@ use App\Orchid\Controllers\TeamController;
 use App\Orchid\Screens\Match\MatchEditScreen;
 use App\Orchid\Controllers\MatchController;
 
+use App\Orchid\Screens\AlbumFormScreen;
+use App\Orchid\Screens\AlbumListScreen;
+use App\Orchid\Screens\PhotoManagerScreen;
+
 /*
 |--------------------------------------------------------------------------
 | Dashboard Routes
@@ -279,5 +283,34 @@ Route::screen('/examples/layouts', ExampleLayoutsScreen::class)->name('platform.
 Route::screen('/examples/grid', ExampleGridScreen::class)->name('platform.example.grid');
 Route::screen('/examples/charts', ExampleChartsScreen::class)->name('platform.example.charts');
 Route::screen('/examples/cards', ExampleCardsScreen::class)->name('platform.example.cards');
+
+/**
+ *
+ * Галерея
+ *
+ */
+// Список альбомов
+Route::screen('albums', AlbumListScreen::class)
+    ->name('platform.album.list');
+
+// Создание альбома
+Route::screen('albums/create', AlbumFormScreen::class)
+    ->name('platform.album.create');
+
+// Редактирование альбома
+Route::screen('albums/{album}/edit', AlbumFormScreen::class)
+    ->name('platform.album.edit');
+
+// Управление фото
+Route::screen('albums/{album}/photos', PhotoManagerScreen::class)
+    ->name('platform.album.photos');
+
+// Сортировка фото (POST)
+Route::post('albums/{album}/photos/sort', [PhotoManagerScreen::class, 'updateSortOrder'])
+    ->name('platform.album.photos.sort');
+
+// Удаление фото (DELETE)
+Route::delete('albums/{album}/photos/{photo}', [PhotoManagerScreen::class, 'deletePhoto'])
+    ->name('platform.album.photos.delete');
 
 // Route::screen('idea', Idea::class, 'platform.screens.idea');

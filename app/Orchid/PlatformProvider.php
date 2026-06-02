@@ -94,6 +94,11 @@ class PlatformProvider extends OrchidServiceProvider
                 ->route('platform.tournament.games.management')
                 ->permission(['platform.games.result', 'platform.games.edit']),
 
+            Menu::make('Фотоальбомы')
+                ->icon('camera')
+                ->route('platform.album.list')
+                ->title('Контент'),
+
 //            Menu::make('Get Started')
 //                ->icon('bs.book')
 //                ->title('Navigation')

@@ -270,6 +270,11 @@
                         <i class="fas fa-users me-1"></i>Команды
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold" href="{{ route('gallery.index') }}">
+                        <i class="fas fa-camera me-1"></i>Фотоальбом
+                    </a>
+                </li>
 {{--                <li class="nav-item">--}}
 {{--                    <a class="nav-link fw-semibold" href="#schedule">--}}
 {{--                        <i class="fas fa-calendar-alt me-1"></i>Расписание--}}
