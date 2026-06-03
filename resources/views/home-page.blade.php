@@ -147,7 +147,7 @@
                     <h2 class="display-5 fw-bold mb-3" style="color: var(--volleyball-blue);">
                         <i class="fas fa-medal me-2"></i>Лучшие Команды
                     </h2>
-                    <p class="lead text-muted">Рейтинг сильнейших коллективов сезона</p>
+                    <p class="lead text-muted">Рейтинг сильнейших коллективов активных турниров</p>
                 </div>
 
                 <div class="row g-4 justify-content-center">

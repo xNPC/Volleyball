@@ -91,23 +91,37 @@ class HomeController extends Controller
                 ];
             });
 
-        // Лучшие команды (по реальным победам в играх)
+        // Лучшие команды (по реальным победам в играх только АКТИВНЫХ турниров)
         $topTeams = Team::withCount([
             'gamesAsHome as home_wins' => function($query) {
                 $query->where('games.status', 'completed')
-                    ->whereColumn('games.home_score', '>', 'games.away_score');
+                    ->whereColumn('games.home_score', '>', 'games.away_score')
+                    ->whereHas('stage.tournament', function($q) {
+                        // Фильтруем по статусу турнира "В процессе" (ongoing)
+                        // Если вам нужны и запланированные (planned), замените на: ->whereIn('status', ['ongoing', 'planned'])
+                        $q->where('status', 'ongoing');
+                    });
             },
             'gamesAsAway as away_wins' => function($query) {
                 $query->where('games.status', 'completed')
-                    ->whereColumn('games.away_score', '>', 'games.home_score');
+                    ->whereColumn('games.away_score', '>', 'games.home_score')
+                    ->whereHas('stage.tournament', function($q) {
+                        $q->where('status', 'ongoing');
+                    });
             }
         ])
             ->withCount([
                 'gamesAsHome as home_games' => function($query) {
-                    $query->where('games.status', 'completed');
+                    $query->where('games.status', 'completed')
+                        ->whereHas('stage.tournament', function($q) {
+                            $q->where('status', 'ongoing');
+                        });
                 },
                 'gamesAsAway as away_games' => function($query) {
-                    $query->where('games.status', 'completed');
+                    $query->where('games.status', 'completed')
+                        ->whereHas('stage.tournament', function($q) {
+                            $q->where('status', 'ongoing');
+                        });
                 }
             ])
             ->get()
@@ -118,18 +132,19 @@ class HomeController extends Controller
                 return [
                     'team' => $team,
                     'name' => $team->name,
-                    'logo' => substr($team->name, 0, 2),
+                    'logo' => mb_substr($team->name, 0, 2), // Заменил substr на mb_substr для корректной работы с кириллицей в названиях
                     'wins' => $totalWins,
                     'total_games' => $totalGames,
                     'win_rate' => $totalGames > 0 ? round(($totalWins / $totalGames) * 100, 1) : 0
                 ];
             })
             ->filter(function($team) {
-                return $team['total_games'] > 0; // показываем только команды, которые играли
+                return $team['total_games'] > 0; // Показываем только команды, которые сыграли хотя бы один матч в активных турнирах
             })
             ->sortByDesc('wins')
             ->take(4)
             ->values();
+
 
         // Пользователи с днем рождения сегодня
         $birthdayUsers = User::whereMonth('birthday', now()->month)
