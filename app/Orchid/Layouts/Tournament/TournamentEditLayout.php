@@ -57,13 +57,18 @@ class TournamentEditLayout extends Rows
                 DateTimer::make('tournament.start_date')
                     ->title('Дата начала')
                     ->required()
-                    ->format('d.m.Y')
+                    ->altFormat('d.m.Y')
+                    ->allowInput()
+                    //->format('d.m.Y')
+                    ->enableTime(false)
                     ->placeholder('Выберите дату'),
 
                 DateTimer::make('tournament.end_date')
                     ->title('Дата окончания')
                     ->required()
-                    ->format('d.m.Y')
+                    ->altFormat('d.m.Y')
+                    ->allowInput()
+                    //->format('d.m.Y')
                     ->placeholder('Выберите дату'),
             ])
                 ->autoWidth(),

@@ -46,13 +46,17 @@ class StagesLayout extends Rows
                 DateTimer::make('stage.start_date')
                     ->title('Дата начала')
                     ->required()
-                    ->format('d.m.Y')
+                    ->altFormat('d.m.Y')
+                    ->allowInput()
+                    //->format('d.m.Y')
                     ->placeholder('Выберите дату'),
 
                 DateTimer::make('stage.end_date')
                     ->title('Дата окончания')
                     ->required()
-                    ->format('d.m.Y')
+                    ->altFormat('d.m.Y')
+                    ->allowInput()
+                    //->format('d.m.Y')
                     ->placeholder('Выберите дату'),
             ])
                 ->autoWidth(),
