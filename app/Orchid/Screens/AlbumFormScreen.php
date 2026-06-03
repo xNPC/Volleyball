@@ -19,6 +19,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AlbumFormScreen extends Screen
 {
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.content.gallery'
+        ];
+    }
     public $album;
 
     public function query(Album $album = null): iterable

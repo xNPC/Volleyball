@@ -13,6 +13,12 @@ use Orchid\Support\Facades\Alert;
 
 class AlbumListScreen extends Screen
 {
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.content.gallery'
+        ];
+    }
     public function query(): iterable
     {
         return [

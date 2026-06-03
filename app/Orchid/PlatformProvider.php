@@ -97,7 +97,8 @@ class PlatformProvider extends OrchidServiceProvider
             Menu::make('Фотоальбомы')
                 ->icon('camera')
                 ->route('platform.album.list')
-                ->title('Контент'),
+                ->title('Контент')
+                ->permission('platform.content.gallery'),
 
 //            Menu::make('Get Started')
 //                ->icon('bs.book')
@@ -176,6 +177,9 @@ class PlatformProvider extends OrchidServiceProvider
             ItemPermission::group('Игры')
                 ->addPermission('platform.games.edit', 'Управление играми')
                 ->addPermission('platform.games.result', 'Внесение результатов'),
+
+            ItemPermission::group('Контент')
+                ->addPermission('platform.content.gallery', 'Управление фотоальбомом'),
 
 //            ItemPermission::group('Разобрать')
 //                ->addPermission('platform.1', '1')

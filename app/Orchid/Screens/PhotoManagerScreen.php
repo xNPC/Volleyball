@@ -18,6 +18,12 @@ use Orchid\Support\Facades\Layout;
 
 class PhotoManagerScreen extends Screen
 {
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.content.gallery'
+        ];
+    }
     public ?Album $album = null;
 
     public function query(Album $album = null): iterable
