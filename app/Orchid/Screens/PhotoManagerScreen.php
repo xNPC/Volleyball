@@ -76,7 +76,7 @@ class PhotoManagerScreen extends Screen
             ])->title('Загрузка фотографий'),
 
             Layout::table('photos', [
-                TD::make('id', 'ID')->width('50px'),
+                TD::make('id', 'ID')->width('100px'),
                 TD::make('thumbnail', 'Превью')
                     ->width('100px')
                     ->render(function (Photo $photo) {
