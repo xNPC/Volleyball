@@ -184,7 +184,10 @@
                                             </td>
                                             <td>{{ $application->created_at->format('d.m.Y H:i') }}</td>
                                             <td class="text-center">
-                                                <span class="badge bg-info">{{ $application->roster->count() }}</span>
+                                                <a href="{{ route('tournaments.teams.roster', ['tournament' => $application->tournament, 'team' => $team]) }}"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-users me-1"></i>Состав <span class="badge bg-info">{{ $application->roster->count() }}</span>
+                                                </a>
                                             </td>
                                         </tr>
                                     @endforeach
