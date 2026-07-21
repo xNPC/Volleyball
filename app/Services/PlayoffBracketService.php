@@ -397,6 +397,7 @@ class PlayoffBracketService
             $actualHome = null;
             $actualAway = null;
 
+            // Определяем фактические команды в игре
             if ($game['home_team_id'] == $homeTeam['id'] && $game['away_team_id'] == $awayTeam['id']) {
                 $actualHome = $homeTeam;
                 $actualAway = $awayTeam;
@@ -410,7 +411,7 @@ class PlayoffBracketService
                 $awayScore = $game['away_score'];
 
                 if ($homeScore !== null && $awayScore !== null) {
-                    // Игра сыграна - определяем победителя
+                    // Определяем победителя игры
                     $gameWinner = null;
                     if ($homeScore > $awayScore) {
                         $gameWinner = $actualHome;
@@ -418,27 +419,49 @@ class PlayoffBracketService
                         $gameWinner = $actualAway;
                     }
 
-                    // Увеличиваем счет побед для конкретной команды
+                    // Увеличиваем счет побед
                     if ($gameWinner && $gameWinner['id'] == $homeTeam['id']) {
                         $homeTeamWins++;
                     } elseif ($gameWinner && $gameWinner['id'] == $awayTeam['id']) {
                         $awayTeamWins++;
                     }
 
-                    $gameHomeTeam = $homeTeamOrder[$gameIndex] ?? $homeTeam;
-                    $gameAwayTeam = $awayTeamOrder[$gameIndex] ?? $awayTeam;
+                    // Определяем, кто должен быть хозяином по расписанию
+                    $scheduledHome = $homeTeamOrder[$gameIndex] ?? $homeTeam;
+                    $scheduledAway = $awayTeamOrder[$gameIndex] ?? $awayTeam;
 
-                    $displayHomeScore = $gameHomeTeam['id'] == $actualHome['id'] ? $homeScore : $awayScore;
-                    $displayAwayScore = $gameAwayTeam['id'] == $actualAway['id'] ? $awayScore : $homeScore;
+                    // Пересчитываем счета для отображения с учетом расписания
+                    $displayHomeScore = $scheduledHome['id'] == $actualHome['id'] ? $homeScore : $awayScore;
+                    $displayAwayScore = $scheduledAway['id'] == $actualAway['id'] ? $awayScore : $homeScore;
+
+                    // Пересчитываем сеты для отображения
+                    $displaySets = [];
+                    foreach ($game['sets'] as $set) {
+                        // Если расписанием хозяин совпадает с фактическим хозяином, то сеты не меняем
+                        if ($scheduledHome['id'] == $actualHome['id']) {
+                            $setHomeScore = $set['home_score'];
+                            $setAwayScore = $set['away_score'];
+                        } else {
+                            // Если команды поменялись местами, меняем сеты местами
+                            $setHomeScore = $set['away_score'];
+                            $setAwayScore = $set['home_score'];
+                        }
+
+                        $displaySets[] = [
+                            'set_number' => $set['set_number'],
+                            'home_score' => $setHomeScore,
+                            'away_score' => $setAwayScore,
+                        ];
+                    }
 
                     $result['games'][] = [
                         'game_id' => $game['id'],
-                        'home_team' => $gameHomeTeam,
-                        'away_team' => $gameAwayTeam,
+                        'home_team' => $scheduledHome,
+                        'away_team' => $scheduledAway,
                         'home_score' => $displayHomeScore,
                         'away_score' => $displayAwayScore,
-                        'sets' => $game['sets'],
-                        'winner' => $gameWinner ? ($gameWinner['id'] == $gameHomeTeam['id'] ? 'home' : 'away') : null,
+                        'sets' => $displaySets,
+                        'winner' => $gameWinner ? ($gameWinner['id'] == $scheduledHome['id'] ? 'home' : 'away') : null,
                     ];
 
                     // Проверяем победителя серии
@@ -456,41 +479,34 @@ class PlayoffBracketService
                         return $result;
                     }
                 } else {
-                    // Игра еще не сыграна - помечаем, что не все игры обработаны
+                    // Игра еще не сыграна
                     $allGamesProcessed = false;
 
-                    $gameHomeTeam = $homeTeamOrder[$gameIndex] ?? $homeTeam;
-                    $gameAwayTeam = $awayTeamOrder[$gameIndex] ?? $awayTeam;
+                    $scheduledHome = $homeTeamOrder[$gameIndex] ?? $homeTeam;
+                    $scheduledAway = $awayTeamOrder[$gameIndex] ?? $awayTeam;
 
                     $result['games'][] = [
                         'game_id' => $game['id'],
-                        'home_team' => $gameHomeTeam,
-                        'away_team' => $gameAwayTeam,
+                        'home_team' => $scheduledHome,
+                        'away_team' => $scheduledAway,
                         'home_score' => null,
                         'away_score' => null,
                         'sets' => [],
                         'winner' => null,
                     ];
 
-                    // Если есть незавершенная игра, статус scheduled
                     $result['status'] = 'scheduled';
-
-                    // Выходим из цикла, так как дальше игры не обрабатываем
                     break;
                 }
             }
         }
 
-        // Если все игры обработаны и победитель не определен
         if ($allGamesProcessed && !$result['winner']) {
-            // Если все игры сыграны и ничья
             $result['status'] = 'draw';
         } elseif (!$result['winner'] && $result['status'] !== 'scheduled') {
-            // Если не все игры обработаны, но статус не scheduled
             $result['status'] = 'pending';
         }
 
-        // ВСЕГДА возвращаем актуальный счет, даже если серия не завершена
         $result['home_wins'] = $homeTeamWins;
         $result['away_wins'] = $awayTeamWins;
 
