@@ -3,64 +3,67 @@
         Нет данных сетки для группы {{ $group->name ?? '?' }}
     </div>
 @endif
-@props(['bracket', 'stage'])
+@props(['bracket', 'group'])
 
 <div class="playoff-bracket-container">
+    <!-- ОТЛАДКА -->
+    @php
+        //\Log::info('=== VIEW BRACKET ===');
+        //\Log::info('Bracket rounds: ' . count($bracket));
+        foreach ($bracket as $ri => $round) {
+            //\Log::info('Round ' . ($ri+1) . ': ' . ($round['round_name'] ?? 'no name') . ', matches: ' . count($round['matches'] ?? []));
+            foreach (($round['matches'] ?? []) as $mi => $match) {
+                //\Log::info('  Match ' . ($mi+1) . ': home=' . (isset($match['home_team']['name']) ? $match['home_team']['name'] : (isset($match['home_team']) ? 'object' : 'null')) . ', away=' . (isset($match['away_team']['name']) ? $match['away_team']['name'] : (isset($match['away_team']) ? 'object' : 'null')));
+            }
+        }
+    @endphp
     @forelse($bracket as $roundIndex => $round)
         <div class="bracket-round" data-round="{{ $round['round_number'] ?? $roundIndex + 1 }}">
             <div class="round-header">
-                <h4 class="round-title">{{ $round['round_name'] ?? 'Раунд ' . ($roundIndex + 1) }}</h4>
-                <span class="round-badge">{{ count($round['matches'] ?? []) }} матчей</span>
+                <h4 class="round-title">
+                    @if(isset($round['round_name']))
+                        {{ $round['round_name'] }}
+                    @else
+                        {{ $roundIndex === 0 ? 'Первый раунд' : 'Раунд ' . ($roundIndex + 1) }}
+                    @endif
+                </h4>
+                <!--<span class="round-badge">{{ count($round['matches'] ?? []) }} матчей</span>-->
             </div>
 
             <div class="matches-container">
-                @foreach(($round['matches'] ?? []) as $match)
+                @forelse(($round['matches'] ?? []) as $match)
                     @php
-                        $winner = $match['winner'] ?? null;
-
-                        // Получаем названия команд
-                        $homeTeamName = 'TBD';
-                        $awayTeamName = 'TBD';
-                        $homeScore = '-';
-                        $awayScore = '-';
-
-                        // Домашняя команда
-                        if (!empty($match['home_team'])) {
-                            if (is_array($match['home_team'])) {
-                                $homeTeamName = $match['home_team']['name'] ?? 'TBD';
-                            } else {
-                                $homeTeamName = $match['home_team']->name ?? 'TBD';
-                            }
-                        }
-
-                        // Гостевая команда
-                        if (!empty($match['away_team'])) {
-                            if (is_array($match['away_team'])) {
-                                $awayTeamName = $match['away_team']['name'] ?? 'TBD';
-                            } else {
-                                $awayTeamName = $match['away_team']->name ?? 'TBD';
-                            }
-                        }
-
-                        // Счета
-                        if (isset($match['home_score']) && $match['home_score'] !== null) {
-                            $homeScore = $match['home_score'];
-                        }
-                        if (isset($match['away_score']) && $match['away_score'] !== null) {
-                            $awayScore = $match['away_score'];
-                        }
-
+                        $matchFormat = $match['match_format'] ?? 'single';
+                        $games = $match['games'] ?? [];
                         $homeWins = $match['home_wins'] ?? 0;
                         $awayWins = $match['away_wins'] ?? 0;
-                        $status = $match['status'] ?? 'scheduled';
+                        $status = $match['status'] ?? 'pending';
+                        $winner = $match['winner'] ?? null;
+
+                        $homeTeamName = 'TBD';
+                        $awayTeamName = 'TBD';
+
+                        if (!empty($match['home_team'])) {
+                            $homeTeamName = is_array($match['home_team'])
+                                ? ($match['home_team']['name'] ?? 'TBD')
+                                : ($match['home_team']->name ?? 'TBD');
+                        }
+                        if (!empty($match['away_team'])) {
+                            $awayTeamName = is_array($match['away_team'])
+                                ? ($match['away_team']['name'] ?? 'TBD')
+                                : ($match['away_team']->name ?? 'TBD');
+                        }
                     @endphp
 
                     <div class="match-series-card" data-match="{{ $match['match_number'] ?? $loop->index + 1 }}">
-                        @if(isset($match['title']))
-                            <div class="match-title">{{ $match['title'] }}</div>
-                        @endif
                         <div class="match-header">
-                            <span class="match-number">Матч #{{ $match['match_number'] ?? $loop->index + 1 }}</span>
+                            <span class="match-number">#{{ $match['match_number'] ?? $loop->index + 1 }}</span>
+                            @if(isset($match['title']))
+                                <span class="match-title">{{ $match['title'] }}</span>
+                            @endif
+                            @if($matchFormat === 'best_of_3')
+                                <span class="badge bg-info">До 2 побед</span>
+                            @endif
                             @if($status === 'completed')
                                 <span class="badge bg-success">Завершен</span>
                             @elseif($status === 'scheduled')
@@ -74,25 +77,77 @@
                             <div class="series-stats">
                                 <div class="team-stat {{ $winner === 'home' ? 'winner' : '' }}">
                                     <span class="team-name">{{ $homeTeamName }}</span>
-                                    <span class="team-score">{{ $homeScore }}</span>
+                                    <span class="team-wins">{{ $homeWins }}</span>
                                 </div>
                                 <div class="vs-divider">:</div>
                                 <div class="team-stat {{ $winner === 'away' ? 'winner' : '' }}">
-                                    <span class="team-score">{{ $awayScore }}</span>
+                                    <span class="team-wins">{{ $awayWins }}</span>
                                     <span class="team-name">{{ $awayTeamName }}</span>
                                 </div>
                             </div>
 
-                            @if(!empty($match['sets']) && count($match['sets']) > 0)
+                            @if(count($games) > 0)
                                 <div class="games-list">
-                                    @foreach($match['sets'] as $set)
-                                        <div class="game-item">
-                                            <span class="game-number">Сет {{ $set['set_number'] ?? $loop->index + 1 }}</span>
-                                            <span class="game-score">
-                                {{ $set['home_score'] ?? 0 }}:{{ $set['away_score'] ?? 0 }}
-                            </span>
+                                    @foreach($games as $gameIndex => $game)
+                                        @php
+                                            $gameHomeName = 'TBD';
+                                            $gameAwayName = 'TBD';
+
+                                            if (!empty($game['home_team'])) {
+                                                $gameHomeName = is_array($game['home_team'])
+                                                    ? ($game['home_team']['name'] ?? 'TBD')
+                                                    : ($game['home_team']->name ?? 'TBD');
+                                            }
+                                            if (!empty($game['away_team'])) {
+                                                $gameAwayName = is_array($game['away_team'])
+                                                    ? ($game['away_team']['name'] ?? 'TBD')
+                                                    : ($game['away_team']->name ?? 'TBD');
+                                            }
+                                        @endphp
+                                        <div class="game-item {{ ($game['home_score'] !== null && $game['away_score'] !== null) ? 'completed' : '' }}">
+                                            <span class="game-number">Игра {{ $gameIndex + 1 }}</span>
+                                            <span class="game-teams">
+                    <span class="game-home">{{ $gameHomeName }}</span>
+                    <span class="game-vs">vs</span>
+                    <span class="game-away">{{ $gameAwayName }}</span>
+                </span>
+                                            @if($game['home_score'] !== null && $game['away_score'] !== null)
+                                                <span class="game-score">
+                        {{ $game['home_score'] }}:{{ $game['away_score'] }}
+                    </span>
+                                                @if(!empty($game['sets']))
+                                                    <span class="game-sets">
+                            ({{ collect($game['sets'])->map(fn($s) => $s['home_score'] . ':' . $s['away_score'])->implode(', ') }})
+                        </span>
+                                                @endif
+                                                <span class="game-winner">
+                        @if($game['winner'] === 'home')
+                                                        <!--<i class="fas fa-check-circle text-success"></i>-->
+                                                    @elseif($game['winner'] === 'away')
+                                                        <!--<i class="fas fa-check-circle text-success"></i>-->
+                                                    @endif
+                    </span>
+                                            @else
+                                                <span class="game-status">Ожидание</span>
+                                            @endif
                                         </div>
                                     @endforeach
+
+                                    {{-- РЕШАЮЩАЯ ИГРА - только когда сыграно 2 игры и счет 1:1 (ничья) --}}
+                                    @php
+                                        $playedGames = array_filter($games, function($g) {
+                                            return $g['home_score'] !== null && $g['away_score'] !== null;
+                                        });
+                                        $playedCount = count($playedGames);
+                                        $isDraw = ($homeWins == $awayWins);
+                                    @endphp
+
+                                    @if($matchFormat === 'best_of_3' && $playedCount == 2 && $isDraw && $status !== 'completed' && $status !== 'scheduled')
+                                        <div class="game-item deciding-game">
+                                            <span class="game-number">Решающая игра</span>
+                                            <span class="game-status text-warning">Ожидание</span>
+                                        </div>
+                                    @endif
                                 </div>
                             @endif
                         </div>
@@ -110,7 +165,9 @@
                             </div>
                         @endif
                     </div>
-                @endforeach
+                @empty
+                    <div class="alert alert-info">Нет матчей в этом раунде</div>
+                @endforelse
             </div>
         </div>
     @empty
@@ -178,6 +235,16 @@
         margin-bottom: 10px;
         font-size: 0.9rem;
         color: #666;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .match-title {
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: var(--volleyball-orange);
+        text-align: center;
+        text-transform: uppercase;
     }
 
     .series-stats {
@@ -212,8 +279,14 @@
         text-align: center;
     }
 
+    .team-score {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: var(--volleyball-blue);
+    }
+
     .vs-divider {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: bold;
         color: #ccc;
     }
@@ -230,6 +303,7 @@
         align-items: center;
         padding: 5px;
         font-size: 0.9rem;
+        flex-wrap: wrap;
     }
 
     .game-item.completed {
@@ -239,6 +313,25 @@
     .game-number {
         min-width: 60px;
         color: #666;
+    }
+
+    .game-teams {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+
+    .game-home {
+        font-weight: 500;
+    }
+
+    .game-away {
+        font-weight: 500;
+    }
+
+    .game-vs {
+        color: #999;
+        font-size: 0.8rem;
     }
 
     .game-score {
@@ -251,19 +344,18 @@
         font-size: 0.8rem;
     }
 
+    .game-status {
+        color: #999;
+    }
+
+    .game-winner {
+        margin-left: 5px;
+    }
+
     .next-match-info {
         margin-top: 10px;
         padding-top: 10px;
         border-top: 1px dashed #ddd;
         color: #666;
-    }
-
-    .match-title {
-        font-size: 0.8rem;
-        font-weight: bold;
-        color: var(--volleyball-orange);
-        text-align: center;
-        margin-bottom: 8px;
-        text-transform: uppercase;
     }
 </style>

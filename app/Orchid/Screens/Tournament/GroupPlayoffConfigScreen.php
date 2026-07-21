@@ -68,6 +68,15 @@ class GroupPlayoffConfigScreen extends Screen
                     ->readonly()
                     ->help('Всего команд в группе: ' . $this->group->teams->count()),
 
+                Select::make('config.match_format')
+                    ->title('Формат матчей')
+                    ->options([
+                        'single' => 'Один матч',
+                        'best_of_3' => 'До двух побед (best of 3)',
+                    ])
+                    ->value($this->config->match_format ?? 'single')
+                    ->help('Выберите формат проведения матчей в плейофф'),
+
                 Select::make('config.bye_positions')
                     ->title('Команды, проходящие в следующий раунд без игры (BYE)')
                     ->options($this->getTeamOptions())
@@ -104,6 +113,7 @@ class GroupPlayoffConfigScreen extends Screen
             'total_teams' => $this->group->teams->count(),
             'bye_positions' => array_map('intval', $data['bye_positions'] ?? []),
             'reverse_seeding' => isset($data['reverse_seeding']) && $data['reverse_seeding'] === 'on',
+            'match_format' => $data['match_format'] ?? 'single',
         ];
 
         try {

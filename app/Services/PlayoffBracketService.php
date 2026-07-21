@@ -18,19 +18,28 @@ class PlayoffBracketService
 
         $byePositions = $config['bye_positions'] ?? [];
         $reverseSeeding = $config['reverse_seeding'] ?? false;
+        $matchFormat = $config['match_format'] ?? 'single';
+
+        // ОТЛАДКА
+        //\Log::info('=== BRACKET GENERATE START ===');
+        //\Log::info('Group ID: ' . $group->id);
+        //\Log::info('Teams count: ' . $teams->count());
+        //\Log::info('Bye positions: ' . json_encode($byePositions));
+        //\Log::info('Match format: ' . $matchFormat);
 
         // Получаем все позиции команд
         $allPositions = $teams->pluck('position')->sort()->values()->toArray();
+        //\Log::info('All positions: ' . json_encode($allPositions));
         $byePositions = array_values(array_intersect($allPositions, $byePositions));
         $regularPositions = array_values(array_diff($allPositions, $byePositions));
+        //\Log::info('Regular positions: ' . json_encode($regularPositions));
 
         // Строим структуру
         $bracket = [];
-        $winners = []; // [round][match] = team
+        $winners = [];
 
-        // === РАУНД 1: игры между обычными командами ===
+        // === РАУНД 1 ===
         if (count($regularPositions) >= 2) {
-            // Сортируем по принципу "сильный со слабым"
             $sortedRegular = $regularPositions;
             if (!$reverseSeeding) {
                 $half = count($sortedRegular) / 2;
@@ -56,10 +65,11 @@ class PlayoffBracketService
                 $matchNumber = $index + 1;
                 $homeTeam = $teams->firstWhere('position', $match['home_pos']);
                 $awayTeam = $teams->firstWhere('position', $match['away_pos']);
-                $game = $this->findGame($games, $homeTeam, $awayTeam);
 
-                // Определяем победителя
-                $winner = $this->getWinner($game, $homeTeam, $awayTeam);
+                $gamesBetween = $this->findAllGames($games, $homeTeam, $awayTeam);
+                $seriesResult = $this->processSeries($gamesBetween, $homeTeam, $awayTeam, $matchFormat);
+
+                $winner = $seriesResult['winner'] ?? null;
                 if ($winner) {
                     $winners[1][$matchNumber] = $winner;
                 }
@@ -68,11 +78,12 @@ class PlayoffBracketService
                     'match_number' => $matchNumber,
                     'home_team' => $homeTeam,
                     'away_team' => $awayTeam,
-                    'home_score' => $game['home_score'] ?? null,
-                    'away_score' => $game['away_score'] ?? null,
-                    'sets' => $game['sets'] ?? [],
+                    'games' => $seriesResult['games'],
+                    'home_wins' => $seriesResult['home_wins'],
+                    'away_wins' => $seriesResult['away_wins'],
                     'winner' => $winner ? ($winner['id'] == $homeTeam['id'] ? 'home' : 'away') : null,
-                    'status' => $this->getMatchStatus($game, $homeTeam, $awayTeam),
+                    'status' => $seriesResult['status'],
+                    'match_format' => $matchFormat,
                 ];
             }
 
@@ -80,71 +91,141 @@ class PlayoffBracketService
                 'round_number' => 1,
                 'round_name' => $this->getRoundName(count($regularPositions), 1, count($allPositions)),
                 'matches' => $round1Matches,
+                'match_format' => $matchFormat,
             ];
         }
 
-        // Раунд 2: BYE команды + победители 1-го раунда
+        // === РАУНД 2 (полуфиналы) ===
         $round2Matches = [];
 
-// Сортируем BYE команды (сильнейшие BYE должны быть в разных полуфиналах)
         $sortedBye = $byePositions;
-        if (!$reverseSeeding) {
-            //$sortedBye = array_reverse($sortedBye);
-            $sortedBye = $sortedBye;
-        }
-
-// Получаем победителей 1-го раунда
         $firstRoundWinners = $winners[1] ?? [];
         $winnerCount = count($firstRoundWinners);
-        $winnerNumbers = array_keys($firstRoundWinners);
 
-// Определяем, сколько матчей в полуфинале
-        $totalTeamsInSemifinal = count($byePositions) + $winnerCount;
-        $matchesInSemifinal = $totalTeamsInSemifinal / 2;
+// Определяем сколько должно быть матчей в полуфинале
+// Количество команд в полуфинале = BYE команды + количество матчей в 1-м раунде
+        $totalRounds1Matches = count($round1Matches ?? []);
+        $expectedSemifinalTeams = count($byePositions) + $totalRounds1Matches;
+        $expectedSemifinalMatches = (int)ceil($expectedSemifinalTeams / 2);
 
-// Формируем пары в зависимости от количества команд
-        for ($i = 0; $i < $matchesInSemifinal; $i++) {
-            $matchNumber = $i + 1;
-            $homeTeam = null;
-            $awayTeam = null;
+// Собираем BYE команды
+        $byeTeams = [];
+        foreach ($sortedBye as $byePos) {
+            $team = $teams->firstWhere('position', $byePos);
+            if ($team) {
+                $byeTeams[] = $team;
+            }
+        }
 
-            if ($winnerCount == 2) {
-                // Для 6 команд (победителей 2 + BYE 2)
-                if ($i == 0) {
-                    // Первый полуфинал: BYE1 (сильнейший) vs победитель матча 2 (слабая пара 4-5)
-                    if (isset($sortedBye[0])) {
-                        $homeTeam = $teams->firstWhere('position', $sortedBye[0]);
-                    }
-                    $awayTeam = $firstRoundWinners[2] ?? null; // победитель 4-5
-                } else {
-                    // Второй полуфинал: BYE2 (слабейший) vs победитель матча 1 (сильная пара 3-6)
-                    if (isset($sortedBye[1])) {
-                        $homeTeam = $teams->firstWhere('position', $sortedBye[1]);
-                    }
-                    $awayTeam = $firstRoundWinners[1] ?? null; // победитель 3-6
-                }
-            } elseif ($winnerCount == 4) {
-                // Для 8 команд (победителей 4)
-                if ($i == 0) {
-                    // Первый полуфинал: победитель матча 1 (1-8) vs победитель матча 4 (4-5)
-                    $homeTeam = $firstRoundWinners[1] ?? null;
-                    $awayTeam = $firstRoundWinners[4] ?? null;
-                } else {
-                    // Второй полуфинал: победитель матча 2 (2-7) vs победитель матча 3 (3-6)
-                    $homeTeam = $firstRoundWinners[2] ?? null;
-                    $awayTeam = $firstRoundWinners[3] ?? null;
-                }
+// Создаем список всех участников полуфиналов (победители матчей + BYE)
+        $semifinalParticipants = [];
+
+// Добавляем BYE команды
+        foreach ($byeTeams as $byeTeam) {
+            $semifinalParticipants[] = [
+                'team' => $byeTeam,
+                'type' => 'bye',
+                'source' => 'bye'
+            ];
+        }
+
+// Добавляем победителей из первого раунда (если есть) или создаем заглушки
+        for ($i = 1; $i <= $totalRounds1Matches; $i++) {
+            if (isset($firstRoundWinners[$i])) {
+                $semifinalParticipants[] = [
+                    'team' => $firstRoundWinners[$i],
+                    'type' => 'winner',
+                    'source' => 'match_' . $i,
+                    'is_defined' => true
+                ];
+            } else {
+                // Создаем заглушку для победителя, который еще не определен
+                $semifinalParticipants[] = [
+                    'team' => null,
+                    'type' => 'tbd',
+                    'source' => 'match_' . $i,
+                    'is_defined' => false
+                ];
+            }
+        }
+
+// Сортируем: сначала BYE, потом победители в порядке матчей
+        usort($semifinalParticipants, function($a, $b) {
+            if ($a['type'] === 'bye' && $b['type'] !== 'bye') return -1;
+            if ($a['type'] !== 'bye' && $b['type'] === 'bye') return 1;
+            return 0;
+        });
+
+// Формируем пары: первый с последним, второй с предпоследним
+        $paired = [];
+        $count = count($semifinalParticipants);
+        $half = (int)ceil($count / 2);
+
+        for ($i = 0; $i < $half; $i++) {
+            $home = $semifinalParticipants[$i] ?? null;
+            $away = $semifinalParticipants[$count - 1 - $i] ?? null;
+
+            // Если это одна и та же запись
+            if ($home && $away && $home === $away) {
+                $away = null;
             }
 
-            // Если одна из команд отсутствует, это BYE в этом раунде
+            $paired[] = ['home' => $home, 'away' => $away];
+        }
+
+        foreach ($paired as $index => $pair) {
+            $matchNumber = $index + 1;
+            $homeData = $pair['home'] ?? null;
+            $awayData = $pair['away'] ?? null;
+
+            $homeTeam = $homeData['team'] ?? null;
+            $awayTeam = $awayData['team'] ?? null;
+
+            // Если нет домашней команды, но есть гостевая - меняем местами
             if (!$homeTeam && $awayTeam) {
                 $homeTeam = $awayTeam;
                 $awayTeam = null;
             }
 
-            $game = $this->findGame($games, $homeTeam, $awayTeam);
+            // Если обе команды null - создаем пустой матч
+            if (!$homeTeam && !$awayTeam) {
+                $round2Matches[] = [
+                    'match_number' => $matchNumber,
+                    'home_team' => null,
+                    'away_team' => null,
+                    'games' => [],
+                    'home_wins' => 0,
+                    'away_wins' => 0,
+                    'winner' => null,
+                    'status' => 'pending',
+                    'match_format' => $matchFormat,
+                    'is_bye' => false,
+                ];
+                continue;
+            }
 
-            $winner = $this->getWinner($game, $homeTeam, $awayTeam);
+            // Если только одна команда (BYE без соперника)
+            if ($homeTeam && !$awayTeam) {
+                $round2Matches[] = [
+                    'match_number' => $matchNumber,
+                    'home_team' => $homeTeam,
+                    'away_team' => null,
+                    'games' => [],
+                    'home_wins' => 0,
+                    'away_wins' => 0,
+                    'winner' => null,
+                    'status' => 'pending',
+                    'match_format' => $matchFormat,
+                    'is_bye' => true,
+                ];
+                continue;
+            }
+
+            // Обе команды есть - обрабатываем как обычно
+            $gamesBetween = $this->findAllGames($games, $homeTeam, $awayTeam);
+            $seriesResult = $this->processSeries($gamesBetween, $homeTeam, $awayTeam, $matchFormat);
+
+            $winner = $seriesResult['winner'] ?? null;
             if ($winner) {
                 $winners[2][$matchNumber] = $winner;
             }
@@ -153,108 +234,267 @@ class PlayoffBracketService
                 'match_number' => $matchNumber,
                 'home_team' => $homeTeam,
                 'away_team' => $awayTeam,
-                'home_score' => $game['home_score'] ?? null,
-                'away_score' => $game['away_score'] ?? null,
-                'sets' => $game['sets'] ?? [],
+                'games' => $seriesResult['games'],
+                'home_wins' => $seriesResult['home_wins'],
+                'away_wins' => $seriesResult['away_wins'],
                 'winner' => $winner ? ($winner['id'] == ($homeTeam['id'] ?? null) ? 'home' : 'away') : null,
-                'status' => $this->getMatchStatus($game, $homeTeam, $awayTeam),
+                'status' => $seriesResult['status'],
+                'match_format' => $matchFormat,
+                'is_bye' => false,
             ];
         }
 
         $bracket[] = [
             'round_number' => 2,
-            'round_name' => $this->getRoundName($totalTeamsInSemifinal),
+            'round_name' => $this->getRoundName($expectedSemifinalTeams, 2, count($allPositions)),
             'matches' => $round2Matches,
+            'match_format' => $matchFormat,
         ];
 
-        // === ФИНАЛЬНЫЙ РАУНД (финал + матч за 3-е место) ===
+        // === РАУНД 3 (финалы) ===
         $finalRoundMatches = [];
 
-// Сначала ФИНАЛ
+// ФИНАЛ - всегда 1 игра
         $finalMatch = [
             'match_number' => 1,
             'match_type' => 'final',
             'title' => 'Финал',
-            'home_team' => null,
-            'away_team' => null,
-            'home_score' => null,
-            'away_score' => null,
-            'sets' => [],
+            'home_team' => $winners[2][1] ?? null,
+            'away_team' => $winners[2][2] ?? null,
+            'games' => [],
+            'home_wins' => 0,
+            'away_wins' => 0,
             'winner' => null,
-            'status' => 'pending'
+            'status' => 'pending',
+            'match_format' => 'single', // Всегда 1 игра
         ];
 
-// Если есть победители полуфиналов, заполняем
-        if (isset($winners[2][1])) {
-            $finalMatch['home_team'] = $winners[2][1];
-        }
-        if (isset($winners[2][2])) {
-            $finalMatch['away_team'] = $winners[2][2];
-        }
-
-// Если оба финалиста определены, ищем игру между ними
         if ($finalMatch['home_team'] && $finalMatch['away_team']) {
-            $game = $this->findGame($games, $finalMatch['home_team'], $finalMatch['away_team']);
-            if ($game) {
-                $finalMatch['home_score'] = $game['home_score'];
-                $finalMatch['away_score'] = $game['away_score'];
-                $finalMatch['sets'] = $game['sets'];
-                $finalMatch['status'] = $this->getMatchStatus($game, $finalMatch['home_team'], $finalMatch['away_team']);
+            $gamesBetween = $this->findAllGames($games, $finalMatch['home_team'], $finalMatch['away_team']);
+            $seriesResult = $this->processSeries($gamesBetween, $finalMatch['home_team'], $finalMatch['away_team'], 'single'); // Всегда single
 
-                $winner = $this->getWinner($game, $finalMatch['home_team'], $finalMatch['away_team']);
-                if ($winner) {
-                    $finalMatch['winner'] = $winner['id'] == $finalMatch['home_team']['id'] ? 'home' : 'away';
-                }
-            }
+            $finalMatch['games'] = $seriesResult['games'];
+            $finalMatch['home_wins'] = $seriesResult['home_wins'];
+            $finalMatch['away_wins'] = $seriesResult['away_wins'];
+            $finalMatch['winner'] = $seriesResult['winner'] ?
+                ($seriesResult['winner']['id'] == $finalMatch['home_team']['id'] ? 'home' : 'away') : null;
+            $finalMatch['status'] = $seriesResult['status'];
+        } elseif ($finalMatch['home_team'] || $finalMatch['away_team']) {
+            $finalMatch['status'] = 'pending';
         }
 
         $finalRoundMatches[] = $finalMatch;
 
-// Затем МАТЧ ЗА 3-Е МЕСТО
-        if (isset($winners[2][1]) && isset($winners[2][2])) {
-            // Проигравшие в полуфиналах
-            $loser1 = $this->getLoserFromMatch($round2Matches[0] ?? null);
-            $loser2 = $this->getLoserFromMatch($round2Matches[1] ?? null);
+// МАТЧ ЗА 3-Е МЕСТО - всегда 1 игра
+        $loser1 = isset($round2Matches[0]) ? $this->getLoserFromMatch($round2Matches[0]) : null;
+        $loser2 = isset($round2Matches[1]) ? $this->getLoserFromMatch($round2Matches[1]) : null;
 
-            $thirdPlaceMatch = [
-                'match_number' => 2,
-                'match_type' => 'third_place',
-                'title' => 'Матч за 3-е место',
-                'home_team' => $loser1,
-                'away_team' => $loser2,
-                'home_score' => null,
-                'away_score' => null,
-                'sets' => [],
-                'winner' => null,
-                'status' => 'pending'
-            ];
+        $thirdPlaceMatch = [
+            'match_number' => 2,
+            'match_type' => 'third_place',
+            'title' => 'Матч за 3-е место',
+            'home_team' => $loser1,
+            'away_team' => $loser2,
+            'games' => [],
+            'home_wins' => 0,
+            'away_wins' => 0,
+            'winner' => null,
+            'status' => 'pending',
+            'match_format' => 'single', // Всегда 1 игра
+        ];
 
-            // Ищем игру за 3-е место
-            if ($loser1 && $loser2) {
-                $game = $this->findGame($games, $loser1, $loser2);
-                if ($game) {
-                    $thirdPlaceMatch['home_score'] = $game['home_score'];
-                    $thirdPlaceMatch['away_score'] = $game['away_score'];
-                    $thirdPlaceMatch['sets'] = $game['sets'];
-                    $thirdPlaceMatch['status'] = $this->getMatchStatus($game, $loser1, $loser2);
+        if ($loser1 && $loser2) {
+            $gamesBetween = $this->findAllGames($games, $loser1, $loser2);
+            $seriesResult = $this->processSeries($gamesBetween, $loser1, $loser2, 'single'); // Всегда single
 
-                    $winner = $this->getWinner($game, $loser1, $loser2);
-                    if ($winner) {
-                        $thirdPlaceMatch['winner'] = $winner['id'] == $loser1['id'] ? 'home' : 'away';
-                    }
-                }
-            }
-
-            $finalRoundMatches[] = $thirdPlaceMatch;
+            $thirdPlaceMatch['games'] = $seriesResult['games'];
+            $thirdPlaceMatch['home_wins'] = $seriesResult['home_wins'];
+            $thirdPlaceMatch['away_wins'] = $seriesResult['away_wins'];
+            $thirdPlaceMatch['winner'] = $seriesResult['winner'] ?
+                ($seriesResult['winner']['id'] == $loser1['id'] ? 'home' : 'away') : null;
+            $thirdPlaceMatch['status'] = $seriesResult['status'];
+        } elseif ($loser1 || $loser2) {
+            $thirdPlaceMatch['status'] = 'pending';
         }
+
+        $finalRoundMatches[] = $thirdPlaceMatch;
 
         $bracket[] = [
             'round_number' => 3,
             'round_name' => 'Финальные матчи',
             'matches' => $finalRoundMatches,
+            'match_format' => 'single', // Всегда single
         ];
 
+        // ОТЛАДКА - финальный результат
+        //\Log::info('=== FINAL BRACKET ===');
+        //\Log::info('Total rounds: ' . count($bracket));
+        foreach ($bracket as $ri => $round) {
+            //\Log::info('Round ' . ($ri+1) . ': ' . ($round['round_name'] ?? 'no name') . ', matches: ' . count($round['matches'] ?? []));
+        }
+        //\Log::info('======================');
+
         return $bracket;
+    }
+
+    /**
+     * Находит все игры между двумя командами
+     */
+    private function findAllGames(Collection $games, ?array $homeTeam, ?array $awayTeam): Collection
+    {
+        if (!$homeTeam || !$awayTeam) {
+            return collect();
+        }
+
+        return $games->filter(function ($game) use ($homeTeam, $awayTeam) {
+            return ($game['home_team_id'] == $homeTeam['id'] && $game['away_team_id'] == $awayTeam['id']) ||
+                ($game['home_team_id'] == $awayTeam['id'] && $game['away_team_id'] == $homeTeam['id']);
+        })->values();
+    }
+
+    /**
+     * Обрабатывает серию матчей между двумя командами
+     */
+    private function processSeries(Collection $games, ?array $homeTeam, ?array $awayTeam, string $format): array
+    {
+        $result = [
+            'games' => [],
+            'home_wins' => 0,
+            'away_wins' => 0,
+            'winner' => null,
+            'status' => 'pending',
+        ];
+
+        if (!$homeTeam || !$awayTeam) {
+            return $result;
+        }
+
+        $gamesArray = $games->values()->toArray();
+        $neededWins = ($format === 'best_of_3') ? 2 : 1;
+        $maxGames = ($format === 'best_of_3') ? 3 : 1;
+
+        // Счет побед для каждой конкретной команды
+        $homeTeamWins = 0;
+        $awayTeamWins = 0;
+
+        // Для каждого матча определяем, кто хозяин
+        $homeTeamOrder = [];
+        $awayTeamOrder = [];
+
+        if ($format === 'best_of_3') {
+            for ($i = 0; $i < 3; $i++) {
+                $homeTeamOrder[$i] = ($i % 2 == 0) ? $homeTeam : $awayTeam;
+                $awayTeamOrder[$i] = ($i % 2 == 0) ? $awayTeam : $homeTeam;
+            }
+        } else {
+            $homeTeamOrder[0] = $homeTeam;
+            $awayTeamOrder[0] = $awayTeam;
+        }
+
+        $allGamesProcessed = true;
+
+        foreach ($gamesArray as $gameIndex => $game) {
+            $actualHome = null;
+            $actualAway = null;
+
+            if ($game['home_team_id'] == $homeTeam['id'] && $game['away_team_id'] == $awayTeam['id']) {
+                $actualHome = $homeTeam;
+                $actualAway = $awayTeam;
+            } elseif ($game['home_team_id'] == $awayTeam['id'] && $game['away_team_id'] == $homeTeam['id']) {
+                $actualHome = $awayTeam;
+                $actualAway = $homeTeam;
+            }
+
+            if ($actualHome && $actualAway) {
+                $homeScore = $game['home_score'];
+                $awayScore = $game['away_score'];
+
+                if ($homeScore !== null && $awayScore !== null) {
+                    // Игра сыграна - определяем победителя
+                    $gameWinner = null;
+                    if ($homeScore > $awayScore) {
+                        $gameWinner = $actualHome;
+                    } elseif ($awayScore > $homeScore) {
+                        $gameWinner = $actualAway;
+                    }
+
+                    // Увеличиваем счет побед для конкретной команды
+                    if ($gameWinner && $gameWinner['id'] == $homeTeam['id']) {
+                        $homeTeamWins++;
+                    } elseif ($gameWinner && $gameWinner['id'] == $awayTeam['id']) {
+                        $awayTeamWins++;
+                    }
+
+                    $gameHomeTeam = $homeTeamOrder[$gameIndex] ?? $homeTeam;
+                    $gameAwayTeam = $awayTeamOrder[$gameIndex] ?? $awayTeam;
+
+                    $displayHomeScore = $gameHomeTeam['id'] == $actualHome['id'] ? $homeScore : $awayScore;
+                    $displayAwayScore = $gameAwayTeam['id'] == $actualAway['id'] ? $awayScore : $homeScore;
+
+                    $result['games'][] = [
+                        'game_id' => $game['id'],
+                        'home_team' => $gameHomeTeam,
+                        'away_team' => $gameAwayTeam,
+                        'home_score' => $displayHomeScore,
+                        'away_score' => $displayAwayScore,
+                        'sets' => $game['sets'],
+                        'winner' => $gameWinner ? ($gameWinner['id'] == $gameHomeTeam['id'] ? 'home' : 'away') : null,
+                    ];
+
+                    // Проверяем победителя серии
+                    if ($homeTeamWins >= $neededWins) {
+                        $result['winner'] = $homeTeam;
+                        $result['status'] = 'completed';
+                        $result['home_wins'] = $homeTeamWins;
+                        $result['away_wins'] = $awayTeamWins;
+                        return $result;
+                    } elseif ($awayTeamWins >= $neededWins) {
+                        $result['winner'] = $awayTeam;
+                        $result['status'] = 'completed';
+                        $result['home_wins'] = $homeTeamWins;
+                        $result['away_wins'] = $awayTeamWins;
+                        return $result;
+                    }
+                } else {
+                    // Игра еще не сыграна - помечаем, что не все игры обработаны
+                    $allGamesProcessed = false;
+
+                    $gameHomeTeam = $homeTeamOrder[$gameIndex] ?? $homeTeam;
+                    $gameAwayTeam = $awayTeamOrder[$gameIndex] ?? $awayTeam;
+
+                    $result['games'][] = [
+                        'game_id' => $game['id'],
+                        'home_team' => $gameHomeTeam,
+                        'away_team' => $gameAwayTeam,
+                        'home_score' => null,
+                        'away_score' => null,
+                        'sets' => [],
+                        'winner' => null,
+                    ];
+
+                    // Если есть незавершенная игра, статус scheduled
+                    $result['status'] = 'scheduled';
+
+                    // Выходим из цикла, так как дальше игры не обрабатываем
+                    break;
+                }
+            }
+        }
+
+        // Если все игры обработаны и победитель не определен
+        if ($allGamesProcessed && !$result['winner']) {
+            // Если все игры сыграны и ничья
+            $result['status'] = 'draw';
+        } elseif (!$result['winner'] && $result['status'] !== 'scheduled') {
+            // Если не все игры обработаны, но статус не scheduled
+            $result['status'] = 'pending';
+        }
+
+        // ВСЕГДА возвращаем актуальный счет, даже если серия не завершена
+        $result['home_wins'] = $homeTeamWins;
+        $result['away_wins'] = $awayTeamWins;
+
+        return $result;
     }
 
     private function getTeamsWithPositions(StageGroup $group): Collection
@@ -338,11 +578,23 @@ class PlayoffBracketService
 
     private function getRoundName(int $teams, int $roundNumber = 1, int $totalTeams = 0): string
     {
-        // Для первого раунда с BYE
-        if ($teams == 4 && $roundNumber == 1 && $totalTeams > 4) {
-            return '1/4 финала';
+        // Для первого раунда с BYE (когда обычных команд меньше, чем общее количество)
+        if ($roundNumber == 1 && $teams < $totalTeams) {
+            $remainingTeams = $teams;
+            $names = [
+                2 => '1/2 финала',
+                4 => '1/4 финала',
+                6 => '1/4 финала',
+                8 => '1/8 финала',
+                10 => '1/10 финала',
+                12 => '1/12 финала',
+                14 => '1/14 финала',
+                16 => '1/16 финала',
+            ];
+            return $names[$teams] ?? "Раунд 1";
         }
 
+        // Для остальных раундов
         $names = [
             2 => 'Финал',
             4 => '1/2 финала',

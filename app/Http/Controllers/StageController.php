@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TournamentStage;
 use App\Models\Tournament;
 use App\Services\GroupStandingsService;
+use \App\Models\PlayoffConfig;
 use App\Services\PlayoffBracketGenerator;
 use App\Services\PlayoffConfigurator;
 use Illuminate\Http\Request;
@@ -44,7 +45,7 @@ class StageController extends Controller
 
             foreach ($stage->groups as $group) {
                 // Получаем конфигурацию плейофф для этой группы
-                $config = \App\Models\PlayoffConfig::where('stage_id', $stage->id)
+                $config = PlayoffConfig::where('stage_id', $stage->id)
                     ->where('group_id', $group->id)
                     ->first();
 

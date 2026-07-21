@@ -10,13 +10,15 @@ class PlayoffConfig extends Model
         'stage_id',
         'group_id',
         'total_teams',
-        'bye_positions',     // массив позиций, которые проходят сразу в следующий раунд
-        'reverse_seeding',   // обратный посев
+        'bye_positions',
+        'reverse_seeding',
+        'match_format', // 'single' или 'best_of_3'
     ];
 
     protected $casts = [
         'bye_positions' => 'array',
         'reverse_seeding' => 'boolean',
+        'match_format' => 'string',
     ];
 
     public function stage()
