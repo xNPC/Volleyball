@@ -37,7 +37,13 @@ class PlatformProvider extends OrchidServiceProvider
             Menu::make('Перейти на сайт')
                 ->slug('home')
                 ->icon('house')
-                ->route('home'),
+                ->route('home')
+                ->active(''),
+
+            Menu::make('Начальный экран')
+                ->icon('bs.book')
+                //->title('Navigation')
+                ->route(config('platform.index')),
 
             Menu::make('Организации')
                 ->slug('organizations')
@@ -100,37 +106,43 @@ class PlatformProvider extends OrchidServiceProvider
                 ->title('Контент')
                 ->permission('platform.content.gallery'),
 
-//            Menu::make('Get Started')
-//                ->icon('bs.book')
-//                ->title('Navigation')
-//                ->route(config('platform.index')),
-//
-//            Menu::make('Sample Screen')
-//                ->icon('bs.collection')
-//                ->route('platform.example')
-//                ->badge(fn () => 6),
-//
-//            Menu::make('Form Elements')
-//                ->icon('bs.card-list')
-//                ->route('platform.example.fields')
-//                ->active('*/examples/form/*'),
-//
-//            Menu::make('Layouts Overview')
-//                ->icon('bs.window-sidebar')
-//                ->route('platform.example.layouts'),
-//
-//            Menu::make('Grid System')
-//                ->icon('bs.columns-gap')
-//                ->route('platform.example.grid'),
-//
-//            Menu::make('Charts')
-//                ->icon('bs.bar-chart')
-//                ->route('platform.example.charts'),
-//
-//            Menu::make('Cards')
-//                ->icon('bs.card-text')
-//                ->route('platform.example.cards')
-//                ->divider(),
+
+            Menu::make('Хелпер')
+                ->icon('bs.question-circle')
+                ->title('Прочее')
+                ->list([
+//                    Menu::make('Get Started')
+//                    ->icon('bs.book')
+//                    ->route(config('platform.index')),
+
+                    Menu::make('Sample Screen')
+                        ->icon('bs.collection')
+                        ->route('platform.example')
+                        ->badge(fn () => 6),
+
+                    Menu::make('Form Elements')
+                        ->icon('bs.card-list')
+                        ->route('platform.example.fields')
+                        ->active('*/examples/form/*'),
+
+                    Menu::make('Layouts Overview')
+                        ->icon('bs.window-sidebar')
+                        ->route('platform.example.layouts'),
+
+                    Menu::make('Grid System')
+                        ->icon('bs.columns-gap')
+                        ->route('platform.example.grid'),
+
+                    Menu::make('Charts')
+                        ->icon('bs.bar-chart')
+                        ->route('platform.example.charts'),
+
+                    Menu::make('Cards')
+                        ->icon('bs.card-text')
+                        ->route('platform.example.cards')
+                        ->divider(),
+                ])
+                ->permission('platform.danger'),
 
             Menu::make(__('Users'))
                 ->icon('bs.people')
@@ -180,6 +192,9 @@ class PlatformProvider extends OrchidServiceProvider
 
             ItemPermission::group('Контент')
                 ->addPermission('platform.content.gallery', 'Управление фотоальбомом'),
+
+            ItemPermission::group('Опасная зона!')
+                ->addPermission('platform.danger','Для обслуживания сайта'),
 
 //            ItemPermission::group('Разобрать')
 //                ->addPermission('platform.1', '1')

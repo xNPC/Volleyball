@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Orchid\Screens\Application\ApplicationEditScreen;
 use App\Orchid\Screens\Application\ApplicationListScreen;
+use App\Orchid\Screens\Documentation\DocumentationEditScreen;
+use App\Orchid\Screens\Documentation\DocumentationListScreen;
+use App\Orchid\Screens\Documentation\DocumentationMainScreen;
 use App\Orchid\Screens\Examples\ExampleActionsScreen;
 use App\Orchid\Screens\Examples\ExampleCardsScreen;
 use App\Orchid\Screens\Examples\ExampleChartsScreen;
@@ -312,5 +315,14 @@ Route::post('albums/{album}/photos/sort', [PhotoManagerScreen::class, 'updateSor
 // Удаление фото (DELETE)
 Route::delete('albums/{album}/photos/{photo}', [PhotoManagerScreen::class, 'deletePhoto'])
     ->name('platform.album.photos.delete');
+
+Route::screen('documentation', DocumentationMainScreen::class)
+    ->name('platform.documentation.main');
+
+Route::screen('documentation/list', DocumentationListScreen::class)
+    ->name('platform.documentation.list');
+
+Route::screen('documentation/{doc}/edit', DocumentationEditScreen::class)
+    ->name('platform.documentation.edit');
 
 // Route::screen('idea', Idea::class, 'platform.screens.idea');
