@@ -84,7 +84,7 @@ class DocumentationEditScreen extends Screen
                         ->type(Color::PRIMARY),
                     Button::make('Выйти')
                         ->type(Color::BASIC)
-                        ->confirm('Вы уверены, что хотите выйти без сохранения?')
+                        ->confirm('Вы уверены, что хотите выйти? Все несохраненные изменения пропадут!')
                         ->method('close')
                 ])
                     ->autoWidth(),
