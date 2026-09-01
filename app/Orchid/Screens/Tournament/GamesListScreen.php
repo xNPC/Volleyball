@@ -352,8 +352,8 @@ class GamesListScreen extends Screen
                                     ->modalTitle(fn() => '' . ($game->homeApplication->team->name ?? 'Хозяева') . ' vs ' . ($game->awayApplication->team->name ?? 'Гости'))
                                     ->asyncParameters([
                                         'game' => $game->id,
-                                    ]),
-                                    //->canSee(!$game->isCompleted()),
+                                    ])
+                                    ->canSee(auth()->user()->hasAccess('platform.games.result')),
 
                                 Button::make('Удалить')
                                     ->icon('trash')

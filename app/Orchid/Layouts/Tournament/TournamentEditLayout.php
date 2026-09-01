@@ -77,10 +77,47 @@ class TournamentEditLayout extends Rows
                 ->options([
                     'planned' => 'Запланирован',
                     'ongoing' => 'В процессе',
-                    'completed' => 'Завершен'
+                    'completed' => 'Завершён'
                 ])
                 ->title('Статус')
                 ->required(),
+
+            Group::make([
+                DateTimer::make('tournament.addition_deadline_male')
+                    ->title('Дедлайн дозаявок (муж.)')
+                    ->altFormat('d.m.Y')
+                    ->allowInput()
+                    ->placeholder('Без ограничения'),
+
+                DateTimer::make('tournament.addition_deadline_female')
+                    ->title('Дедлайн дозаявок (жен.)')
+                    ->altFormat('d.m.Y')
+                    ->allowInput()
+                    ->placeholder('Без ограничения'),
+            ])
+                ->autoWidth(),
+
+            Group::make([
+                DateTimer::make('tournament.transfer_deadline_male')
+                    ->title('Дедлайн переходов (муж.)')
+                    ->altFormat('d.m.Y')
+                    ->allowInput()
+                    ->placeholder('Без ограничения'),
+
+                DateTimer::make('tournament.transfer_deadline_female')
+                    ->title('Дедлайн переходов (жен.)')
+                    ->altFormat('d.m.Y')
+                    ->allowInput()
+                    ->placeholder('Без ограничения'),
+            ])
+                ->autoWidth(),
+
+            Input::make('tournament.transfers_limit')
+                ->type('number')
+                ->title('Лимит переходов игрока')
+                ->min(0)
+                ->value(1)
+                ->help('Сколько раз игрок может перейти в рамках турнира. Пусто — без ограничений.'),
 
             Button::make('Сохранить')
                 ->icon('check')

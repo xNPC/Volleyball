@@ -3,19 +3,14 @@
 namespace App\Orchid\Screens\Documentation;
 
 use App\Models\Documentation;
-use Faker\Provider\Text;
-use Illuminate\Database\Eloquent\Collection;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Field;
-use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Screen;
-use Orchid\Screen\Sight;
 use Orchid\Support\Facades\Layout;
 
 class DocumentationMainScreen extends Screen
 {
-
     public $docs = [];
+
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -23,12 +18,13 @@ class DocumentationMainScreen extends Screen
      */
     public function query(): iterable
     {
-        $documentations = Documentation::where('status', 1)->orderBy('order')->get();
-
-        $this->docs = $documentations;
+        $this->docs = Documentation::query()
+            ->where('status', 1)
+            ->orderBy('order')
+            ->get();
 
         return [
-            'docs' => $documentations,
+            'docs' => $this->docs,
         ];
     }
 
@@ -54,10 +50,14 @@ class DocumentationMainScreen extends Screen
      */
     public function commandBar(): iterable
     {
+        if (! auth()->user()?->hasAccess('platform.content.docs')) {
+            return [];
+        }
+
         return [
-            Link::make('Редактировать')
-                ->icon('pencil')
-                ->route('platform.documentation.list')
+//            Link::make('Редактировать')
+//                ->icon('bs.pencil')
+//                ->route('platform.documentation.list'),
         ];
     }
 
@@ -68,23 +68,25 @@ class DocumentationMainScreen extends Screen
      */
     public function layout(): iterable
     {
+        $docs = collect($this->docs);
+
+        if ($docs->isEmpty()) {
+            return [
+                Layout::view('orchid.documentation.empty'),
+            ];
+        }
+
         $accordionItems = [];
 
-        foreach ($this->docs as $doc) {
-            $accordionItems[$doc->order .'. ' . $doc->title] = [
-                Layout::rows([
-                    Label::make('')
-                        ->value($doc->content)
-                ])
+        foreach ($docs as $doc) {
+            $accordionItems[$doc->order . '. ' . $doc->title] = [
+                Layout::view('orchid.documentation.item', ['doc' => $doc]),
             ];
         }
 
         return [
-
-            Layout::accordion(
-                $accordionItems
-            )
-                ->open(''),
+            Layout::view('orchid.documentation.style'),
+            Layout::accordion($accordionItems)->open([]),
         ];
     }
 }

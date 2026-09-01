@@ -40,10 +40,10 @@ class PlatformProvider extends OrchidServiceProvider
                 ->route('home')
                 ->active(''),
 
-            Menu::make('Начальный экран')
+            Menu::make('Документация')
+                ->slug('documentation')
                 ->icon('bs.book')
-                //->title('Navigation')
-                ->route(config('platform.index')),
+                ->route('platform.documentation.main'),
 
             Menu::make('Организации')
                 ->slug('organizations')
@@ -95,6 +95,11 @@ class PlatformProvider extends OrchidServiceProvider
 //                ])
                 ->route('platform.applications.list'),
 
+            Menu::make('Дозаявки и переходы')
+                ->slug('roster-requests')
+                ->icon('bs.box-arrow-in-right')
+                ->route('platform.roster.requests.list'),
+
             Menu::make('Управление играми')
                 ->icon('controller')
                 ->route('platform.tournament.games.management')
@@ -106,6 +111,10 @@ class PlatformProvider extends OrchidServiceProvider
                 ->title('Контент')
                 ->permission('platform.content.gallery'),
 
+            Menu::make('Управление инструкциями')
+                ->icon('bs.pencil-square')
+                ->route('platform.documentation.list')
+                ->permission('platform.content.docs'),
 
             Menu::make('Хелпер')
                 ->icon('bs.question-circle')
@@ -184,14 +193,16 @@ class PlatformProvider extends OrchidServiceProvider
 
             ItemPermission::group('Заявки')
                 ->addPermission('platform.applications.edit', 'Управление заявками')
-                ->addPermission('platform.applications.delete', 'Удаление заявок'),
+                ->addPermission('platform.applications.delete', 'Удаление заявок')
+                ->addPermission('platform.applications.approve', 'Утверждение дозаявок и переходов'),
 
             ItemPermission::group('Игры')
                 ->addPermission('platform.games.edit', 'Управление играми')
                 ->addPermission('platform.games.result', 'Внесение результатов'),
 
             ItemPermission::group('Контент')
-                ->addPermission('platform.content.gallery', 'Управление фотоальбомом'),
+                ->addPermission('platform.content.gallery', 'Управление фотоальбомом')
+                ->addPermission('platform.content.docs', 'Управление инструкциями'),
 
             ItemPermission::group('Опасная зона!')
                 ->addPermission('platform.danger','Для обслуживания сайта'),

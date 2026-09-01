@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\CheckBox;
 use Orchid\Screen\Fields\Input;
@@ -202,6 +203,12 @@ class ApplicationEditScreen extends Screen
                                             or auth()->user()->hasAccess('platform.applications.edit')
                                             or !$this->application->is_complete
                                         ),
+
+                                    Link::make('Отзаявить')
+                                        ->icon('bs.box-arrow-right')
+                                        ->href(route('platform.roster.requests.create', ['application' => $this->application->id])
+                                            . '?type=removal&player=' . $roster->user_id)
+                                        ->canSee($this->application->exists),
                             ])
                         )
                 ])

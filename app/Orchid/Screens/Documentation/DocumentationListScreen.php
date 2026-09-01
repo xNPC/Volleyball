@@ -3,15 +3,25 @@
 namespace App\Orchid\Screens\Documentation;
 
 use App\Models\Documentation;
+use Illuminate\Support\Str;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
+use Orchid\Support\Facades\Alert;
 use Orchid\Support\Facades\Layout;
+use Symfony\Component\HttpFoundation\Response;
 
 class DocumentationListScreen extends Screen
 {
+    public function permission(): ?iterable
+    {
+        return [
+            'platform.content.docs',
+        ];
+    }
+
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -20,7 +30,7 @@ class DocumentationListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'docs' => Documentation::all()
+            'docs' => Documentation::query()->orderBy('order')->get(),
         ];
     }
 
@@ -41,7 +51,11 @@ class DocumentationListScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            Link::make('Создать инструкцию')
+                ->icon('bs.plus-lg')
+                ->route('platform.documentation.create'),
+        ];
     }
 
     /**
@@ -54,15 +68,27 @@ class DocumentationListScreen extends Screen
         return [
             Layout::table('docs', [
                 TD::make('order', 'Порядок')
-                    ->width('100px'),
-                TD::make('title', 'Вопрос'),
+                    ->width('100px')
+                    ->sort(),
+
+                TD::make('title', 'Вопрос')
+                    ->sort()
+                    ->filter(TD::FILTER_TEXT),
+
+                TD::make('content', 'Превью')
+                    ->render(fn (Documentation $doc) => Str::limit(trim(strip_tags($doc->content ?? '')), 100)),
+
                 TD::make('status', 'Статус')
                     ->width('100px')
+                    ->sort()
                     ->render(function (Documentation $doc) {
                         return $doc->status ? '✅' : '❌';
                     }),
+
                 TD::make('Действия')
-                    ->render(fn(Documentation $doc) => DropDown::make()
+                    ->alignCenter()
+                    ->width('120px')
+                    ->render(fn (Documentation $doc) => DropDown::make()
                         ->icon('bs.three-dots-vertical')
                         ->list([
                             Link::make('Редактировать')
@@ -71,9 +97,17 @@ class DocumentationListScreen extends Screen
                             Button::make('Удалить')
                                 ->icon('bs.trash')
                                 ->confirm('Вы уверены, что хотите удалить? Эта операция отмене не подлежит!')
-                        ]),
-                    )
-            ])
+                                ->method('remove', ['doc' => $doc->id]),
+                        ])),
+            ]),
         ];
+    }
+
+    public function remove(Documentation $doc): Response
+    {
+        $doc->delete();
+        Alert::info('Инструкция удалена');
+
+        return redirect()->route('platform.documentation.list');
     }
 }

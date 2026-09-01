@@ -26,12 +26,21 @@ class Tournament extends Model
         'start_date',
         'end_date',
         'status',
-        'rules'
+        'rules',
+        'addition_deadline_male',
+        'addition_deadline_female',
+        'transfer_deadline_male',
+        'transfer_deadline_female',
+        'transfers_limit',
     ];
 
     protected $casts = [
         'start_date' => 'date:Y-m-d',
         'end_date' => 'date:Y-m-d',
+        'addition_deadline_male' => 'date:Y-m-d',
+        'addition_deadline_female' => 'date:Y-m-d',
+        'transfer_deadline_male' => 'date:Y-m-d',
+        'transfer_deadline_female' => 'date:Y-m-d',
     ];
 
     protected $dates = [

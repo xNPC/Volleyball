@@ -104,7 +104,12 @@ class TournamentEditScreen extends Screen
             'tournament.description' => 'string',
             'tournament.start_date' => 'required|date',
             'tournament.end_date' => 'required|date|after_or_equal:tournament.start_date',
-            'tournament.status' => 'required|in:planned,ongoing,completed'
+            'tournament.status' => 'required|in:planned,ongoing,completed',
+            'tournament.addition_deadline_male' => 'nullable|date',
+            'tournament.addition_deadline_female' => 'nullable|date',
+            'tournament.transfer_deadline_male' => 'nullable|date',
+            'tournament.transfer_deadline_female' => 'nullable|date',
+            'tournament.transfers_limit' => 'nullable|integer|min:0',
         ]);
 
         $tournament->fill($validated['tournament'])->save();

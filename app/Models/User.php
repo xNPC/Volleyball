@@ -36,6 +36,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'birthday',
+        'gender',
     ];
 
 //    protected $dates = [
@@ -44,6 +45,11 @@ class User extends Authenticatable
 //        'created_at',
 //        'updated_at'
 //    ];
+
+    public const GENDERS = [
+        'male' => 'Мужской',
+        'female' => 'Женский',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.

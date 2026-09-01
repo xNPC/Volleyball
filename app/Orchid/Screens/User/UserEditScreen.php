@@ -156,6 +156,7 @@ class UserEditScreen extends Screen
                 'required',
                 Rule::unique(User::class, 'email')->ignore($user),
             ],
+            'user.birthday' => ['nullable', 'date'],
         ]);
 
         $permissions = collect($request->get('permissions'))

@@ -7,6 +7,8 @@ use App\Orchid\Screens\Application\ApplicationListScreen;
 use App\Orchid\Screens\Documentation\DocumentationEditScreen;
 use App\Orchid\Screens\Documentation\DocumentationListScreen;
 use App\Orchid\Screens\Documentation\DocumentationMainScreen;
+use App\Orchid\Screens\RosterRequest\RosterRequestFormScreen;
+use App\Orchid\Screens\RosterRequest\RosterRequestListScreen;
 use App\Orchid\Screens\Examples\ExampleActionsScreen;
 use App\Orchid\Screens\Examples\ExampleCardsScreen;
 use App\Orchid\Screens\Examples\ExampleChartsScreen;
@@ -212,6 +214,17 @@ Route::screen('applications', ApplicationListScreen::class)
 
 /**
  *
+ * Дозаявки и переходы игроков
+ *
+ */
+Route::screen('roster-requests/create/{application?}', RosterRequestFormScreen::class)
+    ->name('platform.roster.requests.create');
+
+Route::screen('roster-requests', RosterRequestListScreen::class)
+    ->name('platform.roster.requests.list');
+
+/**
+ *
  * Работа с играми
  *
  */
@@ -321,6 +334,9 @@ Route::screen('documentation', DocumentationMainScreen::class)
 
 Route::screen('documentation/list', DocumentationListScreen::class)
     ->name('platform.documentation.list');
+
+Route::screen('documentation/create', DocumentationEditScreen::class)
+    ->name('platform.documentation.create');
 
 Route::screen('documentation/{doc}/edit', DocumentationEditScreen::class)
     ->name('platform.documentation.edit');
