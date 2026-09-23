@@ -3,6 +3,7 @@
 namespace App\Orchid\Screens\Application;
 
 use App\Models\TournamentApplication;
+use App\Orchid\Layouts\Application\ApplicationFiltersLayout;
 use App\Orchid\Layouts\Application\ApplicationListTable;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
@@ -21,17 +22,22 @@ class ApplicationListScreen extends Screen
     {
         $user = auth()->user();
 
+        $base = TournamentApplication::query()
+            ->with('tournament', 'team', 'venue')
+            ->filters()
+            ->filtersApplySelection(ApplicationFiltersLayout::class);
+
         // Если есть разрешение platform.applications - показываем все заявки
         if ($user->hasAccess('platform.applications.edit')) {
-            $applications = TournamentApplication::with('tournament', 'team', 'venue')->get();
+            $applications = $base->paginate();
         }
         // Иначе показываем только заявки, где пользователь является капитаном команды
         else {
-            $applications = TournamentApplication::with('tournament', 'team', 'venue')
+            $applications = $base
                 ->whereHas('team', function($query) use ($user) {
                     $query->where('captain_id', $user->id);
                 })
-                ->get();
+                ->paginate();
         }
 
         return [
@@ -71,6 +77,7 @@ class ApplicationListScreen extends Screen
     public function layout(): iterable
     {
         return [
+            ApplicationFiltersLayout::class,
             ApplicationListTable::class
         ];
     }

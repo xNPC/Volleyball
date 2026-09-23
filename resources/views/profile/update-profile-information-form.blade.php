@@ -89,6 +89,17 @@
             <x-input-error for="phone" class="mt-2" />
         </div>
 
+        <!-- Gender -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="gender" value="{{ __('Gender') }}" />
+            <select id="gender" wire:model="state.gender" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                @foreach (\App\Models\User::GENDERS as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+            <x-input-error for="gender" class="mt-2" />
+        </div>
+
         <!-- Date of Birth -->
         <div class="col-span-6 sm:col-span-4">
             <x-label for="birthday" value="{{ __('Birthday') }}" />

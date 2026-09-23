@@ -39,6 +39,7 @@ class UserEditLayout extends Rows
                 Select::make('user.gender')
                     ->options(User::GENDERS)
                     ->empty('Не указан')
+                    ->required()
                     ->title('Пол')
                     ->help('Необходим для применения дедлайнов дозаявок и переходов'),
 

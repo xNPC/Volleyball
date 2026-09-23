@@ -3,16 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Orchid\Filters\Filterable;
+use Orchid\Filters\Types\Where;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class TournamentApplication extends Model
 {
-    use AsSource, SoftDeletes;
+    use AsSource, Filterable, SoftDeletes;
 
     protected $fillable = [
         'tournament_id', 'team_id', 'venue_id',
         'status', 'is_complete'
+    ];
+
+    protected $allowedFilters = [
+        'tournament_id' => Where::class,
+        'status'        => Where::class,
+        'is_complete'   => Where::class,
     ];
 
     protected $dates = [

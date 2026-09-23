@@ -5,8 +5,11 @@ namespace App\Orchid\Layouts\Application;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
+use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
+use App\Models\Tournament;
+use App\Models\TournamentApplication;
 
 class ApplicationListTable extends Table
 {
@@ -28,10 +31,19 @@ class ApplicationListTable extends Table
     protected function columns(): iterable
     {
         return [
-            TD::make('tournament.name', 'Турнир'),
+            TD::make('tournament_id', 'Турнир')
+                ->filter(Select::make()
+                    ->options(Tournament::orderBy('name')->pluck('name', 'id')->all())
+                    ->empty('Все турниры'))
+                ->filterValue(fn ($value) => Tournament::find($value)?->name ?? $value)
+                ->render(fn ($application) => $application->tournament?->name ?? '—'),
             TD::make('team.name', 'Команда'),
             //TD::make('venue.name', 'Домашний зал'),
             TD::make('status', 'Статус')
+                ->filter(Select::make()
+                    ->options(TournamentApplication::STATUS)
+                    ->empty('Все статусы'))
+                ->filterValue(fn ($value) => TournamentApplication::STATUS[$value] ?? $value)
                 ->render(function ($application) {
                     $statusText = $application::STATUS[$application->status] ?? 'Неизвестно';
                     $color = match($application->status) {
@@ -45,6 +57,10 @@ class ApplicationListTable extends Table
                 }),
 
             TD::make('is_complete', 'Завершена')
+                ->filter(Select::make()
+                    ->options(TournamentApplication::IS_COMPLETE)
+                    ->empty('Все'))
+                ->filterValue(fn ($value) => TournamentApplication::IS_COMPLETE[$value] ?? $value)
                 ->render(function ($application) {
                     $completeText = $application::IS_COMPLETE[$application->is_complete] ?? 'Неизвестно';
 
@@ -60,7 +76,7 @@ class ApplicationListTable extends Table
                 }),
             TD::make('updated_at', 'Дата обновления')
                 ->render(function ($application) {
-                    return $application->created_at->format('d.m.Y H:i:s');
+                    return $application->updated_at->format('d.m.Y H:i:s');
                 }),
             TD::make('Действия')
                 ->render(fn ($application) => DropDown::make()
