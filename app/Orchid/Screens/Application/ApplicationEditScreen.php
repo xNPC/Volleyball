@@ -47,6 +47,7 @@ class ApplicationEditScreen extends Screen
                 $model->user_id = $row['user_id'];
                 $model->jersey_number = $row['jersey_number'];
                 $model->position = $row['position'];
+                $model->is_captain = $row['is_captain'] ?? false;
                 $model->setRelation('player', User::find($row['user_id']));
 
                 $roster->push($model);
@@ -70,12 +71,25 @@ class ApplicationEditScreen extends Screen
 
     private function draft(): array
     {
-        return array_merge([
+        $draft = array_merge([
             'tournament_id' => null,
             'team_id' => null,
             'venue_id' => null,
             'roster' => [],
         ], session('draft_application', []));
+
+        if (auth()->check() && !collect($draft['roster'])->contains('user_id', auth()->id())) {
+            array_unshift($draft['roster'], [
+                'user_id' => auth()->id(),
+                'jersey_number' => 1,
+                'position' => 'outside',
+                'is_captain' => true,
+            ]);
+
+            session(['draft_application' => $draft]);
+        }
+
+        return $draft;
     }
 
     /**
@@ -202,8 +216,9 @@ class ApplicationEditScreen extends Screen
                             : '<span class="badge bg-danger">X</span>'
                         )
                         ->alignCenter(),
-                    TD::make('user_id', 'Ф.И.О.')
-                        ->render(fn($user) => $user->player->name),
+TD::make('user_id', 'Ф.И.О.')
+                        ->render(fn($user) =>
+                        $user->player->name . ($user->is_captain ? ' <span class="badge bg-warning">Капитан</span>' : '')),
                     TD::make('birthday', 'Дата рождения')
                         ->render(function($roster) {
                             if (!$roster->player->birthday) {
@@ -245,8 +260,9 @@ class ApplicationEditScreen extends Screen
                                         ->confirm('Вы уверены, что хотите удалить игрока из заявки?')
                                         ->novalidate()
                                         ->canSee(request()->route()->getName() == 'platform.applications.create'
-                                            or auth()->user()->hasAccess('platform.applications.edit')
-                                            or !$this->application->is_complete
+                                            ? (int) ($roster->is_captain ?? 0) !== 1
+                                            : (auth()->user()->hasAccess('platform.applications.edit')
+                                                or !$this->application->is_complete)
                                         ),
 
                                     Link::make('Отзаявить')
@@ -311,6 +327,7 @@ class ApplicationEditScreen extends Screen
                     'user_id' => $row['user_id'],
                     'jersey_number' => $row['jersey_number'],
                     'position' => $row['position'],
+                    'is_captain' => $row['is_captain'] ?? false,
                 ]);
             }
 
@@ -400,6 +417,11 @@ class ApplicationEditScreen extends Screen
                 abort(404);
             }
 
+            if (!empty($draft['roster'][$rosterId]['is_captain'])) {
+                Toast::error('Капитан не может быть удален из заявки');
+                return back();
+            }
+
             unset($draft['roster'][$rosterId]);
             $draft['roster'] = array_values($draft['roster']);
             session(['draft_application' => $draft]);
@@ -487,6 +509,7 @@ class ApplicationEditScreen extends Screen
             $roster->user_id = $row['user_id'];
             $roster->jersey_number = $row['jersey_number'];
             $roster->position = $row['position'];
+            $roster->is_captain = $row['is_captain'] ?? false;
             $roster->setRelation('player', User::find($row['user_id']));
         }
 
