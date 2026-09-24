@@ -4,12 +4,14 @@ namespace App\Orchid\Layouts\Application;
 
 use App\Models\ApplicationRoster;
 use App\Models\User;
+use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Field;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Layouts\Rows;
+use Orchid\Support\Color;
 
 class AddPlayerLayout extends Rows
 {
@@ -31,23 +33,27 @@ class AddPlayerLayout extends Rows
             Relation::make('roster.user_id')
                 ->fromModel(User::class, 'name')
                 ->title('Игрок')
-                ->help('')
-                ->required(),
+                ->help(''),
 
 
             Group::make([
                 Input::make('roster.jersey_number')
                     ->title('Игровой номер')
                     ->min(1)
-                    ->max(99)
-                    ->required(),
+                    ->max(99),
 
                 Select::make('roster.position')
                     ->options(ApplicationRoster::POSITIONS)
-                    ->title('Амплуа')
-                    ->required(),
+                    ->title('Амплуа'),
             ])
-            ->widthColumns('30% 65%')
+            ->widthColumns('30% 65%'),
+
+            Button::make('Добавить игрока')
+                ->method('addPlayer')
+                ->icon('plus')
+                ->type(Color::SUCCESS)
+                ->block()
+                ->novalidate(),
 
         ];
     }

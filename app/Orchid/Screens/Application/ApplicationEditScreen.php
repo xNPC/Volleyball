@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Application;
 
 use App\Models\ApplicationRoster;
 use App\Models\TournamentApplication;
+use App\Models\User;
 use App\Models\Venue;
 use App\Orchid\Layouts\Application\AddPlayerLayout;
 use App\Orchid\Layouts\Application\TournamentsListener;
@@ -32,12 +33,49 @@ class ApplicationEditScreen extends Screen
      */
     public function query(TournamentApplication $application): iterable
     {
+        if (!$application->exists) {
+            $draft = $this->draft();
+
+            $application->tournament_id = $draft['tournament_id'];
+            $application->team_id = $draft['team_id'];
+            $application->venue_id = $draft['venue_id'];
+
+            $roster = collect();
+            foreach ($draft['roster'] as $index => $row) {
+                $model = new ApplicationRoster();
+                $model->id = $index;
+                $model->user_id = $row['user_id'];
+                $model->jersey_number = $row['jersey_number'];
+                $model->position = $row['position'];
+                $model->setRelation('player', User::find($row['user_id']));
+
+                $roster->push($model);
+            }
+
+            $application->setRelation('roster', $roster);
+
+            return [
+                'application' => $application,
+                'roster' => $roster,
+            ];
+        }
+
         return [
             'application' => $application,
             'roster' => $application->roster()
                 ->orderByRaw('CAST(jersey_number AS UNSIGNED) ASC')
                 ->get(),
         ];
+    }
+
+    private function draft(): array
+    {
+        return array_merge([
+            'tournament_id' => null,
+            'team_id' => null,
+            'venue_id' => null,
+            'roster' => [],
+        ], session('draft_application', []));
     }
 
     /**
@@ -47,14 +85,7 @@ class ApplicationEditScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [
-
-                ModalToggle::make('Добавить игрока')
-                    ->modal('addPlayer')
-                    ->method('addPlayer')
-                    ->icon('plus')
-                    ->canSee($this->application->exists and (auth()->user()->hasAccess('platform.applications.edit') or !$this->application->is_complete))
-        ];
+        return [];
     }
 
     public $application;
@@ -73,14 +104,15 @@ class ApplicationEditScreen extends Screen
 
     public function layout(): array
     {
-        return [
+        $canAddPlayer = request()->route()->getName() == 'platform.applications.create'
+            || ($this->application->exists && (auth()->user()->hasAccess('platform.applications.edit') || !$this->application->is_complete));
 
-            Layout::modal('addPlayer', [
-                AddPlayerLayout::class
-            ])
-                ->applyButton('Добавить игрока')
-                ->async('asyncGetPlayer')
-                ->title('Добавить игрока'),
+        $rosterTitle = 'Состав';
+        if ($this->application->exists) {
+            $rosterTitle .= ' — ' . ($this->application->team->name ?? $this->application->tournament->name ?? '');
+        }
+
+        return [
 
             Layout::modal('editPlayer', [
                 Layout::rows([
@@ -109,6 +141,8 @@ class ApplicationEditScreen extends Screen
 
                 [
 
+                    Layout::view('platform.application-steps'),
+
                     new TournamentsListener(),
 
                     Layout::rows([
@@ -129,8 +163,8 @@ class ApplicationEditScreen extends Screen
                             ->canSee($this->application->exists and auth()->user()->hasAccess('platform.applications.edit')),
 
                         CheckBox::make('application.is_complete')
-                            ->title('Заявка завершена')
-                            ->help('Будьте внимательны! Если Заявка будет завершена, вы не сможете больше ее изменять!')
+                            ->title('Отправить заявку на утверждение')
+                            ->help('После этого состав изменить нельзя — только через дозаявки и отзаявки')
                             ->sendTrueOrFalse(),
                             //->disabled($this->application->is_complete),
 
@@ -143,15 +177,25 @@ class ApplicationEditScreen extends Screen
                                 or !$this->application->is_complete
                             ),
 
+                        Button::make('Отменить')
+                            ->icon('bs.x-circle')
+                            ->type(Color::DEFAULT)
+                            ->method('discardDraft')
+                            ->confirm('Отменить создание заявки? Введённые данные будут потеряны')
+                            ->novalidate()
+                            ->canSee(request()->route()->getName() == 'platform.applications.create'
+                                && session()->has('draft_application')
+                            ),
+
                     ])
                 ],
 //                Layout::rows([
 //                    //ApplicationScheduleLayout::class
 //                ]),
 //
-                //Layout::rows([
-                Layout::table('application.roster', [
-                    TD::make('photo_preview', '')
+                [
+                    Layout::table('application.roster', [
+                        TD::make('photo_preview', '')
                         ->render(fn($roster) =>
                         $roster->player->profile_photo_path
                             ? '<img src="' . asset('storage/' . $roster->player->profile_photo_path) . '" alt="Фото" class="" style="width: 40px; height: 40px; object-fit: cover;">'
@@ -199,6 +243,7 @@ class ApplicationEditScreen extends Screen
                                         ->icon('trash')
                                         ->method('removePlayer', ['id' => $roster->id])
                                         ->confirm('Вы уверены, что хотите удалить игрока из заявки?')
+                                        ->novalidate()
                                         ->canSee(request()->route()->getName() == 'platform.applications.create'
                                             or auth()->user()->hasAccess('platform.applications.edit')
                                             or !$this->application->is_complete
@@ -212,7 +257,10 @@ class ApplicationEditScreen extends Screen
                             ])
                         )
                 ])
-                ->title('Состав'),
+                        ->title($rosterTitle),
+
+                    ...($canAddPlayer ? [AddPlayerLayout::class] : []),
+                ],
 
             ])
             ->ratio('40/60'),
@@ -242,6 +290,33 @@ class ApplicationEditScreen extends Screen
             ])
         );
 
+        if ($appl->wasRecentlyCreated) {
+            $draft = $this->draft();
+
+            $hasCaptain = collect($draft['roster'])->contains('user_id', auth()->id());
+
+            if (!$hasCaptain) {
+                ApplicationRoster::create([
+                    'application_id' => $appl->id,
+                    'user_id' => auth()->id(),
+                    'jersey_number' => 1,
+                    'position' => 'outside',
+                    'is_captain' => true,
+                ]);
+            }
+
+            foreach ($draft['roster'] as $row) {
+                ApplicationRoster::create([
+                    'application_id' => $appl->id,
+                    'user_id' => $row['user_id'],
+                    'jersey_number' => $row['jersey_number'],
+                    'position' => $row['position'],
+                ]);
+            }
+
+            session()->forget('draft_application');
+        }
+
         Toast::info('Успешно сохранено');
 
         return redirect()->route('platform.applications.edit', ['application' => $appl]);
@@ -267,6 +342,33 @@ class ApplicationEditScreen extends Screen
 
         ]);
 
+        if (!$application->exists) {
+            $data = $request->input('roster');
+
+            $draft = $this->draft();
+            $draft['tournament_id'] = $request->input('application.tournament_id');
+            $draft['team_id'] = $request->input('application.team_id');
+            $draft['venue_id'] = $request->input('application.venue_id');
+
+            $exists = collect($draft['roster'])->contains('user_id', $data['user_id']);
+
+            if ($exists) {
+                Toast::error('Этот игрок уже добавлен в заявку');
+                return back();
+            }
+
+            $draft['roster'][] = $data;
+            session(['draft_application' => $draft]);
+
+            Toast::info('Игрок успешно добавлен');
+
+            return redirect()->route('platform.applications.create');
+        }
+
+        if ($application->is_complete && !auth()->user()->hasAccess('platform.applications.edit')) {
+            abort(403, 'Заявка завершена и больше не может быть изменена.');
+        }
+
         $data = $request->input('roster');
         $data['application_id'] = $application->id;
 
@@ -284,12 +386,28 @@ class ApplicationEditScreen extends Screen
 
         Toast::info('Игрок успешно добавлен');
 
-        return back();
+        return redirect()->route('platform.applications.edit', ['application' => $application]);
     }
 
     public function removePlayer(TournamentApplication $application, Request $request)
     {
-        $rosterId = $request->get('id');
+        $rosterId = $request->query('id');
+
+        if (!$application->exists) {
+            $draft = $this->draft();
+
+            if (!isset($draft['roster'][$rosterId])) {
+                abort(404);
+            }
+
+            unset($draft['roster'][$rosterId]);
+            $draft['roster'] = array_values($draft['roster']);
+            session(['draft_application' => $draft]);
+
+            Toast::info('Игрок удален из заявки');
+
+            return back();
+        }
 
         ApplicationRoster::where('application_id', $application->id)
             ->where('id', $rosterId)
@@ -302,7 +420,7 @@ class ApplicationEditScreen extends Screen
 
     public function editPlayer(TournamentApplication $application, Request $request)
     {
-        $rosterId = $request->get('roster');
+        $rosterId = $request->query('roster');
 
         $request->validate([
             'roster.jersey_number' => 'required|integer|min:1|max:99',
@@ -320,6 +438,22 @@ class ApplicationEditScreen extends Screen
             ],
         ]);
 
+        if (!$application->exists) {
+            $draft = $this->draft();
+
+            if (!isset($draft['roster'][$rosterId])) {
+                abort(404);
+            }
+
+            $draft['roster'][$rosterId]['jersey_number'] = $request->input('roster.jersey_number');
+            $draft['roster'][$rosterId]['position'] = $request->input('roster.position');
+            session(['draft_application' => $draft]);
+
+            Toast::info('Игрок успешно обновлен');
+
+            return back();
+        }
+
         $roster = ApplicationRoster::where('application_id', $application->id)
             ->where('id', $rosterId)
             ->firstOrFail();
@@ -331,12 +465,42 @@ class ApplicationEditScreen extends Screen
         return back();
     }
 
-    public function asyncGetPlayer(ApplicationRoster $roster): array
+    public function asyncGetPlayer(Request $request): array
     {
+        $rosterId = (int) $request->query('roster');
+
+        if ($this->application->exists) {
+            $roster = ApplicationRoster::where('application_id', $this->application->id)
+                ->where('id', $rosterId)
+                ->firstOrFail();
+        } else {
+            $draft = $this->draft();
+
+            if (!isset($draft['roster'][$rosterId])) {
+                abort(404);
+            }
+
+            $row = $draft['roster'][$rosterId];
+
+            $roster = new ApplicationRoster();
+            $roster->id = $rosterId;
+            $roster->user_id = $row['user_id'];
+            $roster->jersey_number = $row['jersey_number'];
+            $roster->position = $row['position'];
+            $roster->setRelation('player', User::find($row['user_id']));
+        }
+
         return [
             'roster' => $roster
         ];
     }
 
+    public function discardDraft()
+    {
+        session()->forget('draft_application');
 
+        Toast::info('Создание заявки отменено');
+
+        return redirect()->route('platform.applications.list');
+    }
 }

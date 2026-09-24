@@ -10,7 +10,6 @@ use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
-use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
@@ -72,8 +71,6 @@ class RosterRequestListScreen extends Screen
         return [
             Layout::modal('rejectModal', [
                 Layout::rows([
-                    Input::make('roster_request_id')->type('hidden'),
-
                     TextArea::make('rejection_reason')
                         ->title('Причина отклонения')
                         ->rows(3)
@@ -156,33 +153,46 @@ class RosterRequestListScreen extends Screen
                     ->alignRight()
                     ->width('160px')
                     ->render(function (RosterRequest $r) {
-                        if (!auth()->user()->hasAccess('platform.applications.approve') || !$r->isPending()) {
+                        $user = auth()->user();
+
+                        if (!$r->isPending()) {
                             return '';
+                        }
+
+                        $canApprove = $user->hasAccess('platform.applications.approve');
+                        $canDelete = $user->hasAccess('platform.roster_requests.delete');
+
+                        if (!$canApprove && !$canDelete) {
+                            return '';
+                        }
+
+                        $list = [];
+
+                        if ($canApprove) {
+                            $list[] = Button::make('Утвердить')
+                                ->icon('bs.check-lg')
+                                ->confirm('Утвердить запрос? Изменения в составе будут применены сразу.')
+                                ->method('approve', ['roster_request' => $r->id]);
+
+                            $list[] = ModalToggle::make('Отклонить')
+                                ->icon('bs.x-lg')
+                                ->modal('rejectModal')
+                                ->method('reject')
+                                ->asyncParameters(['roster_request' => $r->id]);
+                        }
+
+                        if ($canDelete) {
+                            $list[] = Button::make('Удалить')
+                                ->icon('bs.trash3')
+                                ->confirm('Удалить запрос? Он исчезнет из списка и истории.')
+                                ->method('destroy', ['roster_request' => $r->id]);
                         }
 
                         return DropDown::make()
                             ->icon('bs.three-dots-vertical')
-                            ->list([
-                                Button::make('Утвердить')
-                                    ->icon('bs.check-lg')
-                                    ->confirm('Утвердить запрос? Изменения в составе будут применены сразу.')
-                                    ->method('approve', ['roster_request' => $r->id]),
-
-                                ModalToggle::make('Отклонить')
-                                    ->icon('bs.x-lg')
-                                    ->modal('rejectModal')
-                                    ->method('reject')
-                                    ->asyncParameters(['roster_request' => $r->id]),
-                            ]);
+                            ->list($list);
                     }),
             ]),
-        ];
-    }
-
-    public function asyncGetReject(RosterRequest $roster_request): array
-    {
-        return [
-            'roster_request_id' => $roster_request->id,
         ];
     }
 
@@ -218,25 +228,22 @@ class RosterRequestListScreen extends Screen
         return redirect()->route('platform.roster.requests.list');
     }
 
-    public function reject(Request $request): Response
+    public function reject(RosterRequest $roster_request, Request $request): Response
     {
         if (!auth()->user()->hasAccess('platform.applications.approve')) {
             abort(403);
         }
 
         $validated = $request->validate([
-            'roster_request_id' => 'required|exists:roster_requests,id',
             'rejection_reason' => 'nullable|string|max:500',
         ]);
 
-        $rosterRequest = RosterRequest::findOrFail($validated['roster_request_id']);
-
-        if (!$rosterRequest->isPending()) {
+        if (!$roster_request->isPending()) {
             Toast::error('Запрос уже рассмотрен');
             return back();
         }
 
-        $rosterRequest->update([
+        $roster_request->update([
             'status' => RosterRequest::STATUS_REJECTED,
             'rejection_reason' => $validated['rejection_reason'] ?? null,
             'reviewed_by' => auth()->id(),
@@ -244,6 +251,24 @@ class RosterRequestListScreen extends Screen
         ]);
 
         Toast::info('Запрос отклонён');
+
+        return redirect()->route('platform.roster.requests.list');
+    }
+
+    public function destroy(RosterRequest $roster_request): Response
+    {
+        if (!auth()->user()->hasAccess('platform.roster_requests.delete')) {
+            abort(403);
+        }
+
+        if (!$roster_request->isPending()) {
+            Toast::error('Удалить можно только запрос на рассмотрении');
+            return back();
+        }
+
+        $roster_request->delete();
+
+        Toast::info('Запрос удалён');
 
         return redirect()->route('platform.roster.requests.list');
     }

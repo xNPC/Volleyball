@@ -36,6 +36,7 @@ class RosterRequestFormScreen extends Screen
 
         $applicationsQuery = TournamentApplication::query()
             ->where('status', 'approved')
+            ->whereHas('tournament', fn ($q) => $q->where('status', '!=', 'completed'))
             ->with(['team', 'tournament']);
 
         if (!$isAdmin) {

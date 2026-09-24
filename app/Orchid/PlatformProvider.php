@@ -196,6 +196,9 @@ class PlatformProvider extends OrchidServiceProvider
                 ->addPermission('platform.applications.delete', 'Удаление заявок')
                 ->addPermission('platform.applications.approve', 'Утверждение дозаявок и переходов'),
 
+            ItemPermission::group('Дозаявки и переходы')
+                ->addPermission('platform.roster_requests.delete', 'Удаление дозаявок и переходов'),
+
             ItemPermission::group('Игры')
                 ->addPermission('platform.games.edit', 'Управление играми')
                 ->addPermission('platform.games.result', 'Внесение результатов'),
