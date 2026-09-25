@@ -199,7 +199,7 @@
                                     <div class="d-flex align-items-center mt-1">
                                         <div class="user-avatar-xs me-2">
                                             @if($team->captain->profile_photo_path)
-                                                <img src="{{ asset('storage/' . $team->captain->profile_photo_path) }}"
+                                                <img src="{{ $team->captain->profile_photo_thumb_url }}"
                                                      alt="{{ $team->captain->name }}"
                                                      class="player-avatar-xs">
                                             @else

@@ -135,7 +135,7 @@
                                          data-name="{{ $user->name }}"
                                          data-profile-url="{{ route('users.show', $user) }}"
                                          title="Посмотреть фото">
-                                        <img src="{{ asset('storage/' . $user->profile_photo_path) }}"
+                                        <img src="{{ $user->profile_photo_thumb_url }}"
                                              alt="{{ $user->name }}"
                                              class="w-100 h-100 player-avatar">
                                     </div>

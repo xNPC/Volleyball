@@ -202,7 +202,7 @@
                                     <div class="card-body py-4">
                                         <div class="position-relative mb-3">
                                             @if($user->profile_photo_url)
-                                                <img src="{{ $user->profile_photo_url }}"
+                                                <img src="{{ $user->profile_photo_thumb_url ?? $user->profile_photo_url }}"
                                                      alt="{{ $user->name }}"
                                                      class="rounded-circle mx-auto"
                                                      style="width: 80px; height: 80px; object-fit: cover;">

@@ -29,7 +29,7 @@
 {{--                                </div>--}}
 {{--                            @else--}}
                             @if($user->profile_photo_path)
-                                <img src="{{ asset('storage/' . $user->profile_photo_path) }}"
+                                <img src="{{ $user->profile_photo_thumb_url }}"
                                      alt="{{ $user->name }}"
                                      class="player-avatar-large">
                             @else

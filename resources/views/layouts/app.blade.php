@@ -306,8 +306,8 @@
                             <li><a class="dropdown-item" href="{{ route('profile.show') }}">
                                     <i class="fas fa-user-circle me-2"></i>Профиль
                                 </a></li>
-                            <li><a class="dropdown-item" href="{{ route('platform.teams.list') }}">
-                                    <i class="fas fa-volleyball-ball me-2"></i>Мои команды
+                            <li><a class="dropdown-item" href="{{ route(config('platform.index')) }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Панель управления
                                 </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
