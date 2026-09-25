@@ -68,7 +68,10 @@ class Team extends Model
     public function scopeUserTeamsWithoutApplication($query, $tournamentId)
     {
         return $query
-                    ->where('captain_id', auth()->user()->id)
+                    ->when(
+                        !auth()->user()->hasAccess('platform.applications.edit'),
+                        fn ($q) => $q->where('captain_id', auth()->user()->id)
+                    )
                     ->whereDoesntHave('applications', function ($subQuery) use ($tournamentId) {
                         $subQuery->where('tournament_id', $tournamentId);
                     });
