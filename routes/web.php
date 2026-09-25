@@ -50,3 +50,5 @@ Route::middleware([
 
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
 Route::get('/gallery/{slug}', [GalleryController::class, 'show'])->name('gallery.show');
+
+Route::view('/privacy', 'privacy')->name('privacy');

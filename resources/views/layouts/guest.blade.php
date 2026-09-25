@@ -22,6 +22,8 @@
             {{ $slot }}
         </div>
 
+        <x-cookie-consent />
+
         @livewireScripts
     </body>
 </html>

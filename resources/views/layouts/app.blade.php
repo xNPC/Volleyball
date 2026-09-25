@@ -9,16 +9,28 @@
 
     <title>@yield('title', 'Волейбольные Турниры') | {{ config('app.name', 'Laravel') }}</title>
 
-    <!-- Yandex.Metrika counter -->
+    <!-- Yandex.Metrika counter (загружается после согласия на cookie) -->
     <script type="text/javascript">
-        (function(m,e,t,r,i,k,a){
-            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();
-            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105404352', 'ym');
-
-        ym(105404352, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+        (function () {
+            function initYandexMetrika() {
+                if (window.__ymLoaded) {
+                    return;
+                }
+                window.__ymLoaded = true;
+                window.ym = window.ym || function () { (window.ym.a = window.ym.a || []).push(arguments); };
+                window.ym.l = 1 * new Date();
+                var s = document.createElement('script');
+                s.async = true;
+                s.src = 'https://mc.yandex.ru/metrika/tag.js?id=105404352';
+                var n = document.getElementsByTagName('script')[0];
+                n.parentNode.insertBefore(s, n);
+                window.ym(105404352, 'init', {ssr: true, webvisor: true, clickmap: true, ecommerce: 'dataLayer', accurateTrackBounce: true, trackLinks: true});
+            }
+            if (window.localStorage.getItem('cookie_consent') === 'accepted') {
+                initYandexMetrika();
+            }
+            document.addEventListener('cookie-consent:accepted', initYandexMetrika);
+        })();
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/105404352" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
@@ -190,11 +202,16 @@
             </div>
         </div>
         <div class="border-t border-white/10">
-            <div class="mx-auto max-w-7xl px-4 py-5 text-center text-xs text-brand-300 sm:px-6 lg:px-8">
-                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Все права защищены.
+            <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-xs text-brand-300">
+                    <span>&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Все права защищены.</span>
+                    <a href="{{ route('privacy') }}" class="transition hover:text-accent-400">Политика конфиденциальности</a>
+                </div>
             </div>
         </div>
     </footer>
+
+    <x-cookie-consent />
 
     <x-photo-modal />
 
