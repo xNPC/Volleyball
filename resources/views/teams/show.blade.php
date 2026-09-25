@@ -1,255 +1,165 @@
 <x-app-layout>
-    <div class="container py-4">
-        <!-- Хлебные крошки -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Главная</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('teams.index') }}" class="text-decoration-none">Команды</a></li>
-                <li class="breadcrumb-item active">{{ $team->name }}</li>
-            </ol>
-        </nav>
+    <div>
+        <x-breadcrumb :items="[
+            ['label' => 'Команды', 'url' => route('teams.index')],
+            ['label' => $team->name],
+        ]" />
 
-        <!-- Профиль команды -->
-        <div class="row">
-            <!-- Левая колонка - информация -->
-            <div class="col-lg-4 mb-4">
-                <div class="card card-volleyball">
-                    <div class="card-body text-center">
-                        <!-- Логотип -->
-                        <div class="team-logo-large mx-auto mb-4">
-                            <i class="fas fa-volleyball-ball"></i>
-                        </div>
-
-                        <!-- Основная информация -->
-                        <h1 class="h3 fw-bold mb-2" style="color: var(--volleyball-blue);">
-                            {{ $team->name }}
-                        </h1>
-
-                        @if($team->city)
-                            <p class="text-muted mb-3">
-                                <i class="fas fa-map-marker-alt me-1"></i>{{ $team->city }}
-                            </p>
-                        @endif
-
-                        @if($team->description)
-                            <p class="text-muted mb-4">
-                                {{ $team->description }}
-                            </p>
-                        @endif
-
-                        <!-- Статистика -->
-                        <div class="row text-center mb-4">
-                            <div class="col-4">
-                                <div class="stat-number-large fw-bold" style="color: var(--volleyball-orange);">
-                                    {{ $team->activeTournaments->count() }}
-                                </div>
-                                <div class="stat-label text-muted">Турниров</div>
-                            </div>
-                            <div class="col-4">
-                                <div class="stat-number-large fw-bold" style="color: var(--volleyball-orange);">
-                                    {{ $team->tournamentApplications->count() }}
-                                </div>
-                                <div class="stat-label text-muted">Заявок</div>
-                            </div>
-                            <div class="col-4">
-                                <div class="stat-number-large fw-bold" style="color: var(--volleyball-orange);">
-                                    ?
-                                </div>
-                                <div class="stat-label text-muted">Игроков</div>
-                            </div>
-                        </div>
-
-                        <!-- Капитан -->
-                        @if($team->captain)
-                            <div class="captain-info mb-4">
-                                <h6 class="fw-bold mb-3" style="color: var(--volleyball-blue);">
-                                    <i class="fas fa-crown me-2"></i>Капитан
-                                </h6>
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <div class="user-avatar me-3">
-                                        @if($team->captain->profile_photo_path)
-                                            <div class="photo-modal-trigger player-avatar"
-                                                 data-photo="{{ asset('storage/' . $team->captain->profile_photo_path) }}"
-                                                 data-name="{{ $team->captain->name }}"
-                                                 data-profile-url="{{ route('users.show', $team->captain) }}"
-                                                 title="Посмотреть фото">
-                                                <img src="{{ $team->captain->profile_photo_thumb_url }}"
-                                                     alt="{{ $team->captain->name }}"
-                                                     class="w-100 h-100 player-avatar">
-                                            </div>
-                                        @else
-{{--                                        @if($team->captain->profile_photo_path)--}}
-{{--                                            <img src="{{ asset('storage/' . $team->captain->profile_photo_path) }}"--}}
-{{--                                                 alt="{{ $team->captain->name }}"--}}
-{{--                                                 class="player-avatar">--}}
-{{--                                        @else--}}
-                                            <div class="player-avatar bg-volleyball-blue text-white d-flex align-items-center justify-content-center">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="text-start">
-                                        <div class="fw-bold">{{ $team->captain->name }}</div>
-                                        <small class="text-muted">{{ $team->captain->email }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Дата создания -->
-                        <div class="creation-date">
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>
-                                Создана: {{ $team->created_at->format('d.m.Y') }}
-                            </small>
-                        </div>
+        <div class="grid gap-6 lg:grid-cols-3">
+            <div>
+                <x-card class="p-6 text-center">
+                    <div class="mx-auto mb-4 w-fit">
+                        <x-team-logo :name="$team->name" size="xl" />
                     </div>
-                </div>
+
+                    <h1 class="font-display text-xl font-bold text-brand-800">{{ $team->name }}</h1>
+
+                    @if ($team->city)
+                        <p class="mt-1 flex items-center justify-center gap-1 text-slate-500">
+                            @svg('lucide-map-pin', 'h-4 w-4'){{ $team->city }}
+                        </p>
+                    @endif
+
+                    @if ($team->description)
+                        <p class="mt-3 text-sm leading-relaxed text-slate-500">{{ $team->description }}</p>
+                    @endif
+
+                    <div class="mt-5 grid grid-cols-3 gap-2 border-y border-slate-100 py-4">
+                        <x-stat label="Турниров">{{ $team->activeTournaments->count() }}</x-stat>
+                        <x-stat label="Заявок">{{ $team->tournamentApplications->count() }}</x-stat>
+                        <x-stat label="Игроков">?</x-stat>
+                    </div>
+
+                    @if ($team->captain)
+                        <div class="mt-5 text-left">
+                            <h2 class="mb-3 flex items-center gap-2 font-display font-bold text-brand-800">
+                                @svg('lucide-crown', 'h-4 w-4 text-accent-500')Капитан
+                            </h2>
+                            <div class="flex items-center gap-3">
+                                @if ($team->captain->profile_photo_path)
+                                    <div data-photo="{{ asset('storage/' . $team->captain->profile_photo_path) }}"
+                                         data-name="{{ $team->captain->name }}"
+                                         data-profile-url="{{ route('users.show', $team->captain) }}"
+                                         class="cursor-pointer"
+                                         title="Посмотреть фото">
+                                        <x-avatar :photo="$team->captain->profile_photo_thumb_url" :name="$team->captain->name" size="md" />
+                                    </div>
+                                @else
+                                    <x-avatar :name="$team->captain->name" size="md" />
+                                @endif
+                                <div class="min-w-0">
+                                    <a href="{{ route('users.show', $team->captain) }}"
+                                       class="block truncate font-semibold text-brand-800 transition hover:text-accent-600">
+                                        {{ $team->captain->name }}
+                                    </a>
+                                    <p class="truncate text-xs text-slate-400">{{ $team->captain->email }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <p class="mt-5 border-t border-slate-100 pt-4 text-xs text-slate-400">
+                        @svg('lucide-calendar-days', 'inline h-3.5 w-3.5') Создана: {{ $team->created_at->format('d.m.Y') }}
+                    </p>
+                </x-card>
             </div>
 
-            <!-- Правая колонка - турниры и состав -->
-            <div class="col-lg-8">
-                <!-- Активные турниры -->
-                @if($team->activeTournaments->count() > 0)
-                    <div class="card card-volleyball mb-4">
-                        <div class="card-header bg-transparent border-bottom-0">
-                            <h3 class="fw-bold mb-0" style="color: var(--volleyball-blue);">
-                                <i class="fas fa-trophy me-2"></i>Активные турниры
-                            </h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                @foreach($team->activeTournaments as $tournament)
-                                    <div class="col-md-6">
-                                        <div class="tournament-card card border h-100">
-                                            <div class="card-body">
-                                                <h6 class="fw-bold mb-2">{{ $tournament->name }}</h6>
-                                                <div class="tournament-meta">
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-calendar me-1"></i>
-                                                        {{ $tournament->start_date->format('d.m.Y') }} - {{ $tournament->end_date->format('d.m.Y') }}
-                                                    </small>
-                                                </div>
-                                                <div class="mt-3">
-                                                    <span class="badge bg-success me-2">Участвует</span>
-                                                    <a href="{{ route('tournaments.teams.roster', ['tournament' => $tournament, 'team' => $team]) }}"
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-users me-1"></i>Состав
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
+            <div class="space-y-6 lg:col-span-2">
+                @if ($team->activeTournaments->count() > 0)
+                    <div>
+                        <h2 class="mb-4 flex items-center gap-2 font-display text-lg font-bold text-brand-800">
+                            @svg('lucide-trophy', 'h-5 w-5 text-accent-500')Активные турниры
+                        </h2>
+                        <div class="grid gap-4 md:grid-cols-2">
+                            @foreach ($team->activeTournaments as $tournament)
+                                <x-card class="flex flex-col p-5 transition hover:bg-slate-50/70">
+                                    <a href="{{ route('tournaments.show', $tournament) }}"
+                                       class="font-display font-bold text-brand-800 transition hover:text-accent-600">
+                                        {{ $tournament->name }}
+                                    </a>
+                                    <p class="mt-1 text-sm text-slate-500">
+                                        @svg('lucide-calendar-days', 'inline h-4 w-4'){{ $tournament->start_date->format('d.m.Y') }} — @if ($tournament->end_date){{ $tournament->end_date->format('d.m.Y') }}@endif
+                                    </p>
+                                    <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+                                        <x-badge variant="green">@svg('lucide-check-circle', 'h-3.5 w-3.5')Участвует</x-badge>
+                                        <a href="{{ route('tournaments.teams.roster', ['tournament' => $tournament, 'team' => $team]) }}"
+                                           class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-brand-700 transition hover:bg-slate-50 hover:text-brand-800">
+                                            @svg('lucide-users', 'h-4 w-4')Состав
+                                        </a>
                                     </div>
-                                @endforeach
-                            </div>
+                                </x-card>
+                            @endforeach
                         </div>
                     </div>
                 @endif
 
-                <!-- История заявок -->
-                @if($team->tournamentApplications->count() > 0)
-                    <div class="card card-volleyball">
-                        <div class="card-header bg-transparent border-bottom-0">
-                            <h3 class="fw-bold mb-0" style="color: var(--volleyball-blue);">
-                                <i class="fas fa-history me-2"></i>История заявок
+                @if ($team->tournamentApplications->count() > 0)
+                    <x-card class="overflow-hidden">
+                        <div class="px-6 pt-6">
+                            <h3 class="flex items-center gap-2 font-display text-lg font-bold text-brand-800">
+                                @svg('lucide-activity', 'h-5 w-5 text-accent-500')История заявок
                             </h3>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Турнир</th>
-                                        <th>Статус</th>
-                                        <th>Дата подачи</th>
-                                        <th>Игроков в заявке</th>
+                        <div class="mt-4 overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead>
+                                    <tr class="border-y border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                                        <th class="px-6 py-3 font-semibold">Турнир</th>
+                                        <th class="px-6 py-3 font-semibold">Статус</th>
+                                        <th class="px-6 py-3 font-semibold">Дата подачи</th>
+                                        <th class="px-6 py-3 font-semibold">Игроков в заявке</th>
                                     </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach($team->tournamentApplications as $application)
-                                        <tr>
-                                            <td>
-                                                <strong>{{ $application->tournament->name ?? 'Неизвестный турнир' }}</strong>
-                                            </td>
-                                            <td>
-                                                @if($application->status === 'approved')
-                                                    <span class="badge bg-success">Принята</span>
-                                                @elseif($application->status === 'rejected')
-                                                    <span class="badge bg-danger">Отклонена</span>
-                                                @elseif($application->status === 'pending')
-                                                    <span class="badge bg-warning">На рассмотрении</span>
-                                                @else
-                                                    <span class="badge bg-secondary">{{ $application->status }}</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $application->created_at->format('d.m.Y H:i') }}</td>
-                                            <td class="text-center">
-                                                <a href="{{ route('tournaments.teams.roster', ['tournament' => $application->tournament, 'team' => $team]) }}"
-                                                   class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-users me-1"></i>Состав <span class="badge bg-info">{{ $application->roster->count() }}</span>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @foreach ($team->tournamentApplications as $application)
+                                        @php
+                                            $statusBadge = match ($application->status) {
+                                                'approved' => 'green',
+                                                'rejected' => 'red',
+                                                'pending' => 'amber',
+                                                default => 'slate',
+                                            };
+                                            $statusLabel = match ($application->status) {
+                                                'approved' => 'Принята',
+                                                'rejected' => 'Отклонена',
+                                                'pending' => 'На рассмотрении',
+                                                default => $application->status,
+                                            };
+                                        @endphp
+                                        <tr class="transition hover:bg-slate-50">
+                                            <td class="px-6 py-2.5">
+                                                <a href="{{ route('tournaments.show', $application->tournament) }}"
+                                                   class="font-medium text-brand-800 transition hover:text-accent-600">
+                                                    {{ $application->tournament->name ?? 'Неизвестный турнир' }}
                                                 </a>
+                                            </td>
+                                            <td class="px-6 py-2.5"><x-badge :variant="$statusBadge">{{ $statusLabel }}</x-badge></td>
+                                            <td class="px-6 py-2.5 text-slate-500">{{ $application->created_at->format('d.m.Y H:i') }}</td>
+                                            <td class="px-6 py-2.5">
+                                                @if ($application->tournament)
+                                                    <a href="{{ route('tournaments.teams.roster', ['tournament' => $application->tournament, 'team' => $team]) }}"
+                                                       class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-brand-700 transition hover:bg-slate-50">
+                                                        @svg('lucide-users', 'h-3.5 w-3.5')Состав
+                                                        <span class="rounded-full bg-brand-100 px-1.5 text-brand-800">{{ $application->roster->count() }}</span>
+                                                    </a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
+                    </x-card>
                 @else
-                    <div class="card card-volleyball">
-                        <div class="card-body text-center py-5">
-                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-                            <h4 class="text-muted">Нет заявок на турниры</h4>
-                            <p class="text-muted">Команда пока не подавала заявки на участие в турнирах</p>
+                    <x-card class="py-14 text-center">
+                        <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                            @svg('lucide-list', 'h-7 w-7')
                         </div>
-                    </div>
+                        <h4 class="font-display text-lg font-bold text-brand-800">Нет заявок на турниры</h4>
+                        <p class="mt-1 text-slate-500">Команда пока не подавала заявки на участие в турнирах</p>
+                    </x-card>
                 @endif
             </div>
         </div>
     </div>
-
-    <style>
-        .team-logo-large {
-            width: 120px;
-            height: 120px;
-            background: var(--volleyball-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 3em;
-            margin: 0 auto;
-        }
-
-        .stat-number-large {
-            font-size: 2rem;
-        }
-
-        .player-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            //border: 3px solid var(--volleyball-orange);
-        }
-
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-        }
-
-        .tournament-card {
-            transition: all 0.2s ease;
-        }
-
-        .tournament-card:hover {
-            border-color: var(--volleyball-orange);
-        }
-
-        .bg-volleyball-blue {
-            background: var(--volleyball-blue);
-        }
-    </style>
 </x-app-layout>

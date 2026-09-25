@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,7 +7,7 @@
 
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
-    <title>Волейбольные Турниры | {{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title', 'Волейбольные Турниры') | {{ config('app.name', 'Laravel') }}</title>
 
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript">
@@ -23,408 +23,208 @@
     <noscript><div><img src="https://mc.yandex.ru/watch/105404352" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&family=sora:600,700,800&display=swap" rel="stylesheet">
 
-    <!-- Волейбольный стиль -->
-    <style>
-        :root {
-            --volleyball-orange: #FF6B35;
-            --volleyball-blue: #004E89;
-            --volleyball-white: #FFFFFF;
-            --court-green: #2E8B57;
-        }
-
-        .bg-volleyball-orange {
-            background-color: var(--volleyball-orange);
-        }
-
-        .player-avatar-large {
-            width: 80px;
-            height: 80px;
-            border: 3px solid var(--volleyball-orange);
-        }
-
-        .volleyball-bg {
-            background: linear-gradient(135deg, var(--volleyball-blue) 0%, var(--volleyball-orange) 100%);
-        }
-
-        .court-bg {
-            background-color: var(--court-green);
-            background-image:
-                linear-gradient(transparent 24px, rgba(255,255,255,0.1) 25px),
-                linear-gradient(90deg, transparent 24px, rgba(255,255,255,0.1) 25px);
-            background-size: 25px 25px;
-        }
-
-        .navbar-volleyball {
-            background: rgba(255, 255, 255, 0.95);
-            border-bottom: 3px solid var(--volleyball-orange);
-        }
-
-        .card {
-            border-radius: 0;
-        }
-
-        .card-volleyball {
-            background: white;
-            //border-radius: 15px;
-            //border: 2px solid var(--volleyball-orange);
-            box-shadow: 0 8px 25px rgba(0, 78, 137, 0.15);
-            transition: all 0.3s ease;
-        }
-
-        .card-volleyball:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(255, 107, 53, 0.2);
-        }
-
-        .btn-volleyball {
-            background: var(--volleyball-orange);
-            border: none;
-            color: white;
-            font-weight: bold;
-            padding: 12px 30px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-volleyball:hover {
-            background: var(--volleyball-blue);
-            transform: translateY(-2px);
-            color: white;
-        }
-
-        .score-badge {
-            background: var(--volleyball-orange);
-            color: white;
-            font-weight: bold;
-            font-size: 1.1em;
-            padding: 8px 15px;
-            border-radius: 20px;
-        }
-
-        .team-card {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .team-logo {
-            width: 80px;
-            height: 80px;
-            background: var(--volleyball-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            color: white;
-            font-size: 2em;
-        }
-
-        .tournament-card {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .tournament-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--volleyball-orange);
-        }
-
-        .net-icon {
-            color: var(--volleyball-orange);
-            font-size: 2em;
-        }
-
-        .player-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            //border: 3px solid var(--volleyball-orange);
-        }
-
-        .match-card {
-            background: white;
-            border-left: 5px solid var(--volleyball-orange);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .court-lines {
-            position: relative;
-        }
-
-        .court-lines::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 2px;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateX(-50%);
-        }
-
-        .photo-modal-trigger {
-            cursor: zoom-in;
-            transition: all 0.3s ease;
-            border: none;
-            background: none;
-            padding: 0;
-            display: block;
-        }
-
-        .photo-modal-trigger:hover {
-            opacity: 0.9;
-            transform: scale(1.02);
-        }
-
-        .photo-modal-trigger .player-avatar,
-        .photo-modal-trigger .player-avatar-large,
-        .photo-modal-trigger .player-avatar-sm,
-        .photo-modal-trigger .player-avatar-xs {
-            transition: all 0.3s ease;
-        }
-
-        .photo-modal-trigger:hover .player-avatar {
-            box-shadow: 0 0 0 3px var(--volleyball-orange);
-        }
-
-        .photo-modal-trigger:hover .player-avatar-large {
-            box-shadow: 0 0 0 4px var(--volleyball-orange);
-        }
-
-        .photo-modal-trigger:hover .player-avatar-sm {
-            box-shadow: 0 0 0 2px var(--volleyball-orange);
-        }
-
-        .photo-modal-trigger:hover .player-avatar-xs {
-            box-shadow: 0 0 0 1px var(--volleyball-orange);
-        }
-        /* Кастомизация пагинации Bootstrap 5 */
-        .page-link {
-            color: var(--volleyball-blue);
-            border: 1px solid var(--bs-border-color);
-            transition: all 0.3s ease;
-        }
-
-        .page-link:hover {
-            color: white;
-            background-color: var(--volleyball-blue);
-            border-color: var(--volleyball-blue);
-        }
-
-        .page-item.active .page-link {
-            background-color: var(--volleyball-orange);
-            border-color: var(--volleyball-orange);
-            color: white;
-        }
-
-        .page-item.disabled .page-link {
-            color: var(--bs-secondary-color);
-            background-color: var(--bs-body-bg);
-        }
-    </style>
-
+    <!-- Styles -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="font-sans antialiased">
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-volleyball fixed-top">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ url('/') }}" style="color: var(--volleyball-blue);">
-            <i class="fas fa-volleyball-ball me-2"></i>{{ config('app.name', 'Laravel') }}
-        </a>
+<body class="bg-slate-50 font-sans text-brand-900 antialiased">
+    <nav class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/95 backdrop-blur" x-data="{ open: false }">
+        <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-8">
+                <a href="{{ url('/') }}" class="flex items-center gap-2">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-accent-500 text-white shadow-sm">
+                        @svg('lucide-volleyball', 'h-5 w-5')
+                    </span>
+                    <span class="font-display text-lg font-bold tracking-tight text-brand-800">{{ config('app.name', 'Laravel') }}</span>
+                </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="{{ route('home') }}">
-                        <i class="fas fa-home me-1"></i>Главная
+                <div class="hidden items-center gap-1 lg:flex">
+                    <a href="{{ route('home') }}" class="nav-link-item @if(request()->routeIs('home')) nav-link-item-active @endif">
+                        @svg('lucide-home', 'h-4 w-4')Главная
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="/tournaments">
-                        <i class="fas fa-trophy me-1"></i>Турниры
+                    <a href="{{ route('tournaments.index') }}" class="nav-link-item @if(request()->routeIs('tournaments.*')) nav-link-item-active @endif">
+                        @svg('lucide-trophy', 'h-4 w-4')Турниры
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="{{ route('users.index') }}">
-                        <i class="fas fa-users me-1"></i>Игроки
+                    <a href="{{ route('users.index') }}" class="nav-link-item @if(request()->routeIs('users.*')) nav-link-item-active @endif">
+                        @svg('lucide-users', 'h-4 w-4')Игроки
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="{{ route('teams.index') }}">
-                        <i class="fas fa-users me-1"></i>Команды
+                    <a href="{{ route('teams.index') }}" class="nav-link-item @if(request()->routeIs('teams.*')) nav-link-item-active @endif">
+                        @svg('lucide-shield', 'h-4 w-4')Команды
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-semibold" href="{{ route('gallery.index') }}">
-                        <i class="fas fa-camera me-1"></i>Фотоальбом
+                    <a href="{{ route('gallery.index') }}" class="nav-link-item @if(request()->routeIs('gallery.*')) nav-link-item-active @endif">
+                        @svg('lucide-camera', 'h-4 w-4')Фотоальбом
                     </a>
-                </li>
-{{--                <li class="nav-item">--}}
-{{--                    <a class="nav-link fw-semibold" href="#schedule">--}}
-{{--                        <i class="fas fa-calendar-alt me-1"></i>Расписание--}}
-{{--                    </a>--}}
-{{--                </li>--}}
-            </ul>
-            <!-- Поиск в навигации -->
-{{--            <form action="{{ route('users.index') }}" method="GET" class="d-flex me-3">--}}
-{{--                <div class="input-group input-group-sm">--}}
-{{--                    <input type="text"--}}
-{{--                           name="search"--}}
-{{--                           class="form-control form-control-sm"--}}
-{{--                           placeholder="Поиск игроков..."--}}
-{{--                           style="width: 200px;">--}}
-{{--                    <button type="submit" class="btn btn-sm btn-volleyball">--}}
-{{--                        <i class="fas fa-search"></i>--}}
-{{--                    </button>--}}
-{{--                </div>--}}
-{{--            </form>--}}
-
-            <!-- Right Side Of Navbar -->
-            <ul class="navbar-nav ms-auto">
-                @auth
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>{{ Auth::user()->name }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('profile.show') }}">
-                                    <i class="fas fa-user-circle me-2"></i>Профиль
-                                </a></li>
-                            <li><a class="dropdown-item" href="{{ route(config('platform.index')) }}">
-                                    <i class="fas fa-tachometer-alt me-2"></i>Панель управления
-                                </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Выйти
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                @else
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">
-                            <i class="fas fa-sign-in-alt me-1"></i>Войти
-                        </a>
-                    </li>
-                    @if (Route::has('register'))
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('register') }}">
-                                <i class="fas fa-user-plus me-1"></i>Регистрация
-                            </a>
-                        </li>
-                    @endif
-                @endauth
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<!-- Page Content -->
-<main style="padding-top: 80px;">
-    {{ $slot }}
-</main>
-
-<!-- Footer -->
-<!-- Footer -->
-<footer class="volleyball-bg text-white py-4 mt-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <h5 class="fw-bold">
-                    <i class="fas fa-volleyball-ball me-2"></i>{{ config('app.name', 'Laravel') }}
-                </h5>
-                <p class="mb-3">Платформа для организации и проведения волейбольных турниров</p>
-{{--                <div class="d-flex gap-3">--}}
-{{--                    <a href="#" class="text-white"><i class="fab fa-telegram fa-lg"></i></a>--}}
-{{--                    <a href="#" class="text-white"><i class="fab fa-vk fa-lg"></i></a>--}}
-{{--                    <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>--}}
-{{--                </div>--}}
+                </div>
             </div>
-            <div class="col-md-4">
-                <h6 class="fw-bold mb-3">Навигация</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2">
-                        <a href="{{ route('home') }}" class="text-white text-decoration-none">
-                            <i class="fas fa-home me-2"></i>Главная
+
+            <div class="flex items-center gap-3">
+                @auth
+                    <div class="relative hidden lg:block" x-data="{ userOpen: false }" @click.outside="userOpen = false">
+                        <button type="button" @click="userOpen = !userOpen" class="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1.5 pl-1.5 pr-3 text-sm font-medium text-brand-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                                @svg('lucide-user', 'h-4 w-4')
+                            </span>
+                            <span class="max-w-[140px] truncate">{{ Auth::user()->name }}</span>
+                            @svg('lucide-chevron-down', 'h-4 w-4 text-slate-400', ['x-show' => '!userOpen'])
+                            @svg('lucide-chevron-up', 'h-4 w-4 text-slate-400', ['x-show' => 'userOpen', 'x-cloak' => ''])
+                        </button>
+
+                        <div x-cloak x-show="userOpen" x-transition.opacity.origin.top.right class="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-card">
+                            <a href="{{ route('profile.show') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 transition hover:bg-slate-50 hover:text-accent-600">
+                                @svg('lucide-circle-user', 'h-4 w-4 text-slate-400')Профиль
+                            </a>
+                            <a href="{{ route(config('platform.index')) }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 transition hover:bg-slate-50 hover:text-accent-600">
+                                @svg('lucide-gauge', 'h-4 w-4 text-slate-400')Панель управления
+                            </a>
+                            <div class="my-1 border-t border-slate-100"></div>
+                            <form method="POST" action="{{ route('logout') }}" x-data>
+                                @csrf
+                                <button type="submit" class="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-accent-600">
+                                    @svg('lucide-log-out', 'h-4 w-4 text-slate-400')Выйти
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <div class="hidden items-center gap-2 lg:flex">
+                        <a href="{{ route('login') }}" class="nav-link-item">Войти</a>
+                        @if (Route::has('register'))
+                            <a href="{{ route('register') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-accent-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600 hover:shadow-card">
+                                @svg('lucide-user-plus', 'h-4 w-4')Регистрация
+                            </a>
+                        @endif
+                    </div>
+                @endauth
+
+                <button type="button" @click="open = !open" class="rounded-lg border border-slate-200 p-2 text-brand-700 transition hover:border-slate-300 hover:bg-slate-50 lg:hidden" aria-label="Меню">
+                    @svg('lucide-menu', 'h-5 w-5', ['x-show' => '!open'])
+                    @svg('lucide-x', 'h-5 w-5', ['x-show' => 'open', 'x-cloak' => ''])
+                </button>
+            </div>
+        </div>
+
+        <div x-cloak x-show="open" x-transition @click="open = false" class="border-t border-slate-100 bg-white px-4 py-3 lg:hidden">
+            <div class="flex flex-col gap-1">
+                <a href="{{ route('home') }}" class="nav-link-item @if(request()->routeIs('home')) nav-link-item-active @endif">
+                    @svg('lucide-home', 'h-4 w-4')Главная
+                </a>
+                <a href="{{ route('tournaments.index') }}" class="nav-link-item @if(request()->routeIs('tournaments.*')) nav-link-item-active @endif">
+                    @svg('lucide-trophy', 'h-4 w-4')Турниры
+                </a>
+                <a href="{{ route('users.index') }}" class="nav-link-item @if(request()->routeIs('users.*')) nav-link-item-active @endif">
+                    @svg('lucide-users', 'h-4 w-4')Игроки
+                </a>
+                <a href="{{ route('teams.index') }}" class="nav-link-item @if(request()->routeIs('teams.*')) nav-link-item-active @endif">
+                    @svg('lucide-shield', 'h-4 w-4')Команды
+                </a>
+                <a href="{{ route('gallery.index') }}" class="nav-link-item @if(request()->routeIs('gallery.*')) nav-link-item-active @endif">
+                    @svg('lucide-camera', 'h-4 w-4')Фотоальбом
+                </a>
+            </div>
+
+            @auth
+                <div class="mt-3 border-t border-slate-100 pt-3">
+                    <a href="{{ route('profile.show') }}" class="nav-link-item">
+                        @svg('lucide-circle-user', 'h-4 w-4')Профиль
+                    </a>
+                    <a href="{{ route(config('platform.index')) }}" class="nav-link-item">
+                        @svg('lucide-gauge', 'h-4 w-4')Панель управления
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="nav-link-item w-full text-left text-slate-600">
+                            @svg('lucide-log-out', 'h-4 w-4')Выйти
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="mt-3 border-t border-slate-100 pt-3">
+                    <a href="{{ route('login') }}" class="nav-link-item">
+                        @svg('lucide-log-in', 'h-4 w-4')Войти
+                    </a>
+                    @if (Route::has('register'))
+                        <a href="{{ route('register') }}" class="nav-link-item text-accent-600">
+                            @svg('lucide-user-plus', 'h-4 w-4')Регистрация
                         </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="/tournaments" class="text-white text-decoration-none">
-                            <i class="fas fa-trophy me-2"></i>Турниры
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ route('users.index') }}" class="text-white text-decoration-none">
-                            <i class="fas fa-users me-2"></i>Игроки
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="{{ route('teams.index') }}" class="text-white text-decoration-none">
-                            <i class="fas fa-users me-2"></i>Команды
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="https://1liga42.ru" class="text-white text-decoration-none">
-                            <i class="fas fa-book-open me-2"></i>История 1 лиги
-                        </a>
-                    </li>
-{{--                    <li class="mb-2">--}}
-{{--                        <a href="#schedule" class="text-white text-decoration-none">--}}
-{{--                            <i class="fas fa-calendar-alt me-2"></i>Расписание--}}
-{{--                        </a>--}}
-{{--                    </li>--}}
+                    @endif
+                </div>
+            @endauth
+        </div>
+    </nav>
+
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {{ $slot }}
+    </main>
+
+    <footer class="mt-16 bg-brand-900 text-brand-100">
+        <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
+            <div>
+                <a href="{{ url('/') }}" class="flex items-center gap-2">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-accent-500 to-brand-500 text-white">
+                        @svg('lucide-volleyball', 'h-5 w-5')
+                    </span>
+                    <span class="font-display text-lg font-bold text-white">{{ config('app.name', 'Laravel') }}</span>
+                </a>
+                <p class="mt-4 text-sm leading-relaxed text-brand-200">Платформа для организации и проведения волейбольных турниров</p>
+            </div>
+
+            <div>
+                <h6 class="font-display text-sm font-semibold uppercase tracking-wider text-white">Навигация</h6>
+                <ul class="mt-4 space-y-2.5 text-sm">
+                    <li><a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-home', 'h-4 w-4')Главная</a></li>
+                    <li><a href="{{ route('tournaments.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-trophy', 'h-4 w-4')Турниры</a></li>
+                    <li><a href="{{ route('users.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-users', 'h-4 w-4')Игроки</a></li>
+                    <li><a href="{{ route('teams.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-shield', 'h-4 w-4')Команды</a></li>
+                    <li><a href="{{ route('gallery.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-camera', 'h-4 w-4')Фотоальбом</a></li>
+                    <li><a href="https://1liga42.ru" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-book-open', 'h-4 w-4')История 1 лиги</a></li>
                 </ul>
             </div>
-{{--            <div class="col-md-4">--}}
-{{--                <h6 class="fw-bold mb-3">Контакты</h6>--}}
-{{--                <ul class="list-unstyled">--}}
-{{--                    <li class="mb-2">--}}
-{{--                        <i class="fas fa-phone me-2"></i>--}}
-{{--                        <a href="tel:+79999999999" class="text-white text-decoration-none">+7 (999) 999-99-99</a>--}}
-{{--                    </li>--}}
-{{--                    <li class="mb-2">--}}
-{{--                        <i class="fas fa-envelope me-2"></i>--}}
-{{--                        <a href="mailto:info@volleyball.ru" class="text-white text-decoration-none">info@volleyball.ru</a>--}}
-{{--                    </li>--}}
-{{--                    <li class="mb-2">--}}
-{{--                        <i class="fas fa-map-marker-alt me-2"></i>--}}
-{{--                        <span>г. Москва, ул. Спортивная, 1</span>--}}
-{{--                    </li>--}}
-{{--                </ul>--}}
-{{--            </div>--}}
+
+            <div>
+                <h6 class="font-display text-sm font-semibold uppercase tracking-wider text-white">О портале</h6>
+                <p class="mt-4 text-sm leading-relaxed text-brand-200">Следите за турнирами, командами и игроками. Результаты, сетки плей-офф и статистика — всё в одном месте.</p>
+            </div>
         </div>
-        <div class="text-center mt-4 pt-3 border-top border-white-50">
-            <small>&copy; 2025 {{ config('app.name', 'Laravel') }}. Все права защищены.</small>
+        <div class="border-t border-white/10">
+            <div class="mx-auto max-w-7xl px-4 py-5 text-center text-xs text-brand-300 sm:px-6 lg:px-8">
+                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Все права защищены.
+            </div>
         </div>
-    </div>
-</footer>
+    </footer>
 
-<!-- Модальное окно для фото -->
-<x-photo-modal />
+    <x-photo-modal />
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            window.Alpine.store('photo', {
+                open: false,
+                src: '',
+                name: '',
+                loading: true,
 
-@livewireScripts
+                show(src, name = '') {
+                    this.src = src;
+                    this.name = name;
+                    this.loading = true;
+                    this.open = true;
+                },
+
+                loaded() {
+                    this.loading = false;
+                },
+
+                close() {
+                    this.open = false;
+                    this.src = '';
+                },
+            });
+        });
+    </script>
+
+    @livewireScripts
 </body>
 </html>

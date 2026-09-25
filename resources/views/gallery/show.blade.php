@@ -1,167 +1,48 @@
 <x-app-layout>
-    <div class="container py-4">
-        <!-- Хлебные крошки -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Главная</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('gallery.index') }}" class="text-decoration-none">Фотогалерея</a></li>
-                <li class="breadcrumb-item active">{{ $album->title }}</li>
-            </ol>
-        </nav>
+    <div>
+        <x-breadcrumb :items="[
+            ['label' => 'Фотогалерея', 'url' => route('gallery.index')],
+            ['label' => $album->title],
+        ]" />
 
-        <!-- Заголовок альбома -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card card-volleyball">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h1 class="display-6 fw-bold" style="color: var(--volleyball-blue);">
-                                    <i class="fas fa-camera me-3"></i>{{ $album->title }}
-                                </h1>
-                                <p class="lead mb-0">{{ $album->description }}</p>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <div class="score-badge d-inline-block">
-                                    <i class="fas fa-image me-2"></i>{{ $album->photos->count() }} фото
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <x-card class="mb-6 p-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="min-w-0">
+                    <h1 class="font-display text-2xl font-bold tracking-tight text-brand-800 sm:text-3xl">
+                        @svg('lucide-camera', 'inline h-7 w-7 text-accent-500'){{ $album->title }}
+                    </h1>
+                    @if ($album->description)
+                        <p class="mt-1 text-slate-500">{{ $album->description }}</p>
+                    @endif
+                </div>
+                <div class="shrink-0">
+                    <x-badge variant="accent">
+                        @svg('lucide-image', 'h-3.5 w-3.5'){{ $album->photos->count() }} фото
+                    </x-badge>
                 </div>
             </div>
-        </div>
+        </x-card>
 
-        <!-- Галерея фото -->
-        <div class="row g-4">
-            @forelse($album->photos as $photo)
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card card-volleyball h-100 cursor-pointer" onclick="openModal('{{ $photo->url }}')">
+        @if ($album->photos->count() > 0)
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                @foreach ($album->photos as $photo)
+                    <button type="button"
+                            data-photo="{{ $photo->url }}"
+                            data-name="{{ $photo->original_name }}"
+                            class="group overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-card transition duration-300 hover:opacity-95"
+                            title="{{ $photo->original_name }}">
                         <img src="{{ $photo->thumbnail_url }}"
                              alt="{{ $photo->original_name }}"
-                             class="card-img-top"
-                             style="height: 200px; object-fit: cover; cursor: pointer; border-radius: 0;">
-                        <!--<div class="card-body text-center p-2">
-                            <small class="text-muted">{{ Str::limit($photo->original_name, 30) }}</small>
-                        </div>-->
-                    </div>
-                </div>
-            @empty
-                <div class="col-12">
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-info-circle me-2"></i>В этом альбоме пока нет фотографий
-                    </div>
-                </div>
-            @endforelse
-        </div>
+                             loading="lazy"
+                             class="aspect-square w-full object-cover transition duration-300 group-hover:scale-105">
+                    </button>
+                @endforeach
+            </div>
+        @else
+            <x-card class="p-8 text-center text-slate-500">
+                @svg('lucide-info', 'mx-auto mb-2 h-6 w-6 text-slate-400')
+                В этом альбоме пока нет фотографий
+            </x-card>
+        @endif
     </div>
-
-    <!-- Модальное окно для просмотра фото -->
-    <div id="modal" class="fixed inset-0 bg-black hidden items-center justify-center z-50" onclick="closeModal()">
-        <div class="relative max-w-7xl mx-auto p-4">
-            <img id="modal-img" src="" alt="" class="max-w-full max-h-screen object-contain">
-            <!--<button class="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 z-50" onclick="closeModal()">&times;</button>-->
-        </div>
-    </div>
-
-    <style>
-        .fixed {
-            position: fixed;
-        }
-        .inset-0 {
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-        }
-        .bg-black {
-            background-color: #000000 !important; /* Полностью черный фон */
-            background: #000000 !important;
-        }
-        .hidden {
-            display: none;
-        }
-        .flex {
-            display: flex;
-        }
-        .items-center {
-            align-items: center;
-        }
-        .justify-center {
-            justify-content: center;
-        }
-        .z-50 {
-            z-index: 9999; /* Увеличил z-index */
-        }
-        .max-w-7xl {
-            max-width: 80rem;
-        }
-        .mx-auto {
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .p-4 {
-            padding: 1rem;
-        }
-        .max-w-full {
-            max-width: 100%;
-        }
-        .max-h-screen {
-            max-height: 100vh;
-        }
-        .object-contain {
-            object-fit: contain;
-        }
-        .absolute {
-            position: absolute;
-        }
-        .top-4 {
-            top: 1rem;
-        }
-        .right-4 {
-            right: 1rem;
-        }
-        .text-white {
-            color: #fff;
-        }
-        .text-4xl {
-            font-size: 2.5rem;
-        }
-        .hover\:text-gray-300:hover {
-            color: #d1d5db;
-        }
-        .cursor-pointer {
-            cursor: pointer;
-        }
-
-        /* Дополнительные стили для полного затемнения */
-        body.modal-open {
-            overflow: hidden;
-        }
-
-        #modal {
-            background: rgba(0, 0, 0, 0.95); /* 95% черный, можно 100% */
-        }
-    </style>
-
-    <script>
-        function openModal(src) {
-            var modal = document.getElementById('modal');
-            var modalImg = document.getElementById('modal-img');
-
-            modal.style.display = 'flex';
-            modalImg.src = src;
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            var modal = document.getElementById('modal');
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeModal();
-        });
-    </script>
 </x-app-layout>

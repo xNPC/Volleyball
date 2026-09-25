@@ -26,6 +26,7 @@ class HomeController extends Controller
 
                 return [
                     'name' => $tournament->name,
+                    'url' => route('tournaments.show', $tournament),
                     'teams_count' => $teamsCount,
                     'location' => $tournament->location ?? 'Не указано',
                     'date' => $tournament->start_date ? $tournament->start_date->format('d.m.Y') : 'Дата не указана',

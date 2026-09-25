@@ -5,3 +5,31 @@
 [x-cloak] {
     display: none;
 }
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+        @apply bg-slate-50 font-sans text-brand-900 antialiased;
+    }
+
+    ::selection {
+        @apply bg-accent-500 text-white;
+    }
+}
+
+@layer components {
+    .nav-link-item {
+        @apply inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-brand-700 transition hover:text-accent-500;
+    }
+
+    .nav-link-item-active {
+        @apply bg-accent-500/10 text-accent-500;
+    }
+
+    .input-base {
+        @apply w-full rounded-lg border-slate-200 text-sm text-brand-900 shadow-sm focus:border-accent-500 focus:ring-accent-500;
+    }
+}

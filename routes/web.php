@@ -9,18 +9,17 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TournamentTeamController;
 use App\Http\Controllers\GalleryController;
+use App\Livewire\TournamentList;
+use App\Livewire\TournamentTeamList;
+use App\Livewire\UserList;
+use App\Livewire\TeamList;
 
-//Route::get('/', function () {
-//    return view('welcome');
-//});
-
-//Route::get('/', HomePage::class)->name('home');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Турниры
-Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index');
+Route::get('/tournaments', TournamentList::class)->name('tournaments.index');
 Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
-Route::get('/tournaments/{tournament}/teams', [TournamentController::class, 'teams'])->name('tournaments.teams');
+Route::get('/tournaments/{tournament}/teams', TournamentTeamList::class)->name('tournaments.teams');
 
 // Состав команды в турнире
 Route::get('/tournaments/{tournament}/teams/{team}/roster', [TournamentTeamController::class, 'roster'])->name('tournaments.teams.roster');
@@ -32,11 +31,11 @@ Route::get('/tournaments/{tournament}/stages/{stage}', [StageController::class, 
 Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
 
 // Пользователи
-Route::get('/users', [UserController::class, 'index'])->name('users.index');
+Route::get('/users', UserList::class)->name('users.index');
 Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
 
 // Команды
-Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
+Route::get('/teams', TeamList::class)->name('teams.index');
 Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
 
 Route::middleware([
@@ -51,11 +50,3 @@ Route::middleware([
 
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
 Route::get('/gallery/{slug}', [GalleryController::class, 'show'])->name('gallery.show');
-
-
-
-//Route::middleware(['auth'])->group(function () {
-//    Route::get('/profile', function () {
-//        return view('profile');
-//    })->name('profile.show');
-//});

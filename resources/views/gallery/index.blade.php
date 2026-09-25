@@ -1,64 +1,48 @@
 <x-app-layout>
-    <div class="container py-4">
-        <!-- Хлебные крошки -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Главная</a></li>
-                <li class="breadcrumb-item active">Фотогалерея</li>
-            </ol>
-        </nav>
+    <div>
+        <x-breadcrumb :items="[['label' => 'Фотогалерея']]" />
 
-        <!-- Заголовок -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card card-volleyball">
-                    <div class="card-body">
-                        <h1 class="display-6 fw-bold" style="color: var(--volleyball-blue);">
-                            <i class="fas fa-camera me-3"></i>Фотогалерея
-                        </h1>
-                        <p class="lead mb-0">Альбомы с фотографиями</p>
-                    </div>
-                </div>
+        <div class="mb-8 text-center">
+            <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-accent-500/10 text-accent-500">
+                @svg('lucide-camera', 'h-7 w-7')
             </div>
+            <h1 class="font-display text-3xl font-bold tracking-tight text-brand-800 sm:text-4xl">Фотогалерея</h1>
+            <p class="mt-2 text-slate-500">Альбомы с фотографиями</p>
         </div>
 
-        <!-- Список альбомов -->
-        <div class="row g-4">
-            @forelse($albums as $album)
-                <div class="col-md-6 col-lg-4">
-                    <div class="card card-volleyball h-100">
-                        <div class="position-relative">
-                            <img src="{{ $album->cover_url ?? '/images/placeholder.jpg' }}"
-                                 alt="{{ $album->title }}"
-                                 class="card-img-top"
-                                 style="height: 250px; object-fit: cover; border-radius: 0;">
-                            <div class="position-absolute top-0 end-0 m-3">
-                                <span class="badge bg-primary">
-                                    <i class="fas fa-image me-1"></i>{{ $album->photos_count }} фото
-                                </span>
-                            </div>
+        <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            @forelse ($albums as $album)
+                <x-card hoverable class="flex h-full flex-col overflow-hidden">
+                    <a href="{{ route('gallery.show', $album->slug) }}" class="relative block">
+                        <img src="{{ $album->cover_url ?? '/images/placeholder.jpg' }}"
+                             alt="{{ $album->title }}"
+                             class="aspect-[4/3] w-full object-cover transition duration-300 hover:scale-105">
+                        <div class="absolute right-3 top-3">
+                            <x-badge variant="dark">
+                                @svg('lucide-image', 'h-3.5 w-3.5'){{ $album->photos_count }} фото
+                            </x-badge>
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold">
-                                <a href="{{ route('gallery.show', $album->slug) }}" class="text-decoration-none" style="color: var(--volleyball-blue);">
-                                    {{ $album->title }}
-                                </a>
-                            </h5>
-                            <p class="card-text text-muted">{{ Str::limit($album->description, 100) }}</p>
-                        </div>
-                        <div class="card-footer bg-transparent border-top-0 pb-3">
-                            <a href="{{ route('gallery.show', $album->slug) }}" class="btn btn-volleyball w-100">
-                                <i class="fas fa-eye me-2"></i>Смотреть фото
-                            </a>
+                    </a>
+                    <div class="flex grow flex-col p-5">
+                        <a href="{{ route('gallery.show', $album->slug) }}"
+                           class="font-display text-lg font-bold text-brand-800 transition hover:text-accent-600">
+                            {{ $album->title }}
+                        </a>
+                        @if ($album->description)
+                            <p class="mt-1 flex-1 text-sm text-slate-500">{{ Str::limit($album->description, 100) }}</p>
+                        @endif
+                        <div class="mt-4">
+                            <x-btn href="{{ route('gallery.show', $album->slug) }}" variant="brand" size="sm" class="w-full">
+                                @svg('lucide-eye', 'h-4 w-4')Смотреть фото
+                            </x-btn>
                         </div>
                     </div>
-                </div>
+                </x-card>
             @empty
-                <div class="col-12">
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-info-circle me-2"></i>Альбомов пока нет
-                    </div>
-                </div>
+                <x-card class="col-span-full p-8 text-center text-slate-500">
+                    @svg('lucide-info', 'mx-auto mb-2 h-6 w-6 text-slate-400')
+                    Альбомов пока нет
+                </x-card>
             @endforelse
         </div>
     </div>

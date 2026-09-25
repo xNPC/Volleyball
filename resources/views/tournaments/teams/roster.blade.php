@@ -1,270 +1,120 @@
 <x-app-layout>
-    <div class="container py-4">
-        <!-- Хлебные крошки -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Главная</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('tournaments.index') }}" class="text-decoration-none">Турниры</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('tournaments.show', $tournament) }}" class="text-decoration-none">{{ $tournament->name }}</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('tournaments.teams', $tournament) }}" class="text-decoration-none">Команды</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('teams.show', $team) }}" class="text-decoration-none">{{ $team->name }}</a></li>
-                <li class="breadcrumb-item active">Состав</li>
-            </ol>
-        </nav>
+    <div>
+        <x-breadcrumb :items="[
+            ['label' => 'Турниры', 'url' => route('tournaments.index')],
+            ['label' => $tournament->name, 'url' => route('tournaments.show', $tournament)],
+            ['label' => 'Команды', 'url' => route('tournaments.teams', $tournament)],
+            ['label' => $team->name, 'url' => route('teams.show', $team)],
+            ['label' => 'Состав'],
+        ]" />
 
-        <!-- Заголовок -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card card-volleyball">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h1 class="display-6 fw-bold mb-2" style="color: var(--volleyball-blue);">
-                                    <i class="fas fa-list-alt me-3"></i>Состав команды
-                                </h1>
-                                <h2 class="h4 text-muted mb-1">{{ $team->name }} в турнире {{ $tournament->name }}</h2>
-                                <div class="d-flex gap-4 text-muted">
-                                    <span>
-                                        <i class="fas fa-users me-1"></i>
-                                        {{ $roster->count() }} игроков в заявке
-                                    </span>
-                                    <span>
-                                        <i class="fas fa-calendar-alt me-1"></i>
-                                        Заявка подана: {{ $application->created_at->format('d.m.Y') }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+        <x-card class="mb-6 p-6">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h1 class="font-display text-2xl font-bold tracking-tight text-brand-800 sm:text-3xl">Состав команды</h1>
+                    <h2 class="mt-1 text-lg text-slate-500">{{ $team->name }} в турнире {{ $tournament->name }}</h2>
+                    <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-slate-500">
+                        <span class="inline-flex items-center gap-1.5">
+                            @svg('lucide-users', 'h-4 w-4'){{ $roster->count() }} игроков в заявке
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            @svg('lucide-calendar-days', 'h-4 w-4')Заявка подана: {{ $application->created_at->format('d.m.Y') }}
+                        </span>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Состав команды -->
-{{--        <div class="row">--}}
-{{--            @foreach($groupedRoster as $jerseyNumber => $players)--}}
-{{--                <div class="col-lg-6 mb-4">--}}
-{{--                    <div class="card card-volleyball h-100">--}}
-{{--                        <div class="card-header bg-transparent border-bottom-0">--}}
-{{--                            <h4 class="fw-bold mb-0" style="color: var(--volleyball-blue);">--}}
-{{--                                <i class="fas fa-{{ $role === 'captain' ? 'crown' : ($role === 'coach' ? 'whistle' : 'user') }} me-2"></i>--}}
-{{--                                #{{ $jerseyNumber }}--}}
-{{--                            </h4>--}}
-{{--                        </div>--}}
-{{--                        <div class="card-body">--}}
-{{--                            <div class="row g-3">--}}
-{{--                                @foreach($players as $rosterEntry)--}}
-{{--                                    <div class="col-12">--}}
-{{--                                        <div class="player-card card border">--}}
-{{--                                            <div class="card-body py-3">--}}
-{{--                                                <div class="d-flex align-items-center">--}}
-{{--                                                    <!-- Аватар -->--}}
-{{--                                                    <div class="user-avatar me-3">--}}
-{{--                                                        @if($rosterEntry->user->profile_photo_path)--}}
-{{--                                                            <div class="photo-modal-trigger player-avatar"--}}
-{{--                                                                 data-photo="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
-{{--                                                                 data-name="{{ $rosterEntry->user->name }}"--}}
-{{--                                                                 data-profile-url="{{ route('users.show', $rosterEntry->user) }}"--}}
-{{--                                                                 title="Посмотреть фото">--}}
-{{--                                                                <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
-{{--                                                                     alt="{{ $rosterEntry->user->name }}"--}}
-{{--                                                                     class="w-100 h-100 player-avatar">--}}
-{{--                                                            </div>--}}
-{{--                                                        @else--}}
-{{--                                                        @if($rosterEntry->user->profile_photo_path)--}}
-{{--                                                            <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
-{{--                                                                 alt="{{ $rosterEntry->user->name }}"--}}
-{{--                                                                 class="player-avatar">--}}
-{{--                                                        @else--}}
-{{--                                                            <div class="player-avatar bg-volleyball-blue text-white d-flex align-items-center justify-content-center">--}}
-{{--                                                                <i class="fas fa-user"></i>--}}
-{{--                                                            </div>--}}
-{{--                                                        @endif--}}
-{{--                                                    </div>--}}
-
-{{--                                                    <!-- Информация -->--}}
-{{--                                                    <div class="flex-grow-1">--}}
-{{--                                                        <h6 class="fw-bold mb-1">{{ $rosterEntry->user->name }}</h6>--}}
-{{--                                                        <div class="player-meta">--}}
-{{--                                                            @if($rosterEntry->position)--}}
-{{--                                                                <span class="badge bg-secondary me-2">{{ $rosterEntry::POSITIONS[$rosterEntry->position] }}</span>--}}
-{{--                                                            @endif--}}
-{{--                                                            @if($rosterEntry->jersey_number)--}}
-{{--                                                                <span class="badge bg-info me-2">#{{ $rosterEntry->jersey_number }}</span>--}}
-{{--                                                            @endif--}}
-{{--                                                            <small class="text-muted">--}}
-{{--                                                                <i class="fas fa-envelope me-1"></i>--}}
-{{--                                                                {{ $rosterEntry->user->email }}--}}
-{{--                                                            </small>--}}
-{{--                                                        </div>--}}
-{{--                                                    </div>--}}
-
-{{--                                                    <!-- Действия -->--}}
-{{--                                                    <div class="ms-3">--}}
-{{--                                                        <a href="{{ route('users.show', $rosterEntry->user) }}"--}}
-{{--                                                           class="btn btn-sm btn-outline-primary"--}}
-{{--                                                           title="Профиль игрока">--}}
-{{--                                                            <i class="fas fa-external-link-alt"></i>--}}
-{{--                                                        </a>--}}
-{{--                                                    </div>--}}
-{{--                                                </div>--}}
-{{--                                            </div>--}}
-{{--                                        </div>--}}
-{{--                                    </div>--}}
-{{--                                @endforeach--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--            @endforeach--}}
-{{--        </div>--}}
-
-        <!-- Если состав пустой -->
-        @if($roster->count() === 0)
-            <div class="row">
-                <div class="col-12">
-                    <div class="card card-volleyball">
-                        <div class="card-body text-center py-5">
-                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                            <h4 class="text-muted">Состав команды пуст</h4>
-                            <p class="text-muted">В заявке на турнир пока нет игроков</p>
-                        </div>
-                    </div>
+                <div class="shrink-0">
+                    <x-team-logo :name="$team->name" size="lg" />
                 </div>
             </div>
+        </x-card>
+
+        @if ($roster->count() === 0)
+            <x-card class="py-14 text-center">
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                    @svg('lucide-users', 'h-7 w-7')
+                </div>
+                <h4 class="font-display text-lg font-bold text-brand-800">Состав команды пуст</h4>
+                <p class="mt-1 text-slate-500">В заявке на турнир пока нет игроков</p>
+            </x-card>
         @endif
 
-        <!-- Детальная таблица -->
-        @if($roster->count() > 0)
-            <div class="card card-volleyball mt-4">
-                <div class="card-header bg-transparent border-bottom-0">
-                    <h4 class="fw-bold mb-0" style="color: var(--volleyball-blue);">
-                        <i class="fas fa-table me-2"></i>Детальная информация о составе
-                    </h4>
+        @if ($roster->count() > 0)
+            <x-card class="overflow-hidden">
+                <div class="px-6 pt-6">
+                    <h3 class="flex items-center gap-2 font-display text-lg font-bold text-brand-800">
+                        @svg('lucide-table', 'h-5 w-5 text-accent-500')Детальная информация о составе
+                    </h3>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-dark">
-                            <tr>
-                                <th>Игрок</th>
-                                <th>Позиция</th>
-                                <th>Номер</th>
-{{--                                <th>Email</th>--}}
-                                <th>Дата регистрации</th>
-                                <th>Действия</th>
+                <div class="mt-4 overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="border-y border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                                <th class="px-6 py-3 font-semibold">Игрок</th>
+                                <th class="px-6 py-3 font-semibold">Позиция</th>
+                                <th class="px-6 py-3 font-semibold">Номер</th>
+                                <th class="px-6 py-3 font-semibold">Дата регистрации</th>
+                                <th class="px-6 py-3 font-semibold">Действия</th>
                             </tr>
-                            </thead>
-                            <tbody>
-                            @foreach($roster->sortBy('jersey_number') as $rosterEntry)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="user-avatar me-3">
-                                                @if($rosterEntry->user->profile_photo_path)
-                                                    <div class="photo-modal-trigger player-avatar-sm"
-                                                         data-photo="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach ($roster->sortBy('jersey_number') as $rosterEntry)
+                                <tr class="transition hover:bg-slate-50">
+                                    <td class="px-6 py-2.5">
+                                        <div class="flex items-center gap-3">
+                                            <a href="{{ route('users.show', $rosterEntry->user) }}">
+                                                @if ($rosterEntry->user->profile_photo_path)
+                                                    <div data-photo="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"
                                                          data-name="{{ $rosterEntry->user->name }}"
                                                          data-profile-url="{{ route('users.show', $rosterEntry->user) }}"
+                                                         class="cursor-pointer"
                                                          title="Посмотреть фото">
-                                                        <img src="{{ $rosterEntry->user->profile_photo_thumb_url }}"
-                                                             alt="{{ $rosterEntry->user->name }}"
-                                                             class="w-100 h-100 player-avatar-sm">
+                                                        <x-avatar :photo="$rosterEntry->user->profile_photo_thumb_url"
+                                                                  :name="$rosterEntry->user->name"
+                                                                  size="sm" />
                                                     </div>
                                                 @else
-{{--                                                @if($rosterEntry->user->profile_photo_path)--}}
-{{--                                                    <img src="{{ asset('storage/' . $rosterEntry->user->profile_photo_path) }}"--}}
-{{--                                                         alt="{{ $rosterEntry->user->name }}"--}}
-{{--                                                         class="player-avatar-sm">--}}
-{{--                                                @else--}}
-                                                    <div class="player-avatar-sm bg-secondary text-white d-flex align-items-center justify-content-center">
-                                                        <i class="fas fa-user"></i>
-                                                    </div>
+                                                    <x-avatar :name="$rosterEntry->user->name" size="sm" />
                                                 @endif
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold">{{ $rosterEntry->user->name }}</div>
-                                                @if($rosterEntry->user->email_verified_at)
-                                                    <small class="text-success">
-                                                        <i class="fas fa-check-circle me-1"></i>Подтвержден
-                                                    </small>
+                                            </a>
+                                            <div class="min-w-0">
+                                                <a href="{{ route('users.show', $rosterEntry->user) }}"
+                                                   class="block truncate font-semibold text-brand-800 transition hover:text-accent-600">
+                                                    {{ $rosterEntry->user->name }}
+                                                </a>
+                                                @if ($rosterEntry->user->email_verified_at)
+                                                    <span class="inline-flex items-center gap-1 text-xs text-emerald-600">
+                                                        @svg('lucide-badge-check', 'h-3.5 w-3.5')Подтвержден
+                                                    </span>
                                                 @endif
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        @if($rosterEntry->position)
-                                            <span class="badge bg-secondary">{{ $rosterEntry::POSITIONS[$rosterEntry->position] }}</span>
+                                    <td class="px-6 py-2.5">
+                                        @if ($rosterEntry->position)
+                                            <x-badge>{{ $rosterEntry::POSITIONS[$rosterEntry->position] }}</x-badge>
                                         @else
-                                            <span class="text-muted">-</span>
+                                            <span class="text-slate-400">-</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        @if($rosterEntry->jersey_number)
-                                            <span class="badge bg-dark">#{{ $rosterEntry->jersey_number }}</span>
+                                    <td class="px-6 py-2.5">
+                                        @if ($rosterEntry->jersey_number)
+                                            <x-badge variant="dark">#{{ $rosterEntry->jersey_number }}</x-badge>
                                         @else
-                                            <span class="text-muted">-</span>
+                                            <span class="text-slate-400">-</span>
                                         @endif
                                     </td>
-{{--                                    <td>--}}
-{{--                                        <small>{{ $rosterEntry->user->email }}</small>--}}
-{{--                                    </td>--}}
-                                    <td>
-                                        <small class="text-muted">{{ $rosterEntry->user->created_at->format('d.m.Y') }}</small>
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('users.show', $rosterEntry->user) }}"
-                                           class="btn btn-sm btn-volleyball">
-                                            <i class="fas fa-eye me-1"></i>Профиль
-                                        </a>
+                                    <td class="px-6 py-2.5 text-slate-500">{{ $rosterEntry->user->created_at->format('d.m.Y') }}</td>
+                                    <td class="px-6 py-2.5">
+                                        <x-btn href="{{ route('users.show', $rosterEntry->user) }}" variant="outline" size="sm">
+                                            @svg('lucide-eye', 'h-4 w-4')Профиль
+                                        </x-btn>
                                     </td>
                                 </tr>
                             @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+            </x-card>
         @endif
     </div>
-
-    <style>
-        .player-card {
-            transition: all 0.2s ease;
-        }
-
-        .player-card:hover {
-            border-color: var(--volleyball-orange);
-            transform: translateX(5px);
-        }
-
-        .player-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            //border: 3px solid var(--volleyball-orange);
-        }
-
-        .player-avatar-sm {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            //border: 2px solid var(--volleyball-orange);
-        }
-
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-        }
-
-        .bg-volleyball-blue {
-            background: var(--volleyball-blue);
-        }
-
-        .player-meta {
-            font-size: 0.875rem;
-        }
-    </style>
 </x-app-layout>

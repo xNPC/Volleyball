@@ -1,309 +1,180 @@
 <x-app-layout>
-    <div class="container py-4">
-        <!-- Хлебные крошки -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-decoration-none">Главная</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('users.index') }}" class="text-decoration-none">Игроки</a></li>
-                <li class="breadcrumb-item active">{{ $user->name }}</li>
-            </ol>
-        </nav>
+    <div>
+        <x-breadcrumb :items="[
+            ['label' => 'Игроки', 'url' => route('users.index')],
+            ['label' => $user->name],
+        ]" />
 
-        <!-- Профиль пользователя -->
-        <div class="row">
-            <!-- Левая колонка - информация -->
-            <div class="col-lg-4 mb-4">
-                <div class="card card-volleyball">
-                    <div class="card-body text-center">
-                        <!-- Аватар -->
-                        <div class="user-avatar mx-auto mb-4">
-{{--                            @if($user->profile_photo_path)--}}
-{{--                                <div class="photo-modal-trigger player-avatar-large"--}}
-{{--                                     data-photo="{{ asset('storage/' . $user->profile_photo_path) }}"--}}
-{{--                                     data-name="{{ $user->name }}"--}}
-{{--                                     data-profile-url="{{ route('users.show', $user) }}"--}}
-{{--                                     title="Посмотреть фото">--}}
-{{--                                    <img src="{{ asset('storage/' . $user->profile_photo_path) }}"--}}
-{{--                                         alt="{{ $user->name }}"--}}
-{{--                                         class="w-100 h-100 player-avatar-large">--}}
-{{--                                </div>--}}
-{{--                            @else--}}
-                            @if($user->profile_photo_path)
-                                <img src="{{ $user->profile_photo_thumb_url }}"
-                                     alt="{{ $user->name }}"
-                                     class="player-avatar-large">
-                            @else
-                                <div class="player-avatar-large bg-volleyball-blue text-white d-flex align-items-center justify-content-center mx-auto">
-                                    <i class="fas fa-user fa-2x"></i>
-                                </div>
-                            @endif
+        <div class="grid gap-6 lg:grid-cols-3">
+            <div>
+                <x-card class="p-6 text-center">
+                    @if ($user->profile_photo_path)
+                        <div data-photo="{{ asset('storage/' . $user->profile_photo_path) }}"
+                             data-name="{{ $user->name }}"
+                             data-profile-url="{{ route('users.show', $user) }}"
+                             class="mx-auto mb-4 w-fit cursor-pointer"
+                             title="Посмотреть фото">
+                            <x-avatar :photo="$user->profile_photo_thumb_url" :name="$user->name" size="xl" />
                         </div>
-
-                        <!-- Основная информация -->
-                        <h1 class="h3 fw-bold mb-2" style="color: var(--volleyball-blue);">
-                            {{ $user->name }}
-                        </h1>
-
-{{--                        <p class="text-muted mb-3">--}}
-{{--                            @if($user->email_verified_at)--}}
-{{--                                <i class="fas fa-check-circle text-success me-1" title="Подтвержден"></i>--}}
-{{--                                Подтвержденный аккаунт--}}
-{{--                            @else--}}
-{{--                                <i class="fas fa-clock text-warning me-1" title="Не подтвержден"></i>--}}
-{{--                                Ожидает подтверждения--}}
-{{--                            @endif--}}
-{{--                        </p>--}}
-
-                        <!-- Статистика -->
-                        <div class="row text-center mb-4">
-{{--                            <div class="col-4">--}}
-{{--                                <div class="stat-number-large fw-bold" style="color: var(--volleyball-orange);">--}}
-{{--                                    {{ $user->approvedTournamentApplications()->count() }}--}}
-{{--                                </div>--}}
-{{--                                <div class="stat-label text-muted">Заявок</div>--}}
-{{--                            </div>--}}
-{{--                            <div class="col-4">--}}
-{{--                                <div class="stat-number-large fw-bold" style="color: var(--volleyball-orange);">--}}
-{{--                                    {{ $user->applicationRosters()->count() }}--}}
-{{--                                </div>--}}
-{{--                                <div class="stat-label text-muted">Участий</div>--}}
-{{--                            </div>--}}
-{{--                            <div class="col-4">--}}
-{{--                                <div class="stat-number-large fw-bold" style="color: var(--volleyball-orange);">--}}
-{{--                                    0--}}
-{{--                                </div>--}}
-{{--                                <div class="stat-label text-muted">Побед</div>--}}
-{{--                            </div>--}}
+                    @else
+                        <div class="mx-auto mb-4 w-fit">
+                            <x-avatar :name="$user->name" size="xl" />
                         </div>
+                    @endif
 
-                        <!-- Дополнительная информация -->
-                        <div class="user-info text-start">
-                            <div class="info-item mb-2">
-                                <i class="fas fa-birthday-cake me-2 text-muted"></i>
-                                <span class="text-muted">Дата рождения: {{ $user->birthday?->format('d.m.Y') }}</span>
-                            </div>
-                            <div class="info-item mb-2">
-                                <i class="fas fa-envelope me-2 text-muted"></i>
-                                <span class="text-muted">{{ $user->email }}</span>
-                            </div>
-                            <div class="info-item mb-2">
-                                <i class="fas fa-calendar me-2 text-muted"></i>
-                                <span class="text-muted">Зарегистрирован: {{ $user->created_at->format('d.m.Y') }}</span>
-                            </div>
-                            <div class="info-item">
-                                <i class="fas fa-clock me-2 text-muted"></i>
-                                <span class="text-muted">Последняя активность: {{ $user->updated_at->diffForHumans() }}</span>
-                            </div>
-                        </div>
+                    <h1 class="font-display text-xl font-bold text-brand-800">{{ $user->name }}</h1>
+
+                    <p class="mt-1 text-sm">
+                        @if ($user->email_verified_at)
+                            <span class="inline-flex items-center gap-1 text-emerald-600">
+                                @svg('lucide-badge-check', 'h-4 w-4')Подтвержденный аккаунт
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 text-amber-600">
+                                @svg('lucide-clock', 'h-4 w-4')Ожидает подтверждения
+                            </span>
+                        @endif
+                    </p>
+
+                    <div class="mt-5 space-y-2.5 rounded-xl bg-slate-50 p-4 text-left text-sm text-slate-600">
+                        @if ($user->birthday)
+                            <p class="flex items-center gap-2.5">
+                                @svg('lucide-cake-slice', 'h-4 w-4 text-slate-400')Дата рождения: {{ $user->birthday->format('d.m.Y') }}
+                            </p>
+                        @endif
+                        <p class="flex items-center gap-2.5 break-all">
+                            @svg('lucide-mail', 'h-4 w-4 shrink-0 text-slate-400'){{ $user->email }}
+                        </p>
+                        <p class="flex items-center gap-2.5">
+                            @svg('lucide-calendar-days', 'h-4 w-4 text-slate-400')Зарегистрирован: {{ $user->created_at->format('d.m.Y') }}
+                        </p>
+                        <p class="flex items-center gap-2.5">
+                            @svg('lucide-clock', 'h-4 w-4 text-slate-400')Последняя активность: {{ $user->updated_at->diffForHumans() }}
+                        </p>
                     </div>
-                </div>
+                </x-card>
             </div>
 
-            <!-- Правая колонка - заявки -->
-            <div class="col-lg-8">
-                <!-- Турнирные заявки пользователя -->
-                <div class="card card-volleyball mb-4">
-                    <div class="card-header bg-transparent border-bottom-0">
-                        <h3 class="fw-bold mb-0" style="color: var(--volleyball-blue);">
-                            <i class="fas fa-clipboard-list me-2"></i>Заявлен в командах
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        @if($user->tournamentApplications->count() > 0)
-                            <div class="row g-3">
-                                @foreach($user->tournamentApplications as $application)
-                                    @php
-                                        $team = $application->team;
-                                        $tournament = $application->tournament;
-                                        // Получаем роль пользователя в этой заявке
-                                        $userRoster = $user->applicationRosters
-                                            ->where('application_id', $application->id)
-                                            ->first();
-                                    @endphp
-                                    <div class="col-md-6">
-                                        <div class="application-card card border h-100">
-                                            <div class="card-body">
-                                                <!-- Команда -->
-                                                <div class="d-flex align-items-center mb-3">
-                                                    <div class="team-logo-small me-3">
-                                                        <i class="fas fa-volleyball-ball"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="fw-bold mb-1">
-                                                            @if($team->name)
-                                                                <a href="{{ route('teams.show', $team) }}" class="text-black text-decoration-none">{{ $team->name }}</a>
-                                                            @endif
-                                                        </h6>
-                                                        @if($tournament)
-                                                            <p class="mb-0 text-muted small">
-                                                                <i class="fas fa-trophy me-1"></i>
-                                                                <a href="{{ route('tournaments.show', $tournament) }}" class="text-decoration-none">{{ $tournament->name }}</a>
-                                                            </p>
-                                                        @endif
-                                                    </div>
-                                                </div>
+            <div class="lg:col-span-2">
+                <x-card class="p-6">
+                    <h2 class="mb-5 flex items-center gap-2 font-display text-lg font-bold text-brand-800">
+                        @svg('lucide-list', 'h-5 w-5 text-accent-500')Заявлен в командах
+                    </h2>
 
-                                                <!-- Информация о заявке -->
-                                                <div class="application-info">
-                                                    <!-- Статус заявки -->
-                                                    <div class="mb-2">
-                                                        @if($application->status === 'approved')
-                                                            <span class="badge bg-success">
-                                                                <i class="fas fa-check me-1"></i>Принята
-                                                            </span>
-                                                        @elseif($application->status === 'rejected')
-                                                            <span class="badge bg-danger">
-                                                                <i class="fas fa-times me-1"></i>Отклонена
-                                                            </span>
-                                                        @elseif($application->status === 'pending')
-                                                            <span class="badge bg-warning">
-                                                                <i class="fas fa-clock me-1"></i>На рассмотрении
-                                                            </span>
-                                                        @endif
-                                                        <small class="text-muted ms-2">
-                                                            {{ $application->created_at->format('d.m.Y') }}
-                                                        </small>
-                                                    </div>
-
-                                                    <!-- Роль пользователя -->
-                                                    @if($userRoster)
-                                                        <div class="mb-2">
-                                                            <small class="text-muted">Позиция:</small>
-                                                            @if($userRoster->position)
-                                                                <span class="badge bg-secondary ms-1">
-                                                                    {{ $userRoster::POSITIONS[$userRoster->position] }}
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
+                    @if ($user->tournamentApplications->count() > 0)
+                        <div class="grid gap-4 md:grid-cols-2">
+                            @foreach ($user->tournamentApplications as $application)
+                                @php
+                                    $team = $application->team;
+                                    $tournament = $application->tournament;
+                                    $userRoster = $user->applicationRosters
+                                        ->where('application_id', $application->id)
+                                        ->first();
+                                    $statusBadge = match ($application->status) {
+                                        'approved' => 'green',
+                                        'rejected' => 'red',
+                                        default => 'amber',
+                                    };
+                                    $statusLabel = match ($application->status) {
+                                        'approved' => 'Принята',
+                                        'rejected' => 'Отклонена',
+                                        default => 'На рассмотрении',
+                                    };
+                                @endphp
+                                <x-card class="p-5 transition hover:bg-slate-50/70">
+                                    <div class="flex items-center gap-3">
+                                        <x-team-logo :name="$team->name ?? '?'" size="sm" />
+                                        <div class="min-w-0">
+                                            @if ($team)
+                                                <a href="{{ route('teams.show', $team) }}"
+                                                   class="block truncate font-display font-bold text-brand-800 transition hover:text-accent-600">
+                                                    {{ $team->name }}
+                                                </a>
+                                            @endif
+                                            @if ($tournament)
+                                                <a href="{{ route('tournaments.show', $tournament) }}"
+                                                   class="block truncate text-sm text-slate-500 transition hover:text-accent-600">
+                                                    @svg('lucide-trophy', 'inline h-3.5 w-3.5'){{ $tournament->name }}
+                                                </a>
+                                            @endif
                                         </div>
                                     </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-4">
-                                <i class="fas fa-clipboard-list fa-2x text-muted mb-3"></i>
-                                <p class="text-muted mb-0">Игрок пока не участвовал в заявках на турниры</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
 
-                <!-- История участий в заявках -->
-                @if($user->applicationRosters->count() > 0)
-                    <div class="card card-volleyball">
-                        <div class="card-header bg-transparent border-bottom-0">
-                            <h4 class="fw-bold mb-0" style="color: var(--volleyball-blue);">
-                                <i class="fas fa-history me-2"></i>История участий в турнирах
-                            </h4>
+                                    <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+                                        <x-badge :variant="$statusBadge">{{ $statusLabel }}</x-badge>
+                                        <span class="text-xs text-slate-400">{{ $application->created_at->format('d.m.Y') }}</span>
+                                        @if ($userRoster && $userRoster->position)
+                                            <x-badge>{{ $userRoster::POSITIONS[$userRoster->position] }}</x-badge>
+                                        @endif
+                                    </div>
+                                </x-card>
+                            @endforeach
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Команда</th>
-                                        <th>Турнир</th>
-                                        <th>Позиция</th>
-                                        <th>Дата</th>
+                    @else
+                        <div class="flex flex-col items-center py-10 text-center">
+                            <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                                @svg('lucide-list', 'h-7 w-7')
+                            </div>
+                            <p class="text-slate-500">Игрок пока не участвовал в заявках на турниры</p>
+                        </div>
+                    @endif
+                </x-card>
+
+                @if ($user->applicationRosters->count() > 0)
+                    <x-card class="mt-6 overflow-hidden">
+                        <div class="px-6 pt-6">
+                            <h3 class="flex items-center gap-2 font-display text-lg font-bold text-brand-800">
+                                @svg('lucide-activity', 'h-5 w-5 text-accent-500')История участий в турнирах
+                            </h3>
+                        </div>
+                        <div class="mt-4 overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead>
+                                    <tr class="border-y border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                                        <th class="px-6 py-3 font-semibold">Команда</th>
+                                        <th class="px-6 py-3 font-semibold">Турнир</th>
+                                        <th class="px-6 py-3 font-semibold">Позиция</th>
+                                        <th class="px-6 py-3 font-semibold">Дата</th>
                                     </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach($user->applicationRosters as $roster)
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @foreach ($user->applicationRosters as $roster)
                                         @php
                                             $application = $roster->Application;
                                             $team = $application->team ?? null;
                                             $tournament = $application->tournament ?? null;
                                         @endphp
-                                        <tr>
-                                            <td>
-                                                @if($team)
-                                                    <a href="{{ route('teams.show', $team) }}" class="text-black text-decoration-none">{{ $team->name }}</a>
+                                        <tr class="transition hover:bg-slate-50">
+                                            <td class="px-6 py-2.5">
+                                                @if ($team)
+                                                    <a href="{{ route('teams.show', $team) }}" class="font-medium text-brand-800 hover:text-accent-600">{{ $team->name }}</a>
                                                 @else
-                                                    <span class="text-muted">Неизвестная команда</span>
+                                                    <span class="text-slate-400">Неизвестная команда</span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                @if($tournament)
-                                                    <a href="{{ route('tournaments.show', $tournament) }}" class="text-black text-decoration-none">{{ $tournament->name }}</a>
+                                            <td class="px-6 py-2.5">
+                                                @if ($tournament)
+                                                    <a href="{{ route('tournaments.show', $tournament) }}" class="text-slate-600 hover:text-accent-600">{{ $tournament->name }}</a>
                                                 @else
-                                                    <span class="text-muted">-</span>
+                                                    <span class="text-slate-400">-</span>
                                                 @endif
                                             </td>
-                                            <td>
-{{--                                                <span class="badge bg-primary">--}}
-{{--                                                    {{ $roster->role ?? 'Игрок' }}--}}
-{{--                                                </span>--}}
-                                                @if($roster->position)
-                                                    <small class="text-muted ms-1">{{ $roster::POSITIONS[$roster->position] }}</small>
+                                            <td class="px-6 py-2.5">
+                                                @if ($roster->position)
+                                                    <x-badge>{{ $roster::POSITIONS[$roster->position] }}</x-badge>
+                                                @else
+                                                    <span class="text-slate-400">-</span>
                                                 @endif
                                             </td>
-{{--                                            <td>--}}
-{{--                                                @if($application)--}}
-{{--                                                    @if($application->status === 'approved')--}}
-{{--                                                        <span class="badge bg-success">Принята</span>--}}
-{{--                                                    @elseif($application->status === 'rejected')--}}
-{{--                                                        <span class="badge bg-danger">Отклонена</span>--}}
-{{--                                                    @elseif($application->status === 'pending')--}}
-{{--                                                        <span class="badge bg-warning">На рассмотрении</span>--}}
-{{--                                                    @else--}}
-{{--                                                        <span class="badge bg-secondary">{{ $application->status }}</span>--}}
-{{--                                                    @endif--}}
-{{--                                                @else--}}
-{{--                                                    <span class="badge bg-secondary">Неизвестно</span>--}}
-{{--                                                @endif--}}
-{{--                                            </td>--}}
-                                            <td>{{ $roster->created_at->format('d.m.Y') }}</td>
+                                            <td class="px-6 py-2.5 text-slate-500">{{ $roster->created_at->format('d.m.Y') }}</td>
                                         </tr>
                                     @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
+                    </x-card>
                 @endif
             </div>
         </div>
     </div>
-
-    <style>
-        .player-avatar-large {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            //border: 4px solid var(--volleyball-orange);
-        }
-
-        .stat-number-large {
-            font-size: 2rem;
-        }
-
-        .team-logo-small {
-            width: 40px;
-            height: 40px;
-            background: var(--volleyball-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1em;
-        }
-
-        .application-card {
-            transition: all 0.2s ease;
-        }
-
-        .application-card:hover {
-            border-color: var(--volleyball-orange);
-            transform: translateY(-2px);
-        }
-
-        .bg-volleyball-blue {
-            background: var(--volleyball-blue);
-        }
-    </style>
 </x-app-layout>
