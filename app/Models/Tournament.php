@@ -27,6 +27,7 @@ class Tournament extends Model
         'end_date',
         'status',
         'rules',
+        'needs_venue',
         'addition_deadline_male',
         'addition_deadline_female',
         'transfer_deadline_male',
@@ -41,6 +42,7 @@ class Tournament extends Model
         'addition_deadline_female' => 'date:Y-m-d',
         'transfer_deadline_male' => 'date:Y-m-d',
         'transfer_deadline_female' => 'date:Y-m-d',
+        'needs_venue' => 'boolean',
     ];
 
     protected $dates = [

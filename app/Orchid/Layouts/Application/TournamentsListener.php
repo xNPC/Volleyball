@@ -4,6 +4,7 @@ namespace App\Orchid\Layouts\Application;
 
 use App\Models\Team;
 use App\Models\Tournament;
+use App\Models\Venue;
 use Illuminate\Http\Request;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Layouts\Listener;
@@ -44,6 +45,15 @@ class TournamentsListener extends Listener
                     ->title('Команда')
                     ->help('Если команды нет в списке, значит на нее уже создана заявка на этот турнир, либо же сама команда еще не создана!')
                     ->required(),
+
+                Relation::make('application.venue_id')
+                    ->fromModel(Venue::class, 'name')
+                    ->displayAppend('display_name')
+                    ->title('Домашний зал')
+                    ->help('Обратите внимание! Поиск зала идет по названию, а не по адресу!')
+                    ->allowEmpty()
+                    ->required()
+                    ->canSee((bool) $this->query->get('application.needs_venue')),
                 ]),
 
         ];
@@ -66,6 +76,11 @@ class TournamentsListener extends Listener
         }
 
         $repository->set('application.tournament_id', $appTourId);
+
+        $repository->set(
+            'application.needs_venue',
+            (bool) Tournament::where('id', $appTourId)->value('needs_venue')
+        );
 
         return $repository;
     }

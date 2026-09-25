@@ -110,6 +110,7 @@ class TournamentEditScreen extends Screen
             'tournament.transfer_deadline_male' => 'nullable|date',
             'tournament.transfer_deadline_female' => 'nullable|date',
             'tournament.transfers_limit' => 'nullable|integer|min:0',
+            'tournament.needs_venue' => 'nullable|boolean',
         ]);
 
         $tournament->fill($validated['tournament'])->save();

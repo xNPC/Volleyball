@@ -3,10 +3,10 @@
 namespace App\Orchid\Screens\Application;
 
 use App\Models\ApplicationRoster;
+use App\Models\Tournament;
 use App\Models\TournamentApplication;
 use App\Models\User;
-use App\Models\Venue;
-use App\Orchid\Layouts\Application\AddPlayerLayout;
+use App\Orchid\Layouts\Application\PlayersListener;
 use App\Orchid\Layouts\Application\TournamentsListener;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +16,6 @@ use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\CheckBox;
 use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
@@ -57,12 +56,16 @@ class ApplicationEditScreen extends Screen
 
             return [
                 'application' => $application,
+                'application.needs_venue' => $draft['tournament_id']
+                    ? (bool) Tournament::where('id', $draft['tournament_id'])->value('needs_venue')
+                    : false,
                 'roster' => $roster,
             ];
         }
 
         return [
             'application' => $application,
+            'application.needs_venue' => (bool) $application->tournament?->needs_venue,
             'roster' => $application->roster()
                 ->orderByRaw('CAST(jersey_number AS UNSIGNED) ASC')
                 ->get(),
@@ -92,6 +95,15 @@ class ApplicationEditScreen extends Screen
         return $draft;
     }
 
+    private function playerInAnotherTeam(int $userId, int $tournamentId, ?int $exceptApplicationId = null): bool
+    {
+        return ApplicationRoster::where('user_id', $userId)
+            ->whereNull('deleted_at')
+            ->when($exceptApplicationId, fn ($q) => $q->where('application_id', '!=', $exceptApplicationId))
+            ->whereHas('application', fn ($q) => $q->where('tournament_id', $tournamentId))
+            ->exists();
+    }
+
     /**
      * The screen's action buttons.
      *
@@ -118,13 +130,14 @@ class ApplicationEditScreen extends Screen
 
     public function layout(): array
     {
-        $canAddPlayer = request()->route()->getName() == 'platform.applications.create'
-            || ($this->application->exists && (auth()->user()->hasAccess('platform.applications.edit') || !$this->application->is_complete));
-
         $rosterTitle = 'Состав';
         if ($this->application->exists) {
             $rosterTitle .= ' — ' . ($this->application->team->name ?? $this->application->tournament->name ?? '');
         }
+
+        $canAddPlayer = !$this->application->exists
+            || auth()->user()->hasAccess('platform.applications.edit')
+            || !$this->application->is_complete;
 
         return [
 
@@ -161,14 +174,6 @@ class ApplicationEditScreen extends Screen
 
                     Layout::rows([
 
-                        Relation::make('application.venue_id')
-                            ->fromModel(Venue::class, 'name')
-                            ->displayAppend('display_name')
-                            ->title('Домашний зал')
-                            ->help('Обратите внимание! Поиск зала идет по названию, а не по адресу!')
-                            ->allowEmpty()
-                            ->required(),
-
                         Select::make('application.status')
                             ->title('Статус')
                             ->options(
@@ -179,8 +184,12 @@ class ApplicationEditScreen extends Screen
                         CheckBox::make('application.is_complete')
                             ->title('Отправить заявку на утверждение')
                             ->help('После этого состав изменить нельзя — только через дозаявки и отзаявки')
-                            ->sendTrueOrFalse(),
-                            //->disabled($this->application->is_complete),
+                            ->sendTrueOrFalse()
+                            ->disabled(
+                                $this->application->exists
+                                && $this->application->is_complete
+                                && !auth()->user()->hasAccess('platform.applications.edit')
+                            ),
 
                         Button::make('Сохранить')
                             ->icon('check')
@@ -212,7 +221,7 @@ class ApplicationEditScreen extends Screen
                         TD::make('photo_preview', '')
                         ->render(fn($roster) =>
                         $roster->player->profile_photo_path
-                            ? '<img src="' . asset('storage/' . $roster->player->profile_photo_path) . '" alt="Фото" class="" style="width: 40px; height: 40px; object-fit: cover;">'
+                            ? '<span class="roster-photo-trigger" role="button" tabindex="0" data-photo="' . asset('storage/' . $roster->player->profile_photo_path) . '" data-name="' . e($roster->player->name) . '"><img src="' . e($roster->player->profile_photo_thumb_url) . '" alt="Фото" class="rounded" style="width: 40px; height: 40px; object-fit: cover; cursor: zoom-in;"></span>'
                             : '<span class="badge bg-danger">X</span>'
                         )
                         ->alignCenter(),
@@ -275,11 +284,14 @@ TD::make('user_id', 'Ф.И.О.')
                 ])
                         ->title($rosterTitle),
 
-                    ...($canAddPlayer ? [AddPlayerLayout::class] : []),
+                ...($canAddPlayer ? [PlayersListener::class] : []),
+
                 ],
 
             ])
             ->ratio('40/60'),
+
+            Layout::view('platform.application-photo-modal'),
 
         ];
     }
@@ -288,13 +300,31 @@ TD::make('user_id', 'Ф.И.О.')
     {
         $applicationStatus = $request['application.status'] ?: 'pending';
 
+        $needsVenue = (bool) Tournament::where('id', $request['application.tournament_id'])->value('needs_venue');
+
         $validated = $request->validate([
             'application.tournament_id' => 'required|exists:tournaments,id',
             'application.team_id' => 'required|exists:teams,id',
-            'application.venue_id' => 'required|exists:venues,id',
+            'application.venue_id' => ($needsVenue ? 'required' : 'nullable') . '|exists:venues,id',
             'application.status' => 'nullable|in:pending,approved,rejected',
             'application.is_complete' => 'required',
         ]);
+
+        if (!$needsVenue) {
+            unset($validated['application']['venue_id']);
+        }
+
+        if (empty($request->input('application.id'))) {
+            $draft = $this->draft();
+            $tournamentId = (int) $validated['application']['tournament_id'];
+
+            foreach ($draft['roster'] as $row) {
+                if ($this->playerInAnotherTeam((int) $row['user_id'], $tournamentId)) {
+                    Toast::error('Не удалось сохранить заявку: один из игроков уже заявлен за другую команду этого турнира');
+                    return back();
+                }
+            }
+        }
 
         //dd($applicationStatus);
 
@@ -365,12 +395,18 @@ TD::make('user_id', 'Ф.И.О.')
             $draft = $this->draft();
             $draft['tournament_id'] = $request->input('application.tournament_id');
             $draft['team_id'] = $request->input('application.team_id');
-            $draft['venue_id'] = $request->input('application.venue_id');
+            $draft['venue_id'] = $request->input('application.venue_id') ?: null;
 
             $exists = collect($draft['roster'])->contains('user_id', $data['user_id']);
 
             if ($exists) {
                 Toast::error('Этот игрок уже добавлен в заявку');
+                return back();
+            }
+
+            if (($draft['tournament_id'] ?? null)
+                && $this->playerInAnotherTeam((int) $data['user_id'], (int) $draft['tournament_id'])) {
+                Toast::error('Этот игрок уже заявлен за другую команду этого турнира');
                 return back();
             }
 
@@ -396,6 +432,11 @@ TD::make('user_id', 'Ф.И.О.')
 
         if ($exists) {
             Toast::error('Этот игрок уже добавлен в заявку');
+            return back();
+        }
+
+        if ($this->playerInAnotherTeam((int) $data['user_id'], (int) $application->tournament_id, $application->id)) {
+            Toast::error('Этот игрок уже заявлен за другую команду этого турнира');
             return back();
         }
 
@@ -474,6 +515,10 @@ TD::make('user_id', 'Ф.И.О.')
             Toast::info('Игрок успешно обновлен');
 
             return back();
+        }
+
+        if ($application->is_complete && !auth()->user()->hasAccess('platform.applications.edit')) {
+            abort(403, 'Заявка завершена и больше не может быть изменена.');
         }
 
         $roster = ApplicationRoster::where('application_id', $application->id)

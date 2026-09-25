@@ -10,6 +10,7 @@ use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
+use Orchid\Screen\Fields\Switcher;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Layouts\Rows;
 use Orchid\Support\Color;
@@ -52,6 +53,11 @@ class TournamentEditLayout extends Rows
             TextArea::make('tournament.description')
                 ->title('Описание')
                 ->rows(4),
+
+            Switcher::make('tournament.needs_venue')
+                ->title('Требуется домашний зал')
+                ->help('Если включено, команды обязаны указать домашний зал при подаче заявки')
+                ->sendTrueOrFalse(),
 
             Group::make([
                 DateTimer::make('tournament.start_date')

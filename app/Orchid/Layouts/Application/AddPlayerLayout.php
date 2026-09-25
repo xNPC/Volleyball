@@ -29,11 +29,16 @@ class AddPlayerLayout extends Rows
      */
     protected function fields(): iterable
     {
+        $draftUserIds = empty($this->query->get('application.id'))
+            ? collect(session('draft_application', [])['roster'] ?? [])->pluck('user_id')->all()
+            : [];
+
         return [
             Relation::make('roster.user_id')
                 ->fromModel(User::class, 'name')
+                ->applyScope('forSearch', $this->query->get('application.tournament_id'), $draftUserIds)
                 ->title('Игрок')
-                ->help(''),
+                ->help('Показаны только игроки, ещё не заявленные за другие команды этого турнира'),
 
 
             Group::make([

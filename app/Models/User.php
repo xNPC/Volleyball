@@ -3,9 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Services\ImageService;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 //use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Orchid\Platform\Models\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -124,6 +127,22 @@ class User extends Authenticatable
         return $this->hasMany(ApplicationRoster::class);
     }
 
+    public function scopeForSearch($query, $tournamentId = null, $excludedUserIds = [])
+    {
+        if ($tournamentId) {
+            $query->whereDoesntHave('applicationRosters', function ($q) use ($tournamentId) {
+                $q->whereNull('deleted_at')
+                    ->whereHas('application', fn ($q2) => $q2->where('tournament_id', $tournamentId));
+            });
+        }
+
+        if (!empty($excludedUserIds)) {
+            $query->whereNotIn('id', $excludedUserIds);
+        }
+
+        return $query;
+    }
+
     /**
      * Турнирные заявки, в которых участвует пользователь
      */
@@ -163,4 +182,40 @@ class User extends Authenticatable
             ->distinct();
     }
 
+    protected static function booted(): void
+    {
+        static::updated(function (User $user) {
+            if (!$user->wasChanged('profile_photo_path')) {
+                return;
+            }
+
+            $service = app(ImageService::class);
+
+            if ($user->profile_photo_path) {
+                $service->profilePhotoThumbnail($user);
+            } else {
+                $service->deleteProfileThumbnail($user);
+            }
+        });
+    }
+
+    /**
+     * URL миниатюры профильного фото (генерируется при отсутствии)
+     */
+    protected function profilePhotoThumbUrl(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            if (!$this->profile_photo_path) {
+                return null;
+            }
+
+            $path = app(ImageService::class)->profilePhotoThumbnail($this);
+
+            if (!$path) {
+                return null;
+            }
+
+            return Storage::disk('public')->url($path) . '?v=' . md5($this->profile_photo_path);
+        });
+    }
 }
