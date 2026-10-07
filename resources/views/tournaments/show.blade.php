@@ -104,8 +104,8 @@
                             @svg($fileIcons[strtolower($attachment->extension)] ?? 'lucide-file', 'h-5 w-5')
                         </span>
                         <div class="min-w-0 flex-1">
-                            <p class="truncate font-medium text-slate-800" title="{{ $attachment->original_name }}">
-                                {{ $attachment->original_name }}
+                            <p class="truncate font-medium text-slate-800" title="{{ \App\Support\DocumentName::of($attachment) }}">
+                                {{ \App\Support\DocumentName::of($attachment) }}
                             </p>
                             <p class="text-sm text-slate-500">{{ $formatSize($attachment->size) }}</p>
                         </div>
