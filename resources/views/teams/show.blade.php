@@ -6,8 +6,8 @@
         ]" />
 
         <div class="grid gap-6 lg:grid-cols-3">
-            <div>
-                <x-card class="p-6 text-center">
+            <div class="min-w-0">
+                <x-card class="p-5 text-center sm:p-6">
                     <div class="mx-auto mb-4 w-fit">
                         <x-team-logo :name="$team->name" size="xl" />
                     </div>
@@ -64,7 +64,7 @@
                 </x-card>
             </div>
 
-            <div class="space-y-6 lg:col-span-2">
+            <div class="min-w-0 space-y-6 lg:col-span-2">
                 @if ($team->activeTournaments->count() > 0)
                     <div>
                         <h2 class="mb-4 flex items-center gap-2 font-display text-lg font-bold text-brand-800">
@@ -101,13 +101,13 @@
                             </h3>
                         </div>
                         <div class="mt-4 overflow-x-auto">
-                            <table class="w-full text-left text-sm">
+                            <table class="w-full min-w-[640px] text-left text-sm">
                                 <thead>
                                     <tr class="border-y border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                                        <th class="px-6 py-3 font-semibold">Турнир</th>
-                                        <th class="px-6 py-3 font-semibold">Статус</th>
-                                        <th class="px-6 py-3 font-semibold">Дата подачи</th>
-                                        <th class="px-6 py-3 font-semibold">Игроков в заявке</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Турнир</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Статус</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Дата подачи</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Игроков в заявке</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -127,15 +127,15 @@
                                             };
                                         @endphp
                                         <tr class="transition hover:bg-slate-50">
-                                            <td class="px-6 py-2.5">
+                                            <td class="px-4 py-2.5 sm:px-6">
                                                 <a href="{{ route('tournaments.show', $application->tournament) }}"
                                                    class="font-medium text-brand-800 transition hover:text-accent-600">
                                                     {{ $application->tournament->name ?? 'Неизвестный турнир' }}
                                                 </a>
                                             </td>
-                                            <td class="px-6 py-2.5"><x-badge :variant="$statusBadge">{{ $statusLabel }}</x-badge></td>
-                                            <td class="px-6 py-2.5 text-slate-500">{{ $application->created_at->format('d.m.Y H:i') }}</td>
-                                            <td class="px-6 py-2.5">
+                                            <td class="px-4 py-2.5 sm:px-6"><x-badge :variant="$statusBadge">{{ $statusLabel }}</x-badge></td>
+                                            <td class="px-4 py-2.5 text-slate-500 sm:px-6">{{ $application->created_at->format('d.m.Y H:i') }}</td>
+                                            <td class="px-4 py-2.5 sm:px-6">
                                                 @if ($application->tournament)
                                                     <a href="{{ route('tournaments.teams.roster', ['tournament' => $application->tournament, 'team' => $team]) }}"
                                                        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-brand-700 transition hover:bg-slate-50">

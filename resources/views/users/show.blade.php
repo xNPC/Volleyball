@@ -6,8 +6,8 @@
         ]" />
 
         <div class="grid gap-6 lg:grid-cols-3">
-            <div>
-                <x-card class="p-6 text-center">
+            <div class="min-w-0">
+                <x-card class="p-5 text-center sm:p-6">
                     @if ($user->profile_photo_path)
                         <div data-photo="{{ asset('storage/' . $user->profile_photo_path) }}"
                              data-name="{{ $user->name }}"
@@ -55,7 +55,7 @@
                 </x-card>
             </div>
 
-            <div class="lg:col-span-2">
+            <div class="min-w-0 lg:col-span-2">
                 <x-card class="p-6">
                     <h2 class="mb-5 flex items-center gap-2 font-display text-lg font-bold text-brand-800">
                         @svg('lucide-list', 'h-5 w-5 text-accent-500')Заявлен в командах
@@ -128,13 +128,13 @@
                             </h3>
                         </div>
                         <div class="mt-4 overflow-x-auto">
-                            <table class="w-full text-left text-sm">
+                            <table class="w-full min-w-[640px] text-left text-sm">
                                 <thead>
                                     <tr class="border-y border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                                        <th class="px-6 py-3 font-semibold">Команда</th>
-                                        <th class="px-6 py-3 font-semibold">Турнир</th>
-                                        <th class="px-6 py-3 font-semibold">Позиция</th>
-                                        <th class="px-6 py-3 font-semibold">Дата</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Команда</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Турнир</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Позиция</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Дата</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -145,28 +145,28 @@
                                             $tournament = $application->tournament ?? null;
                                         @endphp
                                         <tr class="transition hover:bg-slate-50">
-                                            <td class="px-6 py-2.5">
+                                            <td class="px-4 py-2.5 sm:px-6">
                                                 @if ($team)
                                                     <a href="{{ route('teams.show', $team) }}" class="font-medium text-brand-800 hover:text-accent-600">{{ $team->name }}</a>
                                                 @else
                                                     <span class="text-slate-400">Неизвестная команда</span>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-2.5">
+                                            <td class="px-4 py-2.5 sm:px-6">
                                                 @if ($tournament)
                                                     <a href="{{ route('tournaments.show', $tournament) }}" class="text-slate-600 hover:text-accent-600">{{ $tournament->name }}</a>
                                                 @else
                                                     <span class="text-slate-400">-</span>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-2.5">
+                                            <td class="px-4 py-2.5 sm:px-6">
                                                 @if ($roster->position)
                                                     <x-badge>{{ $roster::POSITIONS[$roster->position] }}</x-badge>
                                                 @else
                                                     <span class="text-slate-400">-</span>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-2.5 text-slate-500">{{ $roster->created_at->format('d.m.Y') }}</td>
+                                            <td class="px-4 py-2.5 text-slate-500 sm:px-6">{{ $roster->created_at->format('d.m.Y') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
