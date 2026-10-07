@@ -102,8 +102,8 @@
                                 <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                                     <th class="px-6 py-2 font-semibold">Когда</th>
                                     <th class="px-3 py-2 text-center font-semibold">Матч</th>
-                                    <th class="px-3 py-2 font-semibold">Турнир</th>
-                                    <th class="px-6 py-2 text-right font-semibold">Площадка</th>
+                                    <th class="px-3 py-2 text-right font-semibold">Площадка</th>
+                                    <th class="px-6 py-2 text-right font-semibold">Турнир</th>
                                 </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -125,9 +125,11 @@
                                                 <span class="font-semibold text-brand-900">{{ $match['team2_name'] }}</span>
                                             </div>
                                         </td>
-                                        <td class="px-3 py-2 font-medium text-brand-700">{{ $match['tournament'] }}</td>
-                                        <td class="whitespace-nowrap px-6 py-2 text-right text-xs text-slate-500">
+                                        <td class="whitespace-nowrap px-3 py-2 text-right text-xs text-slate-500">
                                             <span class="inline-flex items-center gap-1">@svg('lucide-map-pin', 'inline h-3.5 w-3.5'){{ $match['location'] ?? 'Не указано' }}</span>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-2 text-right font-medium text-brand-700">
+                                            <span class="inline-block max-w-[220px] align-middle truncate" title="{{ $match['tournament'] }}">{{ $match['tournament'] }}</span>
                                         </td>
                                     </tr>
                                 @empty
