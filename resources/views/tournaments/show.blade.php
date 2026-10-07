@@ -69,5 +69,53 @@
                 </x-card>
             @endforeach
         </div>
+
+        @php
+            $formatSize = function ($size) {
+                if ($size >= 1048576) {
+                    return round($size / 1048576, 1).' МБ';
+                }
+                if ($size >= 1024) {
+                    return round($size / 1024).' КБ';
+                }
+                return $size.' Б';
+            };
+
+            $fileIcons = [
+                'xls' => 'lucide-file-spreadsheet',
+                'xlsx' => 'lucide-file-spreadsheet',
+                'zip' => 'lucide-file-archive',
+                'pdf' => 'lucide-file-text',
+                'doc' => 'lucide-file-text',
+                'docx' => 'lucide-file-text',
+                'txt' => 'lucide-file-text',
+            ];
+        @endphp
+
+        @if ($tournament->attachments->isNotEmpty())
+            <h2 class="mt-10 mb-4 flex items-center gap-2 font-display text-xl font-bold text-brand-800">
+                @svg('lucide-files', 'h-5 w-5 text-accent-500')Документы турнира
+            </h2>
+
+            <x-card class="divide-y divide-slate-100 p-0">
+                @foreach ($tournament->attachments as $attachment)
+                    <div class="flex items-center gap-4 p-4 sm:px-6">
+                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
+                            @svg($fileIcons[strtolower($attachment->extension)] ?? 'lucide-file', 'h-5 w-5')
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate font-medium text-slate-800" title="{{ $attachment->original_name }}">
+                                {{ $attachment->original_name }}
+                            </p>
+                            <p class="text-sm text-slate-500">{{ $formatSize($attachment->size) }}</p>
+                        </div>
+                        <x-btn href="{{ route('tournaments.documents.download', ['tournament' => $tournament, 'attachment' => $attachment]) }}"
+                               variant="brand" size="sm" class="shrink-0">
+                            @svg('lucide-download', 'h-4 w-4')Скачать
+                        </x-btn>
+                    </div>
+                @endforeach
+            </x-card>
+        @endif
     </div>
 </x-app-layout>

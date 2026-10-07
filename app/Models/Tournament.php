@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Orchid\Filters\OrganizationFilter;
 use Dyrynda\Database\Support\CascadeSoftDeletes;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Orchid\Attachment\Attachable;
 use Orchid\Platform\Concerns\Sortable;
 use Orchid\Screen\AsSource;
 use Orchid\Filters\Filterable;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tournament extends Model
 {
-    use AsSource, Filterable, Sortable, SoftDeletes, CascadeSoftDeletes;
+    use AsSource, Filterable, Sortable, SoftDeletes, CascadeSoftDeletes, Attachable;
 
     protected $cascadeDeletes = ['stages'];
 

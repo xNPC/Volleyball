@@ -3,6 +3,7 @@
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TournamentController;
+use App\Http\Controllers\TournamentDocumentController;
 use App\Http\Controllers\StageController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\UserController;
@@ -20,6 +21,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/tournaments', TournamentList::class)->name('tournaments.index');
 Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
 Route::get('/tournaments/{tournament}/teams', TournamentTeamList::class)->name('tournaments.teams');
+Route::get('/tournaments/{tournament}/documents/{attachment}', [TournamentDocumentController::class, 'download'])->name('tournaments.documents.download');
 
 // Состав команды в турнире
 Route::get('/tournaments/{tournament}/teams/{team}/roster', [TournamentTeamController::class, 'roster'])->name('tournaments.teams.roster');

@@ -12,6 +12,7 @@ use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Fields\Switcher;
 use Orchid\Screen\Fields\TextArea;
+use Orchid\Screen\Fields\Upload;
 use Orchid\Screen\Layouts\Rows;
 use Orchid\Support\Color;
 
@@ -31,7 +32,7 @@ class TournamentEditLayout extends Rows
      */
     protected function fields(): array
     {
-        return [
+        $fields = [
             Input::make('tournament.name')
                 ->title('Название турнира')
                 ->required(),
@@ -124,11 +125,27 @@ class TournamentEditLayout extends Rows
                 ->min(0)
                 ->value(1)
                 ->help('Сколько раз игрок может перейти в рамках турнира. Пусто — без ограничений.'),
-
-            Button::make('Сохранить')
-                ->icon('check')
-                ->method('save')
-                ->type(Color::PRIMARY)
         ];
+
+        $tournament = $this->query->get('tournament');
+
+        if ($tournament !== null && $tournament->exists) {
+            $fields[] = Upload::make('tournament.documents')
+                ->title('Документы турнира')
+                ->groups('tournament-documents')
+                ->path('tournament-documents')
+                ->maxFiles(20)
+                ->maxFileSize(20)
+                ->acceptedFiles('application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,application/zip,application/x-zip-compressed')
+                ->value($tournament->attachments->pluck('id')->all())
+                ->help('Файлы будут доступны для скачивания на странице турнира на сайте');
+        }
+
+        $fields[] = Button::make('Сохранить')
+            ->icon('check')
+            ->method('save')
+            ->type(Color::PRIMARY);
+
+        return $fields;
     }
 }

@@ -111,9 +111,12 @@ class TournamentEditScreen extends Screen
             'tournament.transfer_deadline_female' => 'nullable|date',
             'tournament.transfers_limit' => 'nullable|integer|min:0',
             'tournament.needs_venue' => 'nullable|boolean',
+            'tournament.documents' => 'nullable|array',
         ]);
 
         $tournament->fill($validated['tournament'])->save();
+
+        $tournament->attachments()->sync($validated['tournament']['documents'] ?? []);
 
         Toast::info('Успешно сохранено');
 
