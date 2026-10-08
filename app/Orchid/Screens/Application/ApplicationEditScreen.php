@@ -111,16 +111,18 @@ class ApplicationEditScreen extends Screen
      */
     public function commandBar(): iterable
     {
+        if (!$this->application->exists) {
+            return [];
+        }
+
         return [
             Link::make('Скачать заявку')
                 ->icon('bs.download')
-                ->href(route('applications.download', $this->application))
-                ->canSee($this->application->exists),
+                ->href(route('applications.download', $this->application)),
 
             Link::make('Скачать мед. заявку')
                 ->icon('bs.heart-pulse')
-                ->href(route('applications.download.medical', $this->application))
-                ->canSee($this->application->exists),
+                ->href(route('applications.download.medical', $this->application)),
         ];
     }
 
@@ -286,8 +288,9 @@ TD::make('user_id', 'Ф.И.О.')
 
                                     Link::make('Отзаявить')
                                         ->icon('bs.box-arrow-right')
-                                        ->href(route('platform.roster.requests.create', ['application' => $this->application->id])
-                                            . '?type=removal&player=' . $roster->user_id)
+                                        ->href($this->application->exists
+                                            ? route('platform.roster.requests.create', ['application' => $this->application->id]) . '?type=removal&player=' . $roster->user_id
+                                            : '#')
 ->canSee($this->application !== null && $this->application->exists),
                             ])
                         )
