@@ -21,7 +21,7 @@ class ProfileGamesController extends Controller
             ->whereNotNull('scheduled_time')
             ->where('scheduled_time', '>=', now())
             ->orderBy('scheduled_time')
-            ->limit(10)
+            ->limit(50)
             ->get()
             ->map(function ($game) {
                 return [
@@ -44,7 +44,7 @@ class ProfileGamesController extends Controller
             ->whereNotNull('home_score')
             ->whereNotNull('away_score')
             ->orderBy('scheduled_time', 'desc')
-            ->limit(10)
+            ->limit(50)
             ->get()
             ->map(function ($game) {
                 $winner = $game->home_score > $game->away_score ? 'team1' : 'team2';
