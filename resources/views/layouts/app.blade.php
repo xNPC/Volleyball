@@ -43,15 +43,12 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="bg-slate-50 font-sans text-brand-900 antialiased">
+<body class="bg-slate-50 font-sans text-brand-900 antialiased overflow-x-clip">
     <nav class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/95 backdrop-blur" x-data="{ open: false }">
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-8">
-                <a href="{{ url('/') }}" class="flex items-center gap-2">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-accent-500 text-white shadow-sm">
-                        @svg('lucide-volleyball', 'h-5 w-5')
-                    </span>
-                    <span class="font-display text-lg font-bold tracking-tight text-brand-800">{{ config('app.name', 'Laravel') }}</span>
+                <a href="{{ url('/') }}" class="flex items-center">
+                    <img src="{{ asset('logo.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto">
                 </a>
 
                 <div class="hidden items-center gap-1 lg:flex">
@@ -175,11 +172,8 @@
     <footer class="mt-16 bg-brand-900 text-brand-100">
         <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
             <div>
-                <a href="{{ url('/') }}" class="flex items-center gap-2">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-accent-500 to-brand-500 text-white">
-                        @svg('lucide-volleyball', 'h-5 w-5')
-                    </span>
-                    <span class="font-display text-lg font-bold text-white">{{ config('app.name', 'Laravel') }}</span>
+                <a href="{{ url('/') }}" class="flex items-center">
+                    <img src="{{ asset('logo.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto brightness-200">
                 </a>
                 <p class="mt-4 text-sm leading-relaxed text-brand-200">Платформа для организации и проведения волейбольных турниров</p>
             </div>

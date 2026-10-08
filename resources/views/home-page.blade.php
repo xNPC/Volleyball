@@ -1,17 +1,18 @@
 <x-app-layout>
     <div>
-        <section class="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700 text-white">
-            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 50%, rgba(255,107,53,0.8) 0, transparent 45%), radial-gradient(circle at 80% 20%, rgba(255,107,53,0.5) 0, transparent 40%);"></div>
+        <section class="relative -mt-8 -mb-8 w-screen overflow-hidden bg-brand-900 text-white" style="margin-left: calc(50% - 50vw); background-image: url('{{ asset('hero.jpg') }}'); background-size: cover; background-position: center;">
+            <div class="absolute inset-0 bg-brand-900/60"></div>
             <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-                <div class="grid items-center gap-10 lg:grid-cols-2">
+                <div class="lg:max-w-3xl">
                     <div>
                         <x-badge variant="accent" class="mb-5">
                             @svg('lucide-volleyball', 'h-3.5 w-3.5')Сезон {{ date('Y') }}
                         </x-badge>
                         <h1 class="font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-                            Волейбольные <span class="text-accent-400">Турниры</span>
+                            Единая волейбольная лига
+                            <span class="text-accent-400">Кемеровской области — Кузбасса</span>
                         </h1>
-                        <p class="mt-4 max-w-xl text-lg leading-relaxed text-brand-200">
+                        <p class="invisible mt-4 max-w-xl text-lg leading-relaxed text-brand-200" aria-hidden="true">
                             Чемпионат города Кемерово по волейболу среди мужских команд
                         </p>
                         <div class="mt-8 flex flex-wrap gap-3">
@@ -23,11 +24,6 @@
                                class="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur transition hover:bg-white/20">
                                 @svg('lucide-users', 'h-5 w-5')Все команды
                             </a>
-                        </div>
-                    </div>
-                    <div class="hidden justify-center lg:flex">
-                        <div class="flex h-56 w-56 items-center justify-center rounded-full border border-white/20 bg-white/10 text-accent-400 backdrop-blur">
-                            @svg('lucide-volleyball', 'h-28 w-28')
                         </div>
                     </div>
                 </div>
