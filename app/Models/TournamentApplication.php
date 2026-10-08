@@ -135,4 +135,23 @@ class TournamentApplication extends Model
     {
         return $this->homeGames->merge($this->awayGames);
     }
+
+    public function downloadableBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->hasAccess('platform.applications.edit')) {
+            return true;
+        }
+
+        $team = $this->team;
+
+        if ($team && $team->captain_id === $user->id) {
+            return true;
+        }
+
+        return $this->roster()->where('user_id', $user->id)->where('is_captain', true)->exists();
+    }
 }

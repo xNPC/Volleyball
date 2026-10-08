@@ -108,6 +108,7 @@
                                         <th class="px-4 py-3 font-semibold sm:px-6">Статус</th>
                                         <th class="px-4 py-3 font-semibold sm:px-6">Дата подачи</th>
                                         <th class="px-4 py-3 font-semibold sm:px-6">Игроков в заявке</th>
+                                        <th class="px-4 py-3 font-semibold sm:px-6">Документы</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -141,6 +142,14 @@
                                                        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-brand-700 transition hover:bg-slate-50">
                                                         @svg('lucide-users', 'h-3.5 w-3.5')Состав
                                                         <span class="rounded-full bg-brand-100 px-1.5 text-brand-800">{{ $application->roster->count() }}</span>
+                                                    </a>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2.5 sm:px-6">
+                                                @if ($application->downloadableBy(auth()->user()))
+                                                    <a href="{{ route('applications.download', $application) }}"
+                                                       class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-brand-700 transition hover:bg-slate-50">
+                                                        @svg('lucide-file-down', 'h-3.5 w-3.5')Скачать заявку
                                                     </a>
                                                 @endif
                                             </td>

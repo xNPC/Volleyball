@@ -25,6 +25,8 @@ class TournamentTeamController extends Controller
         // Группируем по ролям для красивого отображения
         $groupedRoster = $roster->groupBy('jersey_number');
 
-        return view('tournaments.teams.roster', compact('tournament', 'team', 'application', 'roster', 'groupedRoster'));
+        $canDownload = $application->downloadableBy(auth()->user());
+
+        return view('tournaments.teams.roster', compact('tournament', 'team', 'application', 'roster', 'groupedRoster', 'canDownload'));
     }
 }

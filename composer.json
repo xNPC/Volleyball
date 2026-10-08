@@ -16,7 +16,8 @@
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.0",
         "orchid/fortify": "^0.0.12",
-        "orchid/platform": "^14.52"
+        "orchid/platform": "^14.52",
+        "phpoffice/phpword": "^1.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

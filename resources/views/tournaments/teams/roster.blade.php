@@ -22,7 +22,12 @@
                         </span>
                     </div>
                 </div>
-                <div class="shrink-0">
+                <div class="flex shrink-0 flex-col items-end gap-3">
+                    @if ($canDownload)
+                        <x-btn href="{{ route('applications.download', $application) }}" variant="brand" size="sm">
+                            @svg('lucide-file-down', 'h-4 w-4')Скачать заявку
+                        </x-btn>
+                    @endif
                     <x-team-logo :name="$team->name" size="lg" />
                 </div>
             </div>

@@ -4,6 +4,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentDocumentController;
+use App\Http\Controllers\ApplicationDocumentController;
 use App\Http\Controllers\StageController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\UserController;
@@ -48,6 +49,9 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/applications/{application}/download', [ApplicationDocumentController::class, 'download'])
+        ->name('applications.download');
 });
 
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
