@@ -16,4 +16,13 @@ class ApplicationDocumentController extends Controller
 
         return response()->download($path, $service->downloadName($application))->deleteFileAfterSend(true);
     }
+
+    public function downloadMedical(TournamentApplication $application, ApplicationDocumentService $service, Request $request)
+    {
+        abort_unless($application->downloadableBy($request->user()), 403);
+
+        $path = $service->buildMedical($application);
+
+        return response()->download($path, $service->downloadNameMedical($application))->deleteFileAfterSend(true);
+    }
 }

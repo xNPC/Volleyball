@@ -147,10 +147,16 @@
                                             </td>
                                             <td class="px-4 py-2.5 sm:px-6">
                                                 @if ($application->downloadableBy(auth()->user()))
-                                                    <a href="{{ route('applications.download', $application) }}"
-                                                       class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-brand-700 transition hover:bg-slate-50">
-                                                        @svg('lucide-file-down', 'h-3.5 w-3.5')Скачать заявку
-                                                    </a>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        <a href="{{ route('applications.download', $application) }}"
+                                                           class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-brand-700 transition hover:bg-slate-50">
+                                                            @svg('lucide-file-down', 'h-3.5 w-3.5')Скачать заявку
+                                                        </a>
+                                                        <a href="{{ route('applications.download.medical', $application) }}"
+                                                           class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-brand-700 transition hover:bg-slate-50">
+                                                            @svg('lucide-file-plus', 'h-3.5 w-3.5')Скачать мед. заявку
+                                                        </a>
+                                                    </div>
                                                 @endif
                                             </td>
                                         </tr>

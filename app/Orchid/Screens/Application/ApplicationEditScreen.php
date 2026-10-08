@@ -116,6 +116,11 @@ class ApplicationEditScreen extends Screen
                 ->icon('bs.download')
                 ->href(route('applications.download', $this->application))
                 ->canSee($this->application->exists),
+
+            Link::make('Скачать мед. заявку')
+                ->icon('bs.heart-pulse')
+                ->href(route('applications.download.medical', $this->application))
+                ->canSee($this->application->exists),
         ];
     }
 

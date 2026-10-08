@@ -11,17 +11,43 @@ class ApplicationDocumentService
 {
     public const TEMPLATE = 'technical_application.docx';
 
+    public const MEDICAL_TEMPLATE = 'med_blank.docx';
+
     public function build(TournamentApplication $application): string
     {
-        $template = resource_path('templates/'.self::TEMPLATE);
+        return $this->buildWith($application, self::TEMPLATE, 'Заявка_');
+    }
 
-        $processor = new TemplateProcessor($template);
+    public function buildMedical(TournamentApplication $application): string
+    {
+        return $this->buildWith($application, self::MEDICAL_TEMPLATE, 'Медзаявка_');
+    }
+
+    public function downloadName(TournamentApplication $application): string
+    {
+        return $this->fileName($application, 'Заявка_');
+    }
+
+    public function downloadNameMedical(TournamentApplication $application): string
+    {
+        return $this->fileName($application, 'Медзаявка_');
+    }
+
+    private function buildWith(TournamentApplication $application, string $template, string $prefix): string
+    {
+        $processor = new TemplateProcessor(resource_path('templates/'.$template));
 
         $processor->setMacroChars('[[', ']]');
 
         $roster = $application->roster()->with('user')->get();
 
-$this->fillHead($processor, $application, $roster);
+        $processor->setValue('турнир', $application->tournament->name ?? '');
+        $processor->setValue('организация', $application->tournament->organization->name ?? '');
+        $processor->setValue('команда', $application->team->name ?? '');
+
+        if ($template === self::TEMPLATE) {
+            $this->fillTechnicalHead($processor, $application, $roster);
+        }
 
         $count = max($roster->count(), 1);
 
@@ -33,10 +59,10 @@ $this->fillHead($processor, $application, $roster);
 
             $processor->setValue('номер#'.$i, (string) $i);
             $processor->setValue('фио#'.$i, $entry ? $entry->user->name : '');
-            $processor->setValue('игровой_номер#'.$i, $entry && $entry->jersey_number ? $entry->jersey_number : '');
             $processor->setValue('дата_рождения#'.$i, $entry && $entry->user->birthday ? $entry->user->birthday->format('d.m.Y') : '');
-            $processor->setValue('амплуа#'.$i, $entry ? $this->position($entry) : '');
             $processor->setValue('примечание#'.$i, $entry && (bool) $entry->is_captain ? 'капитан' : '');
+            $processor->setValue('игровой_номер#'.$i, $entry && $entry->jersey_number ? $entry->jersey_number : '');
+            $processor->setValue('амплуа#'.$i, $entry ? $this->position($entry) : '');
         }
 
         $path = $this->tempPath($application->id);
@@ -46,20 +72,8 @@ $this->fillHead($processor, $application, $roster);
         return $path;
     }
 
-    public function downloadName(TournamentApplication $application): string
+    private function fillTechnicalHead(TemplateProcessor $processor, TournamentApplication $application, $roster): void
     {
-        $tournament = $application->tournament ? $this->sanitize($application->tournament->name) : 'турнир';
-        $team = $application->team ? $this->sanitize($application->team->name) : 'команда';
-
-        return sprintf('Заявка_%s_%s.docx', $team, $tournament);
-    }
-
-    private function fillHead(TemplateProcessor $processor, TournamentApplication $application, $roster): void
-    {
-        $processor->setValue('турнир', $application->tournament->name ?? '');
-        $processor->setValue('организация', $application->tournament->organization->name ?? '');
-        $processor->setValue('команда', $application->team->name ?? '');
-
         $captain = $roster->first(function ($entry) {
             return (bool) $entry->is_captain;
         });
@@ -73,6 +87,14 @@ $this->fillHead($processor, $application, $roster);
 
         $processor->setValue('дата', now()->format('d.m.Y'));
         $processor->setValue('год', now()->format('y'));
+    }
+
+    private function fileName(TournamentApplication $application, string $prefix): string
+    {
+        $tournament = $application->tournament ? $this->sanitize($application->tournament->name) : 'турнир';
+        $team = $application->team ? $this->sanitize($application->team->name) : 'команда';
+
+        return sprintf('%s%s_%s.docx', $prefix, $team, $tournament);
     }
 
     private function position($entry): string

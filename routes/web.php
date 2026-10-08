@@ -52,6 +52,9 @@ Route::middleware([
 
     Route::get('/applications/{application}/download', [ApplicationDocumentController::class, 'download'])
         ->name('applications.download');
+
+    Route::get('/applications/{application}/download/medical', [ApplicationDocumentController::class, 'downloadMedical'])
+        ->name('applications.download.medical');
 });
 
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');

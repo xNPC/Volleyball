@@ -24,9 +24,14 @@
                 </div>
                 <div class="flex shrink-0 flex-col items-end gap-3">
                     @if ($canDownload)
-                        <x-btn href="{{ route('applications.download', $application) }}" variant="brand" size="sm">
-                            @svg('lucide-file-down', 'h-4 w-4')Скачать заявку
-                        </x-btn>
+                        <div class="flex flex-wrap gap-3">
+                            <x-btn href="{{ route('applications.download', $application) }}" variant="brand" size="sm">
+                                @svg('lucide-file-down', 'h-4 w-4')Скачать заявку
+                            </x-btn>
+                            <x-btn href="{{ route('applications.download.medical', $application) }}" variant="outline" size="sm">
+                                @svg('lucide-file-plus', 'h-4 w-4')Скачать мед. заявку
+                            </x-btn>
+                        </div>
                     @endif
                     <x-team-logo :name="$team->name" size="lg" />
                 </div>
