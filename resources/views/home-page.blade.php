@@ -97,7 +97,7 @@
                                 <thead>
                                 <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                                     <th class="px-6 py-2 font-semibold">Когда</th>
-                                    <th class="px-3 py-2 text-center font-semibold">Матч</th>
+                                    <th class="px-3 py-2 font-semibold">Матч</th>
                                     <th class="px-3 py-2 text-right font-semibold">Площадка</th>
                                     <th class="px-6 py-2 text-right font-semibold">Турнир</th>
                                 </tr>
@@ -114,12 +114,10 @@
                                                 @svg('lucide-calendar-days', 'inline h-3.5 w-3.5'){{ $match['date'] }}
                                             </span>
                                         </td>
-                                        <td class="px-3 py-2">
-                                            <div class="flex items-center justify-center gap-2 whitespace-nowrap">
-                                                <span class="font-semibold text-brand-900">{{ $match['team1_name'] }}</span>
-                                                <span class="text-xs font-bold text-slate-400">VS</span>
-                                                <span class="font-semibold text-brand-900">{{ $match['team2_name'] }}</span>
-                                            </div>
+                                        <td class="whitespace-nowrap px-3 py-2">
+                                            <span class="font-semibold @if (($match['winner'] ?? null) === 'team1') text-emerald-600 @else text-brand-900 @endif">{{ $match['team1_name'] }}</span>
+                                            <span class="px-1.5 text-slate-300">—</span>
+                                            <span class="font-semibold @if (($match['winner'] ?? null) === 'team2') text-emerald-600 @else text-brand-900 @endif">{{ $match['team2_name'] }}</span>
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-2 text-right text-xs text-slate-500">
                                             <span class="inline-flex items-center gap-1">@svg('lucide-map-pin', 'inline h-3.5 w-3.5'){{ $match['location'] ?? 'Не указано' }}</span>
