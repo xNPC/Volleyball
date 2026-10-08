@@ -8,6 +8,7 @@ use App\Http\Controllers\ApplicationDocumentController;
 use App\Http\Controllers\StageController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileGamesController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TournamentTeamController;
 use App\Http\Controllers\GalleryController;
@@ -55,6 +56,8 @@ Route::middleware([
 
     Route::get('/applications/{application}/download/medical', [ApplicationDocumentController::class, 'downloadMedical'])
         ->name('applications.download.medical');
+
+    Route::get('/profile', [ProfileGamesController::class, 'index'])->name('profile.index');
 });
 
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
