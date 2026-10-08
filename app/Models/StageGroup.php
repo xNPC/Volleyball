@@ -41,7 +41,9 @@ class StageGroup extends Model
 
     public function games()
     {
-        return $this->hasMany(Game::class, 'group_id'); // Указываем правильный внешний ключ
+        return $this->hasMany(Game::class, 'group_id') // Указываем правильный внешний ключ
+            ->orderByRaw('scheduled_time IS NULL, scheduled_time')
+            ->orderBy('id');
     }
 
     /**
