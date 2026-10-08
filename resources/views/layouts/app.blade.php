@@ -84,10 +84,7 @@
 
                         <div x-cloak x-show="userOpen" x-transition.opacity.origin.top.right class="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-card">
                             <a href="{{ route('profile.index') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 transition hover:bg-slate-50 hover:text-accent-600">
-                                @svg('lucide-volleyball', 'h-4 w-4 text-slate-400')Мои игры
-                            </a>
-                            <a href="{{ route('profile.show') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 transition hover:bg-slate-50 hover:text-accent-600">
-                                @svg('lucide-settings', 'h-4 w-4 text-slate-400')Настройки
+                                @svg('lucide-user', 'h-4 w-4 text-slate-400')Профиль
                             </a>
                             <a href="{{ route(config('platform.index')) }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 transition hover:bg-slate-50 hover:text-accent-600">
                                 @svg('lucide-gauge', 'h-4 w-4 text-slate-400')Панель управления
@@ -141,10 +138,7 @@
             @auth
                 <div class="mt-3 border-t border-slate-100 pt-3">
                     <a href="{{ route('profile.index') }}" class="nav-link-item">
-                        @svg('lucide-volleyball', 'h-4 w-4')Мои игры
-                    </a>
-                    <a href="{{ route('profile.show') }}" class="nav-link-item">
-                        @svg('lucide-settings', 'h-4 w-4')Настройки
+                        @svg('lucide-user', 'h-4 w-4')Профиль
                     </a>
                     <a href="{{ route(config('platform.index')) }}" class="nav-link-item">
                         @svg('lucide-gauge', 'h-4 w-4')Панель управления

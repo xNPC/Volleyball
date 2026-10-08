@@ -1,15 +1,11 @@
 <x-app-layout>
     <div>
-        <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <h1 class="font-display text-3xl font-bold tracking-tight text-brand-800">Мои игры</h1>
-                <p class="mt-2 text-slate-500">Ближайшие и прошедшие игры ваших команд</p>
-            </div>
-            <a href="{{ route('profile.show') }}"
-               class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition hover:border-slate-300 hover:bg-slate-50">
-                @svg('lucide-settings', 'h-4 w-4')Настройки
-            </a>
+        <div class="mb-6">
+            <h1 class="font-display text-3xl font-bold tracking-tight text-brand-800">Мои игры</h1>
+            <p class="mt-2 text-slate-500">Ближайшие и прошедшие игры ваших команд</p>
         </div>
+
+        @include('partials.profile-nav')
 
         <x-card class="overflow-hidden" x-data="{ active: 'upcoming' }">
             <div class="flex flex-wrap gap-1 border-b border-slate-100 bg-slate-50/70 p-2">
