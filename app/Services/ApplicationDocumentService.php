@@ -58,6 +58,7 @@ $this->fillHead($processor, $application, $roster);
     {
         $processor->setValue('турнир', $application->tournament->name ?? '');
         $processor->setValue('организация', $application->tournament->organization->name ?? '');
+        $processor->setValue('команда', $application->team->name ?? '');
 
         $captain = $roster->first(function ($entry) {
             return (bool) $entry->is_captain;
