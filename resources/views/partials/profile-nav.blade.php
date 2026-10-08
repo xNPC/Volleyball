@@ -5,6 +5,6 @@
     </a>
     <a href="{{ route('profile.show') }}"
        class="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition {{ request()->routeIs('profile.show') ? 'bg-brand-700 text-white shadow-sm' : 'text-brand-700 hover:bg-slate-200 hover:text-brand-800' }}">
-        @svg('lucide-settings', 'h-4 w-4')Настройки
+        @svg('lucide-user', 'h-4 w-4')Аккаунт
     </a>
 </div>

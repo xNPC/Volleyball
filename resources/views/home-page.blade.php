@@ -84,14 +84,23 @@
                     <p class="mt-2 text-slate-500">Следите за результатами и предстоящими играми</p>
                 </div>
 
-                <div class="grid gap-6 lg:grid-cols-2">
-                    <x-card class="overflow-hidden">
-                        <div class="flex items-center gap-2.5 border-b border-slate-100 px-6 py-4">
-                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/10 text-accent-500">
-                                @svg('lucide-clock', 'h-4 w-4')
-                            </span>
-                            <h3 class="font-display text-lg font-bold text-brand-800">Ближайшие матчи</h3>
-                        </div>
+                <x-card class="overflow-hidden" x-data="{ active: 'upcoming' }">
+                    <div class="flex flex-wrap gap-1 border-b border-slate-100 bg-slate-50/70 p-2">
+                        <button type="button"
+                                @click="active = 'upcoming'"
+                                :class="active === 'upcoming' ? 'bg-brand-700 text-white shadow-sm' : 'text-brand-700 hover:bg-slate-200 hover:text-brand-800'"
+                                class="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition">
+                            @svg('lucide-clock', 'h-4 w-4')Ближайшие матчи
+                        </button>
+                        <button type="button"
+                                @click="active = 'past'"
+                                :class="active === 'past' ? 'bg-brand-700 text-white shadow-sm' : 'text-brand-700 hover:bg-slate-200 hover:text-brand-800'"
+                                class="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition">
+                            @svg('lucide-activity', 'h-4 w-4')Прошедшие матчи
+                        </button>
+                    </div>
+
+                    <div x-show="active === 'upcoming'" x-cloak>
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
@@ -123,7 +132,7 @@
                                             <span class="inline-flex items-center gap-1">@svg('lucide-map-pin', 'inline h-3.5 w-3.5'){{ $match['location'] ?? 'Не указано' }}</span>
                                         </td>
                                         <td class="whitespace-nowrap px-6 py-2 text-right font-medium text-brand-700">
-                                            <span class="inline-block max-w-[220px] align-middle truncate" title="{{ $match['tournament'] }}">{{ $match['tournament'] }}</span>
+                                            <span class="inline-block max-w-[320px] align-middle truncate" title="{{ $match['tournament'] }}">{{ $match['tournament'] }}</span>
                                         </td>
                                     </tr>
                                 @empty
@@ -134,15 +143,9 @@
                                 </tbody>
                             </table>
                         </div>
-                    </x-card>
+                    </div>
 
-                    <x-card class="overflow-hidden">
-                        <div class="flex items-center gap-2.5 border-b border-slate-100 px-6 py-4">
-                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-600">
-                                @svg('lucide-activity', 'h-4 w-4')
-                            </span>
-                            <h3 class="font-display text-lg font-bold text-brand-800">Прошедшие матчи</h3>
-                        </div>
+                    <div x-show="active === 'past'" x-cloak>
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
@@ -185,8 +188,8 @@
                                 </tbody>
                             </table>
                         </div>
-                    </x-card>
-                </div>
+                    </div>
+                </x-card>
             </div>
         </section>
 

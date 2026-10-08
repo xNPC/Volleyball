@@ -1,7 +1,7 @@
 <x-app-layout>
     <div>
         <div class="mb-6">
-            <h1 class="font-display text-3xl font-bold tracking-tight text-brand-800">Настройки</h1>
+            <h1 class="font-display text-3xl font-bold tracking-tight text-brand-800">Аккаунт</h1>
         </div>
 
         @include('partials.profile-nav')
