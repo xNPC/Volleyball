@@ -1,19 +1,19 @@
-@section('title', 'Фотогалерея')
+@section('title', 'Фотоальбомы')
 @section('description', 'Фотоальбомы с волейбольных турниров. Моменты игр, награждения, команды.')
 @section('og_type', 'website')
-@section('og_title', 'Фотогалерея')
+@section('og_title', 'Фотоальбомы')
 @section('canonical', request()->url())
 @php $canonicalUrl = request()->url(); @endphp
 
 <x-app-layout>
     <div>
-        <x-breadcrumb :items="[['label' => 'Фотогалерея']]" />
+        <x-breadcrumb :items="[['label' => 'Фотоальбомы']]" />
 
         <div class="mb-8 text-center">
             <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-accent-500/10 text-accent-500">
                 @svg('lucide-camera', 'h-7 w-7')
             </div>
-            <h1 class="font-display text-3xl font-bold tracking-tight text-brand-800 sm:text-4xl">Фотогалерея</h1>
+            <h1 class="font-display text-3xl font-bold tracking-tight text-brand-800 sm:text-4xl">Фотоальбомы</h1>
             <p class="mt-2 text-slate-500">Альбомы с фотографиями</p>
         </div>
 

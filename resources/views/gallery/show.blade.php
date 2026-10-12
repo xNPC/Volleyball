@@ -8,7 +8,7 @@
 <x-app-layout>
     <div>
         <x-breadcrumb :items="[
-            ['label' => 'Фотогалерея', 'url' => route('gallery.index')],
+            ['label' => 'Фотоальбомы', 'url' => route('gallery.index')],
             ['label' => $album->title],
         ]" />
 

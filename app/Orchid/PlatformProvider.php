@@ -105,11 +105,17 @@ class PlatformProvider extends OrchidServiceProvider
                 ->route('platform.tournament.games.management')
                 ->permission(['platform.games.result', 'platform.games.edit']),
 
-            Menu::make('Фотоальбомы')
+            Menu::make('Медиатека')
+                ->slug('media')
                 ->icon('camera')
-                ->route('platform.album.list')
                 ->title('Контент')
-                ->permission('platform.content.gallery'),
+                ->list([
+                    Menu::make('Фотоальбомы')
+                        ->icon('images')
+                        ->route('platform.album.list')
+                        ->active('platform/albums*')
+                        ->permission('platform.content.gallery'),
+                ]),
 
             Menu::make('Управление инструкциями')
                 ->icon('bs.pencil-square')
@@ -204,7 +210,7 @@ class PlatformProvider extends OrchidServiceProvider
                 ->addPermission('platform.games.result', 'Внесение результатов'),
 
             ItemPermission::group('Контент')
-                ->addPermission('platform.content.gallery', 'Управление фотоальбомом')
+                ->addPermission('platform.content.gallery', 'Управление медиатекой')
                 ->addPermission('platform.content.docs', 'Управление инструкциями'),
 
             ItemPermission::group('Опасная зона!')
