@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
         <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
-    <title>@yield('title', 'Волейбольные Турниры') | {{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title', 'Единая волейбольная лига') | {{ config('app.name', 'Laravel') }}</title>
     <meta name="description" content="@yield('description', 'Портал волейбольных турниров Кемеровской области — Кузбасса. Турниры, команды, игроки, результаты, сетки плей-офф и фотоальбомы.')">
 
     <link rel="canonical" href="{{ $canonicalUrl ?? request()->url() }}">
 
     <!-- Open Graph -->
     <meta property="og:type" content="@yield('og_type', 'website')">
-    <meta property="og:title" content="@yield('og_title', trim((trim(View::yieldContent('title', 'Волейбольные Турниры')) . ' | ' . config('app.name')), ' |'))">
+    <meta property="og:title" content="@yield('og_title', trim((trim(View::yieldContent('title', 'Единая волейбольная лига')) . ' | ' . config('app.name')), ' |'))">
     <meta property="og:description" content="@yield('description', 'Портал волейбольных турниров Кемеровской области — Кузбасса. Турниры, команды, игроки, результаты, сетки плей-офф и фотоальбомы.')">
     <meta property="og:url" content="{{ $canonicalUrl ?? request()->url() }}">
     <meta property="og:site_name" content="{{ config('app.name') }}">
@@ -29,7 +30,7 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('og_title', trim((trim(View::yieldContent('title', 'Волейбольные Турниры')) . ' | ' . config('app.name')), ' |'))">
+    <meta name="twitter:title" content="@yield('og_title', trim((trim(View::yieldContent('title', 'Единая волейбольная лига')) . ' | ' . config('app.name')), ' |'))">
     <meta name="twitter:description" content="@yield('description', 'Портал волейбольных турниров Кемеровской области — Кузбасса. Турниры, команды, игроки, результаты, сетки плей-офф и фотоальбомы.')">
     <meta name="twitter:image" content="{{ $ogImage }}">
 
@@ -72,7 +73,7 @@
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-8">
                 <a href="{{ url('/') }}" class="flex items-center">
-                    <img src="{{ asset('logo.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto">
+                    <x-volleyball-logo class="h-9 w-auto text-brand-700" />
                 </a>
 
                 <div class="hidden items-center gap-1 lg:flex">
@@ -197,7 +198,7 @@
         <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
             <div>
                 <a href="{{ url('/') }}" class="flex items-center">
-                    <img src="{{ asset('logo.png') }}" alt="{{ config('app.name') }}" class="h-9 w-auto brightness-200">
+                    <x-volleyball-logo class="h-9 w-auto text-white" />
                 </a>
                 <p class="mt-4 text-sm leading-relaxed text-brand-200">Платформа для организации и проведения волейбольных турниров</p>
             </div>
