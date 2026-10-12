@@ -135,7 +135,7 @@ class TournamentEditLayout extends Rows
                 ->groups('tournament-documents')
                 ->path('tournament-documents')
                 ->maxFiles(20)
-                ->maxFileSize(20)
+                ->maxFileSize(50)
                 ->acceptedFiles('application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,application/zip,application/x-zip-compressed')
                 ->value($tournament->attachments->pluck('id')->all())
                 ->help('Файлы будут доступны для скачивания на странице турнира на сайте');

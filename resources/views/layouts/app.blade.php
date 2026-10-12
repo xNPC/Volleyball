@@ -5,9 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
     <title>@yield('title', 'Волейбольные Турниры') | {{ config('app.name', 'Laravel') }}</title>
+    <meta name="description" content="@yield('description', 'Портал волейбольных турниров Кемеровской области — Кузбасса. Турниры, команды, игроки, результаты, сетки плей-офф и фотоальбомы.')">
+
+    <link rel="canonical" href="{{ $canonicalUrl ?? request()->url() }}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:title" content="@yield('og_title', trim((trim(View::yieldContent('title', 'Волейбольные Турниры')) . ' | ' . config('app.name')), ' |'))">
+    <meta property="og:description" content="@yield('description', 'Портал волейбольных турниров Кемеровской области — Кузбасса. Турниры, команды, игроки, результаты, сетки плей-офф и фотоальбомы.')">
+    <meta property="og:url" content="{{ $canonicalUrl ?? request()->url() }}">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:locale" content="ru_RU">
+    @php
+        $ogImage = View::yieldContent('og_image', '') ?: asset('logo.png');
+        $ogExt = strtolower(pathinfo(parse_url($ogImage, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+        $ogType = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp', 'gif' => 'image/gif'][$ogExt] ?? 'image/png';
+    @endphp
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta property="og:image:type" content="{{ $ogType }}">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', trim((trim(View::yieldContent('title', 'Волейбольные Турниры')) . ' | ' . config('app.name')), ' |'))">
+    <meta name="twitter:description" content="@yield('description', 'Портал волейбольных турниров Кемеровской области — Кузбасса. Турниры, команды, игроки, результаты, сетки плей-офф и фотоальбомы.')">
+    <meta name="twitter:image" content="{{ $ogImage }}">
 
     <!-- Yandex.Metrika counter (загружается после согласия на cookie) -->
     <script type="text/javascript">
@@ -165,7 +189,7 @@
         </div>
     </nav>
 
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main class="@yield('mainClass', 'mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8')">
         {{ $slot }}
     </main>
 

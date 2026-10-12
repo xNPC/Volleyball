@@ -1,3 +1,10 @@
+@section('title', 'Команды турнира — ' . $tournament->name)
+@section('description', 'Команды, участвующие в турнире ' . $tournament->name . '.')
+@section('og_type', 'article')
+@section('og_title', 'Команды турнира — ' . $tournament->name)
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <div>
     <x-breadcrumb :items="[
         ['label' => 'Турниры', 'url' => route('tournaments.index')],

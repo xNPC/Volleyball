@@ -1,3 +1,11 @@
+@php use Illuminate\Support\Str; @endphp
+@section('title', $tournament->name . ' — турнир по волейболу')
+@section('description', Str::limit(strip_tags($tournament->description ?? ''), 160) ?: 'Турнир по волейболу — ' . $tournament->name)
+@section('og_type', 'article')
+@section('og_title', $tournament->name . ' — турнир по волейболу')
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <x-app-layout>
     <div>
         <x-breadcrumb :items="[

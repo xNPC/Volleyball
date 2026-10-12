@@ -1,6 +1,12 @@
+@section('title', 'Главная')
+@section('description', 'Волейбольные турниры Кемеровской области — Кузбасса. Расписание, результаты, команды, игроки, фотоальбомы.')
+@section('og_type', 'website')
+@php $canonicalUrl = request()->url(); @endphp
+@section('mainClass', 'mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8')
+
 <x-app-layout>
     <div>
-        <section class="relative -mt-8 -mb-8 w-screen overflow-hidden bg-brand-900 text-white" style="margin-left: calc(50% - 50vw); background-image: url('{{ asset('hero.jpg') }}'); background-size: cover; background-position: center;">
+        <section class="relative -mt-0 -mb-0 w-screen overflow-hidden bg-brand-900 text-white" style="margin-left: calc(50% - 50vw); background-image: url('{{ asset('hero.jpg') }}'); background-size: cover; background-position: center;">
             <div class="absolute inset-0 bg-brand-900/60"></div>
             <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
                 <div class="lg:max-w-3xl">

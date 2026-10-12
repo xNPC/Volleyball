@@ -1,3 +1,10 @@
+@section('title', 'Фотогалерея')
+@section('description', 'Фотоальбомы с волейбольных турниров. Моменты игр, награждения, команды.')
+@section('og_type', 'website')
+@section('og_title', 'Фотогалерея')
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <x-app-layout>
     <div>
         <x-breadcrumb :items="[['label' => 'Фотогалерея']]" />

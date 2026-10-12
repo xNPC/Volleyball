@@ -1,3 +1,10 @@
+@section('title', 'Группа: ' . $group->name . ' — ' . $group->stage->name)
+@section('description', 'Группа ' . $group->name . ' этапа ' . $group->stage->name . '. Таблица, результаты и календарь игр.')
+@section('og_type', 'article')
+@section('og_title', 'Группа: ' . $group->name . ' — ' . $group->stage->name)
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <x-app-layout>
     <div>
         <x-breadcrumb :items="[

@@ -1,7 +1,9 @@
 <?php
 
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentDocumentController;
 use App\Http\Controllers\ApplicationDocumentController;
@@ -17,28 +19,24 @@ use App\Livewire\TournamentTeamList;
 use App\Livewire\UserList;
 use App\Livewire\TeamList;
 
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Турниры
 Route::get('/tournaments', TournamentList::class)->name('tournaments.index');
 Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
 Route::get('/tournaments/{tournament}/teams', TournamentTeamList::class)->name('tournaments.teams');
 Route::get('/tournaments/{tournament}/documents/{attachment}', [TournamentDocumentController::class, 'download'])->name('tournaments.documents.download');
 
-// Состав команды в турнире
 Route::get('/tournaments/{tournament}/teams/{team}/roster', [TournamentTeamController::class, 'roster'])->name('tournaments.teams.roster');
 
-// Этапы
 Route::get('/tournaments/{tournament}/stages/{stage}', [StageController::class, 'show'])->name('stages.show');
 
-// Группы
 Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
 
-// Пользователи
 Route::get('/users', UserList::class)->name('users.index');
 Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
 
-// Команды
 Route::get('/teams', TeamList::class)->name('teams.index');
 Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
 

@@ -1,3 +1,10 @@
+@section('title', 'Турниры')
+@section('description', 'Все волейбольные турниры. Фильтрация по статусам, календарь и составы команд.')
+@section('og_type', 'website')
+@section('og_title', 'Турниры')
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <div>
     <x-breadcrumb :items="[['label' => 'Турниры']]" />
 

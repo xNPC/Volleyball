@@ -1,3 +1,10 @@
+@section('title', 'Игроки')
+@section('description', 'Список зарегистрированных волейболистов. Профили, команды и участие в турнирах.')
+@section('og_type', 'website')
+@section('og_title', 'Игроки')
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <div>
     <x-breadcrumb :items="[['label' => 'Игроки']]" />
 

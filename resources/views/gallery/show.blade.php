@@ -1,3 +1,10 @@
+@section('title', 'Альбом: ' . $album->title)
+@section('description', 'Фотографии альбома «' . $album->title . '».')
+@section('og_type', 'article')
+@section('og_title', 'Альбом: ' . $album->title)
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <x-app-layout>
     <div>
         <x-breadcrumb :items="[

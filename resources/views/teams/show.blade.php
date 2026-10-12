@@ -1,3 +1,10 @@
+@section('title', 'Команда: ' . $team->name)
+@section('description', 'Волейбольная команда ' . $team->name . ($team->city ? ', ' . $team->city : '') . '. Состав, турниры, результаты.')
+@section('og_type', 'article')
+@section('og_title', 'Команда: ' . $team->name)
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <x-app-layout>
     <div>
         <x-breadcrumb :items="[

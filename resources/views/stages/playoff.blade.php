@@ -1,3 +1,10 @@
+@section('title', 'Плей-офф: ' . $stage->name . ' — ' . $tournament->name)
+@section('description', 'Плей-офф этапа ' . $stage->name . ' турнира ' . $tournament->name . '. Сетка и результаты.')
+@section('og_type', 'article')
+@section('og_title', 'Плей-офф: ' . $stage->name . ' — ' . $tournament->name)
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <x-app-layout>
     <div>
         <x-breadcrumb :items="[

@@ -1,3 +1,10 @@
+@section('title', 'Профиль: ' . $user->name)
+@section('description', 'Профиль волейболиста ' . $user->name . '. Команды, участие в турнирах.')
+@section('og_type', 'profile')
+@section('og_title', 'Профиль: ' . $user->name)
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <x-app-layout>
     <div>
         <x-breadcrumb :items="[

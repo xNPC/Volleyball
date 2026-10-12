@@ -1,3 +1,10 @@
+@section('title', 'Политика конфиденциальности')
+@section('description', 'Политика конфиденциальности и использования файлов cookie на портале волейбольных турниров.')
+@section('og_type', 'website')
+@section('og_title', 'Политика конфиденциальности')
+@section('canonical', request()->url())
+@php $canonicalUrl = request()->url(); @endphp
+
 <x-app-layout>
     <div class="mx-auto max-w-3xl">
         <div class="mb-8 text-center">
