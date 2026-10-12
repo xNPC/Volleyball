@@ -95,13 +95,29 @@ class ApplicationEditScreen extends Screen
         return $draft;
     }
 
-    private function playerInAnotherTeam(int $userId, int $tournamentId, ?int $exceptApplicationId = null): bool
+    private function conflictInfo(int $userId, int $tournamentId, ?int $exceptApplicationId = null): ?array
     {
-        return ApplicationRoster::where('user_id', $userId)
+        $roster = ApplicationRoster::where('user_id', $userId)
             ->whereNull('deleted_at')
             ->when($exceptApplicationId, fn ($q) => $q->where('application_id', '!=', $exceptApplicationId))
             ->whereHas('application', fn ($q) => $q->where('tournament_id', $tournamentId))
-            ->exists();
+            ->with(['application.team', 'player'])
+            ->first();
+
+        if (! $roster) {
+            return null;
+        }
+
+        return [
+            'player'      => $roster->player,
+            'application' => $roster->application,
+            'team'        => $roster->application?->team,
+        ];
+    }
+
+    private function playerInAnotherTeam(int $userId, int $tournamentId, ?int $exceptApplicationId = null): bool
+    {
+        return $this->conflictInfo($userId, $tournamentId, $exceptApplicationId) !== null;
     }
 
     /**
@@ -332,8 +348,12 @@ TD::make('user_id', 'Ф.И.О.')
             $tournamentId = (int) $validated['application']['tournament_id'];
 
             foreach ($draft['roster'] as $row) {
-                if ($this->playerInAnotherTeam((int) $row['user_id'], $tournamentId)) {
-                    Toast::error('Не удалось сохранить заявку: один из игроков уже заявлен за другую команду этого турнира');
+                $conflict = $this->conflictInfo((int) $row['user_id'], $tournamentId);
+
+                if ($conflict) {
+                    Toast::error('Не удалось сохранить заявку: игрок ' . ($conflict['player']->name ?? '—')
+                        . ' уже заявлен за команду ' . ($conflict['team']->name ?? '—') . ' в этом турнире');
+
                     return back();
                 }
             }
@@ -419,7 +439,10 @@ TD::make('user_id', 'Ф.И.О.')
 
             if (($draft['tournament_id'] ?? null)
                 && $this->playerInAnotherTeam((int) $data['user_id'], (int) $draft['tournament_id'])) {
-                Toast::error('Этот игрок уже заявлен за другую команду этого турнира');
+                $conflict = $this->conflictInfo((int) $data['user_id'], (int) $draft['tournament_id']);
+
+                Toast::error('Игрок ' . ($conflict['player']->name ?? '—')
+                    . ' уже заявлен за команду ' . ($conflict['team']->name ?? '—') . ' в этом турнире');
                 return back();
             }
 
@@ -448,8 +471,11 @@ TD::make('user_id', 'Ф.И.О.')
             return back();
         }
 
-        if ($this->playerInAnotherTeam((int) $data['user_id'], (int) $application->tournament_id, $application->id)) {
-            Toast::error('Этот игрок уже заявлен за другую команду этого турнира');
+        $conflict = $this->conflictInfo((int) $data['user_id'], (int) $application->tournament_id, $application->id);
+
+        if ($conflict) {
+            Toast::error('Игрок ' . ($conflict['player']->name ?? '—')
+                . ' уже заявлен за команду ' . ($conflict['team']->name ?? '—') . ' в этом турнире');
             return back();
         }
 

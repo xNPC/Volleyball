@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use App\Models\Broadcast;
 use App\Models\Tournament;
 use App\Models\User;
 use App\Models\Team;
@@ -39,7 +40,8 @@ class HomeController extends Controller
             'homeApplication.team',
             'awayApplication.team',
             'stage.tournament',
-            'venue'
+            'venue',
+            'broadcasts',
         ])
             ->where('scheduled_time', '>=', now())
             ->whereNotNull('scheduled_time')
@@ -54,6 +56,7 @@ class HomeController extends Controller
                     'time' => $game->scheduled_time->format('H:i'),
                     'location' => $game->venue ? ($game->venue->name . ($game->venue->address ? ', ' . $game->venue->address : '')) : 'Не указано',
                     'tournament' => $game->stage->tournament->name ?? 'Турнир',
+                    'broadcast' => $game->broadcasts->firstWhere('status', 'live') ?? $game->broadcasts->firstWhere('status', 'scheduled'),
                 ];
             });
 
@@ -161,12 +164,21 @@ class HomeController extends Controller
                 return $user;
             });
 
+        // Сейчас в эфире
+        $liveBroadcasts = Broadcast::query()
+            ->with(['tournament', 'game.homeApplication.team', 'game.awayApplication.team', 'cover'])
+            ->where('status', 'live')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
         return view('home-page', compact(
             'featuredTournaments',
             'upcomingMatches',
             'pastMatches',
             'topTeams',
-            'birthdayUsers'
+            'birthdayUsers',
+            'liveBroadcasts'
         ));
     }
 }

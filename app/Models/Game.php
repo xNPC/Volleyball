@@ -73,6 +73,11 @@ class Game extends Model
         return $this->hasMany(GameSet::class);
     }
 
+    public function broadcasts(): HasMany
+    {
+        return $this->hasMany(Broadcast::class);
+    }
+
     public function getHomeTeamAttribute()
     {
         return $this->homeApplication->team;

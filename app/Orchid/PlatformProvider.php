@@ -115,6 +115,12 @@ class PlatformProvider extends OrchidServiceProvider
                         ->route('platform.album.list')
                         ->active('platform/albums*')
                         ->permission('platform.content.gallery'),
+
+                    Menu::make('Трансляции')
+                        ->icon('bs.broadcast')
+                        ->route('platform.broadcasts.list')
+                        ->active('platform/broadcasts*')
+                        ->permission('platform.content.broadcasts'),
                 ]),
 
             Menu::make('Управление инструкциями')
@@ -211,6 +217,7 @@ class PlatformProvider extends OrchidServiceProvider
 
             ItemPermission::group('Контент')
                 ->addPermission('platform.content.gallery', 'Управление медиатекой')
+                ->addPermission('platform.content.broadcasts', 'Управление трансляциями')
                 ->addPermission('platform.content.docs', 'Управление инструкциями'),
 
             ItemPermission::group('Опасная зона!')

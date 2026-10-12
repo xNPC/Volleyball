@@ -81,6 +81,11 @@ class OrganizationEditScreen extends Screen
                     ->mask('+7 (999) 999-9999')
                     ->type('Phone'),
 
+                Input::make('organization.vk_group')
+                    ->title('Группа ВКонтакте')
+                    ->placeholder('https://vk.com/club123456789')
+                    ->help('Ссылка на группу организации во ВКонтакте (для трансляций)'),
+
                 Upload::make('organization.attachment')
                     ->title('Логотип')
                     ->acceptedFiles('image/*')
@@ -93,6 +98,7 @@ class OrganizationEditScreen extends Screen
     {
         $request->validate([
             'organization.name' => 'required|string|max:255',
+            'organization.vk_group' => 'nullable|string|max:255',
             'organization.attachment' => 'nullable|mimes:jpg,jpeg,png|max:10240'
         ]);
 

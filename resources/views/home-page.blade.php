@@ -36,6 +36,40 @@
             </div>
         </section>
 
+        @if ($liveBroadcasts->isNotEmpty())
+            <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+                <div class="mb-8 text-center">
+                    <h2 class="font-display text-3xl font-bold tracking-tight text-brand-800">
+                        Сейчас в <span class="text-accent-500">эфире</span>
+                    </h2>
+                    <p class="mt-2 text-slate-500">Смотрите прямую трансляцию матча</p>
+                </div>
+                <div class="grid gap-6 md:grid-cols-2">
+                    @foreach ($liveBroadcasts as $broadcast)
+                        <x-card hoverable class="overflow-hidden">
+                            @include('partials.broadcast-player', ['broadcast' => $broadcast])
+                            <div class="p-5">
+                                <div class="mb-2 flex flex-wrap items-center gap-2">
+                                    <x-badge variant="red">
+                                        @svg('lucide-radio', 'h-3.5 w-3.5')Прямой эфир
+                                    </x-badge>
+                                    @if ($broadcast->tournament)
+                                        <x-badge variant="blue">{{ $broadcast->tournament->name }}</x-badge>
+                                    @endif
+                                </div>
+                                <h3 class="font-display text-lg font-bold text-brand-800">{{ $broadcast->title }}</h3>
+                                @include('partials.broadcast-teams', ['broadcast' => $broadcast])
+                                <a href="{{ route('broadcasts.show', $broadcast) }}"
+                                   class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent-600 transition hover:text-accent-700">
+                                    @svg('lucide-external-link', 'h-4 w-4')Смотреть трансляцию
+                                </a>
+                            </div>
+                        </x-card>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         @if ($featuredTournaments->count() > 0)
             <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
                 <div class="mb-8 text-center">
@@ -128,6 +162,15 @@
                                             <span class="inline-flex items-center gap-1">
                                                 @svg('lucide-calendar-days', 'inline h-3.5 w-3.5'){{ $match['date'] }}
                                             </span>
+                                            @if (!empty($match['broadcast']))
+                                                <span class="mt-1 inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                                                    <span class="relative flex h-1.5 w-1.5">
+                                                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
+                                                        <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-600"></span>
+                                                    </span>
+                                                    В эфире
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-2">
                                             <span class="font-semibold @if (($match['winner'] ?? null) === 'team1') text-emerald-600 @else text-brand-900 @endif">{{ $match['team1_name'] }}</span>

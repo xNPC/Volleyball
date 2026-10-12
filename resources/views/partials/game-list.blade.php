@@ -2,7 +2,7 @@
     if (! $games instanceof \Illuminate\Support\Collection) {
         $games = collect($games);
     }
-    $games->load('homeApplication.team', 'awayApplication.team', 'sets');
+    $games->load('homeApplication.team', 'awayApplication.team', 'sets', 'broadcasts');
 @endphp
 
 @if ($games->count() > 0)
@@ -16,6 +16,7 @@
                 <th class="px-3 py-2 font-semibold">Команда 2</th>
                 <th class="px-3 py-2 font-semibold">Сеты</th>
                 <th class="px-4 py-2 text-right font-semibold">Площадка</th>
+                <th class="px-4 py-2 text-right font-semibold">Эфир</th>
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -55,6 +56,33 @@
                     </td>
                     <td class="whitespace-nowrap px-4 py-2 text-right text-xs text-slate-500">
                         {{ $game->venue ? $game->venue->name : '—' }}
+                    </td>
+                    <td class="whitespace-nowrap px-4 py-2 text-right">
+                        @php
+                            $liveBroadcast = $game->broadcasts->firstWhere('status', 'live');
+                            $upcomingBroadcast = $game->broadcasts->firstWhere('status', 'scheduled');
+                            $broadcast = $liveBroadcast ?? $upcomingBroadcast;
+                        @endphp
+
+                        @if ($broadcast)
+                            @if ($liveBroadcast)
+                                <a href="{{ route('broadcasts.show', $liveBroadcast) }}"
+                                   class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700 transition hover:bg-red-200">
+                                    <span class="relative flex h-1.5 w-1.5">
+                                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
+                                        <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-600"></span>
+                                    </span>
+                                    Смотреть
+                                </a>
+                            @else
+                                <a href="{{ route('broadcasts.show', $upcomingBroadcast) }}"
+                                   class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 transition hover:bg-amber-200">
+                                    Скоро
+                                </a>
+                            @endif
+                        @else
+                            <span class="text-slate-300">—</span>
+                        @endif
                     </td>
                 </tr>
             @endforeach

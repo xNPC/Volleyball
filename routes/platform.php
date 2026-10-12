@@ -50,6 +50,8 @@ use App\Orchid\Controllers\MatchController;
 use App\Orchid\Screens\AlbumFormScreen;
 use App\Orchid\Screens\AlbumListScreen;
 use App\Orchid\Screens\PhotoManagerScreen;
+use App\Orchid\Screens\Broadcast\BroadcastListScreen;
+use App\Orchid\Screens\Broadcast\BroadcastFormScreen;
 
 /*
 |--------------------------------------------------------------------------
@@ -222,6 +224,32 @@ Route::screen('roster-requests/create/{application?}', RosterRequestFormScreen::
 
 Route::screen('roster-requests', RosterRequestListScreen::class)
     ->name('platform.roster.requests.list');
+
+/**
+ *
+ * Трансляции
+ *
+ */
+Route::screen('broadcasts', BroadcastListScreen::class)
+    ->name('platform.broadcasts.list')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.index')
+        ->push('Список трансляций', route('platform.broadcasts.list'))
+    );
+
+Route::screen('broadcasts/create', BroadcastFormScreen::class)
+    ->name('platform.broadcasts.create')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.broadcasts.list')
+        ->push('Создание трансляции')
+    );
+
+Route::screen('broadcasts/{broadcast}/edit', BroadcastFormScreen::class)
+    ->name('platform.broadcasts.edit')
+    ->breadcrumbs(fn (Trail $trail, $broadcast) => $trail
+        ->parent('platform.broadcasts.list')
+        ->push($broadcast->title, route('platform.broadcasts.edit', $broadcast))
+    );
 
 /**
  *

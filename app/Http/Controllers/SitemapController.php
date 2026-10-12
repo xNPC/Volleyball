@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\Broadcast;
 use App\Models\StageGroup;
 use App\Models\Team;
 use App\Models\Tournament;
@@ -20,6 +21,7 @@ class SitemapController extends Controller
         $urls->push($this->entry(route('teams.index'), now(), 'daily', 0.9));
         $urls->push($this->entry(route('users.index'), now(), 'weekly', 0.8));
         $urls->push($this->entry(route('gallery.index'), now(), 'weekly', 0.7));
+        $urls->push($this->entry(route('broadcasts.index'), now(), 'daily', 0.8));
         $urls->push($this->entry(route('privacy'), now(), 'yearly', 0.3));
 
         Tournament::query()->get()->each(function (Tournament $tournament) use ($urls) {
@@ -46,6 +48,10 @@ class SitemapController extends Controller
 
         Album::query()->where('is_active', true)->get()->each(function (Album $album) use ($urls) {
             $urls->push($this->entry(route('gallery.show', $album->slug), $album->updated_at, 'monthly', 0.5));
+        });
+
+        Broadcast::query()->where('is_active', true)->get()->each(function (Broadcast $broadcast) use ($urls) {
+            $urls->push($this->entry(route('broadcasts.show', $broadcast), $broadcast->updated_at, 'daily', 0.7));
         });
 
         $xml = view('sitemap', ['urls' => $urls])->render();

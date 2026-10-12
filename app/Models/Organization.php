@@ -19,7 +19,7 @@ class Organization extends Model {
 
     protected $fillable = [
         'name', 'description', 'logo',
-        'contact_email', 'contact_phone'
+        'contact_email', 'contact_phone', 'vk_group'
     ];
 
     protected $dates = [

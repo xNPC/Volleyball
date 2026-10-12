@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileGamesController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TournamentTeamController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\BroadcastController;
 use App\Livewire\TournamentList;
 use App\Livewire\TournamentTeamList;
 use App\Livewire\UserList;
@@ -60,5 +61,8 @@ Route::middleware([
 
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
 Route::get('/gallery/{slug}', [GalleryController::class, 'show'])->name('gallery.show');
+
+Route::get('/broadcasts', [BroadcastController::class, 'index'])->name('broadcasts.index');
+Route::get('/broadcasts/{broadcast}', [BroadcastController::class, 'show'])->name('broadcasts.show');
 
 Route::view('/privacy', 'privacy')->name('privacy');

@@ -91,7 +91,7 @@
                     </a>
                     <div class="relative" x-data="{ mediaOpen: false }" @click.outside="mediaOpen = false">
                         <button type="button" @click="mediaOpen = !mediaOpen"
-                                class="nav-link-item cursor-pointer @if(request()->routeIs('gallery.*')) nav-link-item-active @endif">
+                                class="nav-link-item cursor-pointer @if(request()->routeIs('gallery.*') || request()->routeIs('broadcasts.*')) nav-link-item-active @endif">
                             @svg('lucide-camera', 'h-4 w-4')Медиатека
                             @svg('lucide-chevron-down', 'h-4 w-4', ['x-show' => '!mediaOpen'])
                             @svg('lucide-chevron-up', 'h-4 w-4', ['x-show' => 'mediaOpen', 'x-cloak' => ''])
@@ -103,10 +103,10 @@
                                class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 transition hover:bg-slate-50 hover:text-accent-600">
                                 @svg('lucide-images', 'h-4 w-4 text-slate-400')Фотоальбомы
                             </a>
-                            <span class="flex cursor-not-allowed items-center justify-between gap-2 px-4 py-2.5 text-sm text-slate-400">
-                                <span class="flex items-center gap-2.5">@svg('lucide-tv', 'h-4 w-4 text-slate-300')Трансляции</span>
-                                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">Скоро</span>
-                            </span>
+                            <a href="{{ route('broadcasts.index') }}"
+                               class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-brand-700 transition hover:bg-slate-50 hover:text-accent-600">
+                                @svg('lucide-tv', 'h-4 w-4 text-slate-400')Трансляции
+                            </a>
                             <span class="flex cursor-not-allowed items-center justify-between gap-2 px-4 py-2.5 text-sm text-slate-400">
                                 <span class="flex items-center gap-2.5">@svg('lucide-video', 'h-4 w-4 text-slate-300')Видеозаписи</span>
                                 <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">Скоро</span>
@@ -178,7 +178,7 @@
                 </a>
                 <div x-data="{ mediaOpen: false }">
                     <button type="button" @click.stop="mediaOpen = !mediaOpen"
-                            class="nav-link-item w-full cursor-pointer justify-between @if(request()->routeIs('gallery.*')) nav-link-item-active @endif">
+                            class="nav-link-item w-full cursor-pointer justify-between @if(request()->routeIs('gallery.*') || request()->routeIs('broadcasts.*')) nav-link-item-active @endif">
                         <span class="inline-flex items-center gap-1.5">@svg('lucide-camera', 'h-4 w-4')Медиатека</span>
                         @svg('lucide-chevron-down', 'h-4 w-4', ['x-show' => '!mediaOpen'])
                         @svg('lucide-chevron-up', 'h-4 w-4', ['x-show' => 'mediaOpen', 'x-cloak' => ''])
@@ -187,10 +187,9 @@
                         <a href="{{ route('gallery.index') }}" class="nav-link-item">
                             @svg('lucide-images', 'h-4 w-4')Фотоальбомы
                         </a>
-                        <span class="nav-link-item cursor-not-allowed justify-between text-slate-400">
-                            <span class="inline-flex items-center gap-1.5">@svg('lucide-tv', 'h-4 w-4 text-slate-300')Трансляции</span>
-                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">Скоро</span>
-                        </span>
+                        <a href="{{ route('broadcasts.index') }}" class="nav-link-item">
+                            @svg('lucide-tv', 'h-4 w-4')Трансляции
+                        </a>
                         <span class="nav-link-item cursor-not-allowed justify-between text-slate-400">
                             <span class="inline-flex items-center gap-1.5">@svg('lucide-video', 'h-4 w-4 text-slate-300')Видеозаписи</span>
                             <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">Скоро</span>
@@ -250,7 +249,7 @@
                     <li><a href="{{ route('users.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-users', 'h-4 w-4')Игроки</a></li>
                     <li><a href="{{ route('teams.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-shield', 'h-4 w-4')Команды</a></li>
                     <li><a href="{{ route('gallery.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-images', 'h-4 w-4')Фотоальбомы</a></li>
-                    <li><span class="inline-flex items-center gap-2 text-brand-400">@svg('lucide-tv', 'h-4 w-4')Трансляции <span class="rounded-full bg-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wide">Скоро</span></span></li>
+                    <li><a href="{{ route('broadcasts.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-tv', 'h-4 w-4')Трансляции</a></li>
                     <li><span class="inline-flex items-center gap-2 text-brand-400">@svg('lucide-video', 'h-4 w-4')Видеозаписи <span class="rounded-full bg-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wide">Скоро</span></span></li>
                     <li><a href="https://1liga42.ru" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-book-open', 'h-4 w-4')История 1 лиги</a></li>
                 </ul>
