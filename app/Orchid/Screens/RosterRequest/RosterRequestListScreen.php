@@ -35,9 +35,11 @@ class RosterRequestListScreen extends Screen
                 'reviewer',
             ])
             ->when(!$seeAll, function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                    ->orWhereHas('toApplication.team', fn ($t) => $t->where('captain_id', $user->id))
-                    ->orWhereHas('fromApplication.team', fn ($t) => $t->where('captain_id', $user->id));
+                $q->where(function ($sub) use ($user) {
+                    $sub->where('created_by', $user->id)
+                        ->orWhereHas('toApplication.team', fn ($t) => $t->where('captain_id', $user->id))
+                        ->orWhereHas('fromApplication.team', fn ($t) => $t->where('captain_id', $user->id));
+                });
             })
             ->orderByDesc('created_at')
             ->get();

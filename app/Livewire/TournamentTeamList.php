@@ -44,8 +44,10 @@ class TournamentTeamList extends Component
             ->with(['captain'])
             ->wherePivot('status', 'approved')
             ->when($this->search, function($query) {
-                $query->where('teams.name', 'like', "%{$this->search}%")
-                    ->orWhere('teams.description', 'like', "%{$this->search}%");
+                $query->where(function($q) {
+                    $q->where('teams.name', 'like', "%{$this->search}%")
+                        ->orWhere('teams.description', 'like', "%{$this->search}%");
+                });
             })
             ->orderBy('teams.name')
             ->paginate(30);

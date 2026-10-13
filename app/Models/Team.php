@@ -106,7 +106,8 @@ class Team extends Model
     {
         return $this->belongsToMany(Tournament::class, 'tournament_applications', 'team_id', 'tournament_id')
             ->withPivot('status')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->wherePivotNull('deleted_at');
     }
 
     /**

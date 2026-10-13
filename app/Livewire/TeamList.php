@@ -40,12 +40,9 @@ class TeamList extends Component
         $activeTournamentStatuses = ['ongoing', 'planned'];
 
         $teams = Team::withCount([
-            'tournamentApplications as applications_count' => function ($query) use ($activeTournamentStatuses) {
-                $query->whereNull('tournament_applications.deleted_at');
-            },
+            'tournamentApplications as applications_count',
             'activeTournaments as active_tournaments_count' => function ($query) use ($activeTournamentStatuses) {
-                $query->whereNull('tournament_applications.deleted_at')
-                    ->whereIn('tournaments.status', $activeTournamentStatuses);
+                $query->whereIn('tournaments.status', $activeTournamentStatuses);
             }
         ])
             ->with(['captain'])
@@ -57,8 +54,7 @@ class TeamList extends Component
             })
             ->when($this->filter === 'with_tournaments', function($query) use ($activeTournamentStatuses) {
                 $query->whereHas('activeTournaments', function($q) use ($activeTournamentStatuses) {
-                    $q->whereNull('tournament_applications.deleted_at')
-                        ->whereIn('tournaments.status', $activeTournamentStatuses);
+                    $q->whereIn('tournaments.status', $activeTournamentStatuses);
                 });
             })
             ->when($this->filter === 'new', function($query) {
@@ -73,8 +69,7 @@ class TeamList extends Component
                 'total_teams' => Team::count(),
                 'new_teams_month' => Team::where('created_at', '>=', now()->subMonth())->count(),
                 'teams_with_tournaments' => Team::whereHas('activeTournaments', function($q) use ($activeTournamentStatuses) {
-                    $q->whereNull('tournament_applications.deleted_at')
-                        ->whereIn('tournaments.status', $activeTournamentStatuses);
+                    $q->whereIn('tournaments.status', $activeTournamentStatuses);
                 })->count(),
             ],
         ]);

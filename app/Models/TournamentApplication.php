@@ -56,7 +56,8 @@ class TournamentApplication extends Model
             'application_id',
             'user_id'
         )
-            ->withPivot('jersey_number', 'position', 'is_captain');
+            ->withPivot('jersey_number', 'position', 'is_captain')
+            ->wherePivotNull('deleted_at');
     }
 
     public function venue()

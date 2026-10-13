@@ -39,8 +39,10 @@ class TournamentList extends Component
     {
         $tournaments = Tournament::withCount(['stages', 'approvedTeams as teams_count'])
             ->when($this->search, function($query) {
-                $query->where('name', 'like', "%{$this->search}%")
-                    ->orWhere('description', 'like', "%{$this->search}%");
+                $query->where(function($q) {
+                    $q->where('name', 'like', "%{$this->search}%")
+                        ->orWhere('description', 'like', "%{$this->search}%");
+                });
             })
             ->when($this->status !== 'all', function($query) {
                 $query->where('status', $this->status);
