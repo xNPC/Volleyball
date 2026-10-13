@@ -128,6 +128,7 @@ class HomeController extends Controller
                         });
                 }
             ])
+            ->with('logoImage')
             ->get()
             ->map(function($team) {
                 $totalWins = $team->home_wins + $team->away_wins;
@@ -136,7 +137,7 @@ class HomeController extends Controller
                 return [
                     'team' => $team,
                     'name' => $team->name,
-                    'logo' => mb_substr($team->name, 0, 2), // Заменил substr на mb_substr для корректной работы с кириллицей в названиях
+                    'logo' => $team->logo_url,
                     'wins' => $totalWins,
                     'total_games' => $totalGames,
                     'win_rate' => $totalGames > 0 ? round(($totalWins / $totalGames) * 100, 1) : 0

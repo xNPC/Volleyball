@@ -1,4 +1,4 @@
-@props(['name' => '', 'size' => 'md'])
+@props(['name' => '', 'logo' => null, 'size' => 'md'])
 
 @php
     $sizes = [
@@ -10,6 +10,10 @@
     $initials = \Illuminate\Support\Str::of($name)->trim()->substr(0, 2)->upper();
 @endphp
 
-<span {{ $attributes->merge(['class' => 'inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-800 font-bold text-white ' . $sizes[$size]]) }}>
-    {{ $initials }}
-</span>
+@if ($logo)
+    <img src="{{ $logo }}" alt="{{ $name }}" {{ $attributes->merge(['class' => 'shrink-0 object-cover ' . $sizes[$size]]) }}>
+@else
+    <span {{ $attributes->merge(['class' => 'inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-800 font-bold text-white ' . $sizes[$size]]) }}>
+        {{ $initials }}
+    </span>
+@endif

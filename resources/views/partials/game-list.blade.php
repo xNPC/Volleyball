@@ -23,8 +23,10 @@
             @foreach ($games as $game)
                 @php
                     $played = $game->home_score !== null && $game->away_score !== null;
-                    $homeName = $game->homeApplication->team->name ?? 'Не определено';
-                    $awayName = $game->awayApplication->team->name ?? 'Не определено';
+                    $homeTeam = $game->homeApplication->team ?? null;
+                    $awayTeam = $game->awayApplication->team ?? null;
+                    $homeName = $homeTeam->name ?? 'Не определено';
+                    $awayName = $awayTeam->name ?? 'Не определено';
                 @endphp
                 <tr class="transition hover:bg-slate-50/70">
                     <td class="whitespace-nowrap px-4 py-2 text-xs text-slate-500">
@@ -32,7 +34,7 @@
                     </td>
                     <td class="px-3 py-2">
                         <span class="flex items-center gap-2 whitespace-nowrap font-medium text-brand-900">
-                            <x-team-logo :name="$homeName" size="sm" />
+                            <x-team-logo :name="$homeName" :logo="$homeTeam?->logo_url" size="sm" />
                             {{ $homeName }}
                         </span>
                     </td>
@@ -48,7 +50,7 @@
                     <td class="px-3 py-2">
                         <span class="flex items-center gap-2 whitespace-nowrap font-medium text-brand-900">
                             {{ $awayName }}
-                            <x-team-logo :name="$awayName" size="sm" />
+                            <x-team-logo :name="$awayName" :logo="$awayTeam?->logo_url" size="sm" />
                         </span>
                     </td>
                     <td class="px-3 py-2 text-xs text-slate-500">

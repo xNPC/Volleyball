@@ -45,7 +45,7 @@ class TeamList extends Component
                 $query->whereIn('tournaments.status', $activeTournamentStatuses);
             }
         ])
-            ->with(['captain'])
+            ->with(['captain', 'logoImage'])
             ->when($this->search, function($query) {
                 $query->where(function($subQuery) {
                     $subQuery->where('name', 'like', "%{$this->search}%")

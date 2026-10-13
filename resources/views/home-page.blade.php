@@ -255,7 +255,7 @@
                     @foreach ($topTeams as $index => $team)
                         <x-card hoverable class="p-5 text-center">
                             <div class="relative mx-auto mb-3 w-fit">
-                                <x-team-logo :name="$team['name']" size="md" />
+                                <x-team-logo :name="$team['name']" :logo="$team['logo']" size="md" />
                                 @if ($index < 3)
                                     <span class="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-accent-500 p-1.5 text-white shadow-card">
                                         @svg('lucide-crown', 'h-3.5 w-3.5')

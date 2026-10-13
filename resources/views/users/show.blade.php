@@ -90,7 +90,7 @@
                                 @endphp
                                 <x-card class="p-5 transition hover:bg-slate-50/70">
                                     <div class="flex items-center gap-3">
-                                        <x-team-logo :name="$team->name ?? '?'" size="sm" />
+                                        <x-team-logo :name="$team->name ?? '?'" :logo="$team?->logo_url" size="sm" />
                                         <div class="min-w-0">
                                             @if ($team)
                                                 <a href="{{ route('teams.show', $team) }}"

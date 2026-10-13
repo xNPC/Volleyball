@@ -25,8 +25,11 @@ class TeamEditScreen extends Screen
      */
     public function query(Team $team): iterable
     {
+        $team->load('logoImage');
+
         return [
-            'team' => $team
+            'team' => $team,
+            'logo' => $team->logoImage ? collect([$team->logoImage]) : collect([]),
         ];
     }
 
@@ -68,9 +71,12 @@ class TeamEditScreen extends Screen
                         ->help('Выберите капитана')
                         ->disabled(!auth()->user()->hasAccess('platform.teams.edit')),
 
-//                    Upload::make('team.logo')
-//                        ->title('Логотип')
-//                        ->acceptedFiles('image/*'),
+                    Upload::make('logo')
+                        ->title('Логотип')
+                        ->acceptedFiles('image/*')
+                        ->maxFiles(1)
+                        ->groups('team_logo')
+                        ->help('Квадратное изображение, рекомендуется не менее 200×200'),
 
                     TextArea::make('team.description')
                         ->title('Описание')
@@ -109,6 +115,7 @@ class TeamEditScreen extends Screen
             'team.name' => 'required|string|max:255',
             'team.captain_id' => 'integer|exists:users,id',
             'team.description' => 'nullable|string|max:2500',
+            'logo' => 'nullable|array',
         ]);
 
         $teamData = $validated['team'];
@@ -123,7 +130,16 @@ class TeamEditScreen extends Screen
             }
         }
 
-        Team::updateOrCreate(['id' => $teamId], $teamData);
+        $logoIds = $request->input('logo');
+        $teamData['logo'] = ! empty($logoIds) && is_array($logoIds) ? head($logoIds) : null;
+
+        $team = Team::updateOrCreate(['id' => $teamId], $teamData);
+
+        if (! empty($logoIds) && is_array($logoIds)) {
+            $team->attachments()->sync($logoIds);
+        } else {
+            $team->attachments()->detach();
+        }
 
         Toast::info('Успешно сохранено');
         return redirect()->route('platform.teams.list');

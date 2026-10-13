@@ -16,7 +16,7 @@
             <div class="min-w-0">
                 <x-card class="p-5 text-center sm:p-6">
                     <div class="mx-auto mb-4 w-fit">
-                        <x-team-logo :name="$team->name" size="xl" />
+                        <x-team-logo :name="$team->name" :logo="$team->logo_url" size="xl" />
                     </div>
 
                     <h1 class="font-display text-xl font-bold text-brand-800">{{ $team->name }}</h1>

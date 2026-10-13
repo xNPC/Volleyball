@@ -58,6 +58,21 @@ class TeamListTable extends Table
     protected function columns(): iterable
     {
         return [
+            TD::make('logo', '')
+                ->width('60px')
+                ->alignCenter()
+                ->render(function (Team $team) {
+                    $style = 'width: 40px; height: 40px;';
+
+                    if ($team->logo_url) {
+                        return '<img src="' . e($team->logo_url) . '" alt="" style="' . $style . ' object-fit: cover;">';
+                    }
+
+                    $initials = \Illuminate\Support\Str::of($team->name)->trim()->substr(0, 2)->upper();
+
+                    return '<span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-dark text-white fw-bold" style="' . $style . '">' . e($initials) . '</span>';
+                }),
+
             TD::make('name', 'Название'),
 
             TD::make('captain.name', 'Капитан'),

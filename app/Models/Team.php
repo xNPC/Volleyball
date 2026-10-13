@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Orchid\Attachment\Attachable;
+use Orchid\Attachment\Models\Attachment;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
 {
-    use AsSource, SoftDeletes;
+    use AsSource, SoftDeletes, Attachable;
 
     protected $fillable = [
         'name', 'logo',
@@ -38,6 +40,29 @@ class Team extends Model
     public function captain()
     {
         return $this->belongsTo(User::class, 'captain_id');
+    }
+
+    /**
+     * Логотип команды (вложение Orchid)
+     */
+    public function logoImage()
+    {
+        return $this->hasOne(Attachment::class, 'id', 'logo');
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (! $this->logo) {
+            return null;
+        }
+
+        if ($this->relationLoaded('logoImage') && $this->logoImage) {
+            return $this->logoImage->url();
+        }
+
+        $attachment = $this->attachments()->find($this->logo);
+
+        return $attachment ? $attachment->url() : null;
     }
 
     /**

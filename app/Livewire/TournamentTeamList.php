@@ -41,7 +41,7 @@ class TournamentTeamList extends Component
                 'activeTournaments as tournaments_count',
                 'tournamentApplications as applications_count'
             ])
-            ->with(['captain'])
+            ->with(['captain', 'logoImage'])
             ->wherePivot('status', 'approved')
             ->when($this->search, function($query) {
                 $query->where(function($q) {

@@ -1,7 +1,7 @@
 @if ($broadcast->game)
     <div class="mt-4 flex flex-wrap items-center gap-4 text-sm">
         <span class="flex items-center gap-2 font-medium text-brand-900">
-            <x-team-logo :name="$broadcast->game->homeApplication->team->name ?? '?'" size="sm" />
+            <x-team-logo :name="$broadcast->game->homeApplication->team->name ?? '?'" :logo="$broadcast->game->homeApplication->team?->logo_url" size="sm" />
             {{ $broadcast->game->homeApplication->team->name ?? 'Не определено' }}
         </span>
         <span class="rounded-lg border border-slate-200 px-2 py-0.5 font-bold text-brand-800">
@@ -13,7 +13,7 @@
         </span>
         <span class="flex items-center gap-2 font-medium text-brand-900">
             {{ $broadcast->game->awayApplication->team->name ?? 'Не определено' }}
-            <x-team-logo :name="$broadcast->game->awayApplication->team->name ?? '?'" size="sm" />
+            <x-team-logo :name="$broadcast->game->awayApplication->team->name ?? '?'" :logo="$broadcast->game->awayApplication->team?->logo_url" size="sm" />
         </span>
     </div>
 @endif

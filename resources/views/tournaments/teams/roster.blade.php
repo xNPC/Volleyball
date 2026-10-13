@@ -40,7 +40,7 @@
                             </x-btn>
                         </div>
                     @endif
-                    <x-team-logo :name="$team->name" size="lg" />
+                    <x-team-logo :name="$team->name" :logo="$team->logo_url" size="lg" />
                 </div>
             </div>
         </x-card>

@@ -59,7 +59,7 @@
                             </p>
                         @endif
                     </div>
-                    <x-team-logo :name="$team->name" size="sm" class="shrink-0" />
+                    <x-team-logo :name="$team->name" :logo="$team->logo_url" size="sm" class="shrink-0" />
                 </div>
 
                 @if ($team->description)
