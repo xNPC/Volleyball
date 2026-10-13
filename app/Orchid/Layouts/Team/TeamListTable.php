@@ -73,7 +73,16 @@ class TeamListTable extends Table
                     return '<span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-dark text-white fw-bold" style="' . $style . '">' . e($initials) . '</span>';
                 }),
 
-            TD::make('name', 'Название'),
+            TD::make('name', 'Название')
+                ->sort()
+                ->render(function (Team $team) {
+                    $duplicateIds = $this->query->get('duplicate_team_ids', []);
+                    $badge = in_array($team->id, $duplicateIds, true)
+                        ? ' <span class="badge bg-danger ms-1">дубликат</span>'
+                        : '';
+
+                    return e($team->name) . $badge;
+                }),
 
             TD::make('captain.name', 'Капитан'),
 

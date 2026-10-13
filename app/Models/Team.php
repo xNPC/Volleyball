@@ -5,16 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Orchid\Attachment\Attachable;
 use Orchid\Attachment\Models\Attachment;
+use Orchid\Filters\Filterable;
 use Orchid\Screen\AsSource;
 use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
 {
-    use AsSource, SoftDeletes, Attachable;
+    use AsSource, SoftDeletes, Attachable, Filterable;
 
     protected $fillable = [
         'name', 'logo',
         'description', 'captain_id'
+    ];
+
+    protected $allowedSorts = [
+        'name',
     ];
 
     protected $dates = [

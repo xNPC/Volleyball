@@ -23,15 +23,37 @@ class TeamListScreen extends Screen
     public function query(): iterable
     {
         $teams = collect();
-        $userTeams = Team::with(['captain', 'logoImage'])->where('captain_id', auth()->user()->id)->get();
+        $userTeams = Team::with(['captain', 'logoImage'])
+            ->where('captain_id', auth()->user()->id)
+            ->filters()
+            ->defaultSort('name')
+            ->get();
 
         if (auth()->user()->hasAccess('platform.teams.edit')) {
-            $teams = Team::with(['captain', 'logoImage'])->paginate();
+            $teams = Team::with(['captain', 'logoImage'])
+                ->filters()
+                ->defaultSort('name')
+                ->paginate();
         }
+
+        $duplicateIds = Team::query()
+            ->select('id', 'name', 'created_at')
+            ->whereIn('name', fn ($query) => $query->select('name')
+                ->from('teams')
+                ->whereNull('deleted_at')
+                ->groupBy('name')
+                ->havingRaw('COUNT(*) > 1'))
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('name')
+            ->flatMap(fn ($group) => $group->skip(1)->pluck('id'))
+            ->all();
 
         return [
             'teams' => $teams,
             'user_teams' => $userTeams,
+            'duplicate_team_ids' => $duplicateIds,
         ];
     }
 
