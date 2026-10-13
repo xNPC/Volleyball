@@ -39,7 +39,7 @@
     @if ($search || $status !== 'all')
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 px-5 py-3">
             <p class="text-sm text-brand-800">
-                @svg('lucide-info', 'h-4 w-4 inline') Найдено {{ $tournaments->total() }} {{ Str::plural('турнир', $tournaments->total()) }}
+                @svg('lucide-info', 'h-4 w-4 inline') Найдено {{ $tournaments->total() }} {{ trans_choice('турнир|турнира|турниров', $tournaments->total()) }}
             </p>
             <button type="button" wire:click="resetFilters"
                     class="inline-flex items-center gap-1.5 text-sm font-medium text-accent-600 transition hover:text-accent-700">

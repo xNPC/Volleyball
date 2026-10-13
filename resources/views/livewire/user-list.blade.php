@@ -33,13 +33,24 @@
                     @svg('lucide-chevron-down', 'h-4 w-4')
                 </span>
             </div>
+            <div class="relative sm:w-48">
+                <select wire:model.live="gender"
+                        class="input-base appearance-none pr-10">
+                    <option value="all">Все</option>
+                    <option value="male">Мужчины</option>
+                    <option value="female">Женщины</option>
+                </select>
+                <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                    @svg('lucide-chevron-down', 'h-4 w-4')
+                </span>
+            </div>
         </div>
     </x-card>
 
-    @if ($search || $filter !== 'all')
+    @if ($search || $filter !== 'all' || $gender !== 'all')
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 px-5 py-3">
             <p class="text-sm text-brand-800">
-                @svg('lucide-info', 'h-4 w-4 inline') Найдено {{ $users->total() }} {{ Str::plural('игрок', $users->total()) }}
+                @svg('lucide-info', 'h-4 w-4 inline') Найдено {{ $users->total() }} {{ trans_choice('игрок|игрока|игроков', $users->total()) }}
             </p>
             <button type="button" wire:click="resetFilters"
                     class="inline-flex items-center gap-1.5 text-sm font-medium text-accent-600 transition hover:text-accent-700">
@@ -97,13 +108,13 @@
                 </div>
                 <h2 class="font-display text-xl font-bold text-brand-800">Игроки не найдены</h2>
                 <p class="mt-1 text-slate-500">
-                    @if ($search || $filter !== 'all')
+                    @if ($search || $filter !== 'all' || $gender !== 'all')
                         Попробуйте изменить параметры поиска или сбросить фильтры
                     @else
                         Здесь появятся игроки, когда они зарегистрируются
                     @endif
                 </p>
-                @if ($search || $filter !== 'all')
+                @if ($search || $filter !== 'all' || $gender !== 'all')
                     <div class="mt-5">
                         <x-btn wire:click="resetFilters" variant="outline-accent" size="sm">
                             @svg('lucide-rotate-ccw', 'h-4 w-4')Показать всех игроков

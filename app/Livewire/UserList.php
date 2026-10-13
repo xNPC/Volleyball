@@ -19,6 +19,9 @@ class UserList extends Component
     #[Url]
     public $filter = 'all';
 
+    #[Url]
+    public $gender = 'all';
+
     public function updatedSearch()
     {
         $this->resetPage();
@@ -29,9 +32,14 @@ class UserList extends Component
         $this->resetPage();
     }
 
+    public function updatedGender()
+    {
+        $this->resetPage();
+    }
+
     public function resetFilters()
     {
-        $this->reset(['search', 'filter']);
+        $this->reset(['search', 'filter', 'gender']);
         $this->resetPage();
     }
 
@@ -42,8 +50,10 @@ class UserList extends Component
             'tournamentApplications as total_applications_count'
         ])
             ->when($this->search, function($query) {
-                $query->where('name', 'like', "%{$this->search}%")
-                    ->orWhere('email', 'like', "%{$this->search}%");
+                $query->where(function($q) {
+                    $q->where('name', 'like', "%{$this->search}%")
+                        ->orWhere('email', 'like', "%{$this->search}%");
+                });
             })
             ->when($this->filter === 'with_teams', function($query) {
                 $query->has('approvedTournamentApplications');
@@ -53,6 +63,9 @@ class UserList extends Component
             })
             ->when($this->filter === 'verified', function($query) {
                 $query->whereNotNull('email_verified_at');
+            })
+            ->when(in_array($this->gender, ['male', 'female'], true), function($query) {
+                $query->where('gender', $this->gender);
             })
             ->orderBy('name')
             ->paginate(16);
