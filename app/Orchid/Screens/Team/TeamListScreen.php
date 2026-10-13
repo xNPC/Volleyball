@@ -114,8 +114,8 @@ class TeamListScreen extends Screen
                 ->pluck('name')->unique()->implode(', ');
 
             Toast::error(
-                'Команда не может быть удалена, пока у неё есть заявки на турниры ('
-                . $tournaments . '). Сначала удалите все заявки команды.'
+                'Команда не может быть удалена, пока на неё созданы заявки на турниры ('
+                . $tournaments . '). Сначала удалите эти заявки или смените в них команду на другую.'
             );
 
             return redirect()->route('platform.teams.list');
