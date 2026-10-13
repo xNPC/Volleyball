@@ -68,7 +68,7 @@ class UserList extends Component
                 $query->where('gender', $this->gender);
             })
             ->orderBy('name')
-            ->paginate(16);
+            ->paginate(40);
 
         return view('livewire.user-list', [
             'users' => $users,

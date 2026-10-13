@@ -48,7 +48,7 @@ class TournamentTeamList extends Component
                     ->orWhere('teams.description', 'like', "%{$this->search}%");
             })
             ->orderBy('teams.name')
-            ->paginate(12);
+            ->paginate(30);
 
         return view('livewire.tournament-team-list', [
             'teams' => $teams,

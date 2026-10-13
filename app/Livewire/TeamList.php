@@ -65,7 +65,7 @@ class TeamList extends Component
                 $query->where('created_at', '>=', now()->subMonth());
             })
             ->orderBy('name')
-            ->paginate(12);
+            ->paginate(30);
 
         return view('livewire.team-list', [
             'teams' => $teams,
