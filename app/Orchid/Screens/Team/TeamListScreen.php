@@ -107,6 +107,20 @@ class TeamListScreen extends Screen
             abort(403, 'У вас нет прав для удаления этой команды');
         }
 
+        $applications = $team->applications()->with('tournament')->get();
+
+        if ($applications->isNotEmpty()) {
+            $tournaments = $applications->map->tournament->filter()
+                ->pluck('name')->unique()->implode(', ');
+
+            Toast::error(
+                'Команда не может быть удалена, пока у неё есть заявки на турниры ('
+                . $tournaments . '). Сначала удалите все заявки команды.'
+            );
+
+            return redirect()->route('platform.teams.list');
+        }
+
         $team->delete();
 
         Toast::info('Команда успешно удалена');
