@@ -52,7 +52,21 @@ class TeamEditScreen extends Screen
 
     public function layout(): array
     {
+        $myTeams = (!$this->team->exists && !auth()->user()->hasAccess('platform.teams.edit'))
+            ? Team::query()->where('captain_id', auth()->id())->orderBy('name')->get()
+            : collect();
+
         return [
+            ...($myTeams->isNotEmpty() ? [
+                Layout::modal('existingTeamsWarning', [
+                    Layout::view('platform.team-existing-teams', ['myTeams' => $myTeams]),
+                ])
+                    ->title('У вас уже есть команды')
+                    ->open()
+                    ->withoutApplyButton()
+                    ->closeButton('Продолжить создание'),
+            ] : []),
+
             Layout::tabs([
                 'Основное' => Layout::rows([
                     Input::make('team.id')
