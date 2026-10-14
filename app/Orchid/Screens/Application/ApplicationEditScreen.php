@@ -343,7 +343,7 @@ TD::make('user_id', 'Ф.И.О.')
             unset($validated['application']['venue_id']);
         }
 
-        if (empty($request->input('application.id'))) {
+        if (!$application->exists) {
             $draft = $this->draft();
             $tournamentId = (int) $validated['application']['tournament_id'];
 
@@ -362,7 +362,7 @@ TD::make('user_id', 'Ф.И.О.')
         //dd($applicationStatus);
 
         $appl = TournamentApplication::updateOrCreate([
-                'id' => $request['application.id'],
+                'id' => $application->id,
             ],
             array_merge($validated['application'], [
                 'status' => $applicationStatus
