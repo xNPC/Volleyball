@@ -87,10 +87,11 @@ class TeamEditScreen extends Screen
 
                     Upload::make('logo')
                         ->title('Логотип')
-                        ->acceptedFiles('image/*')
+                        ->acceptedFiles('image/jpeg,image/png,image/webp')
+                        ->maxFileSize(5)
                         ->maxFiles(1)
                         ->groups('team_logo')
-                        ->help('Квадратное изображение, рекомендуется не менее 200×200'),
+                        ->help('PNG/JPEG/WebP, до 5 МБ. Квадратное изображение, рекомендуется не менее 200×200'),
 
                     TextArea::make('team.description')
                         ->title('Описание')
@@ -130,6 +131,7 @@ class TeamEditScreen extends Screen
             'team.captain_id' => 'integer|exists:users,id',
             'team.description' => 'nullable|string|max:2500',
             'logo' => 'nullable|array',
+            'logo.*' => 'integer|exists:attachments,id',
         ]);
 
         $teamData = $validated['team'];

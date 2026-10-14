@@ -17,6 +17,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(ResetsUserPasswords::class, ResetUserPassword::class);
+
+        $this->app->bind(
+            \Orchid\Platform\Http\Controllers\AttachmentController::class,
+            \App\Http\Controllers\Orchid\AttachmentController::class
+        );
     }
 
     public function boot(): void
