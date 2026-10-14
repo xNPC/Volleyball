@@ -109,6 +109,11 @@ class PlatformProvider extends OrchidServiceProvider
                 ->slug('media')
                 ->icon('camera')
                 ->title('Контент')
+                ->permission([
+                    'platform.content.gallery',
+                    'platform.content.broadcasts',
+                    'platform.content.docs',
+                ])
                 ->list([
                     Menu::make('Фотоальбомы')
                         ->icon('images')
@@ -121,12 +126,12 @@ class PlatformProvider extends OrchidServiceProvider
                         ->route('platform.broadcasts.list')
                         ->active('platform/broadcasts*')
                         ->permission('platform.content.broadcasts'),
-                ]),
 
-            Menu::make('Управление инструкциями')
-                ->icon('bs.pencil-square')
-                ->route('platform.documentation.list')
-                ->permission('platform.content.docs'),
+                    Menu::make('Управление инструкциями')
+                        ->icon('bs.pencil-square')
+                        ->route('platform.documentation.list')
+                        ->permission('platform.content.docs'),
+                ]),
 
             Menu::make('Хелпер')
                 ->icon('bs.question-circle')
