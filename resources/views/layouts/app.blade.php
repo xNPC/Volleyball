@@ -21,12 +21,19 @@
     <meta property="og:site_name" content="{{ config('app.name') }}">
     <meta property="og:locale" content="ru_RU">
     @php
-        $ogImage = View::yieldContent('og_image', '') ?: asset('logo.png');
-        $ogExt = strtolower(pathinfo(parse_url($ogImage, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+        $ogImage = View::yieldContent('og_image', '') ?: asset('og-image.jpg');
+        $ogImagePath = parse_url($ogImage, PHP_URL_PATH) ?? '';
+        $ogExt = strtolower(pathinfo($ogImagePath, PATHINFO_EXTENSION));
         $ogType = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp', 'gif' => 'image/gif'][$ogExt] ?? 'image/png';
+        $ogFile = public_path(ltrim($ogImagePath, '/'));
+        $ogSize = is_file($ogFile) ? @getimagesize($ogFile) : false;
     @endphp
     <meta property="og:image" content="{{ $ogImage }}">
     <meta property="og:image:type" content="{{ $ogType }}">
+    @if ($ogSize)
+        <meta property="og:image:width" content="{{ $ogSize[0] }}">
+        <meta property="og:image:height" content="{{ $ogSize[1] }}">
+    @endif
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
