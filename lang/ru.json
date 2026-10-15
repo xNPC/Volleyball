@@ -38,8 +38,17 @@
     "Delete Account": "Удалить уч. запись",
     "Permanently delete your account.": "Удаление своей уч. запись навсегда.",
     "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.": "После удаления вашего аккаунта все его ресурсы и данные будут удалены навсегда. Перед удалением аккаунта загрузите любые данные или информацию, которые вы хотите сохранить.",
+    "Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.": "Введите пароль, чтобы выйти из других браузерных сессий на всех ваших устройствах.",
+    "Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.": "Вы уверены, что хотите удалить аккаунт? После удаления все его данные будут стёрты безвозвратно. Введите пароль для подтверждения.",
+    "This password does not match our records.": "Пароль не совпадает с нашими данными.",
+    "The provided password was incorrect.": "Указан неверный пароль.",
+    "The provided password does not match your current password.": "Указанный пароль не совпадает с текущим паролем.",
+    "Gender": "Пол",
+    "Unknown": "Неизвестно",
+    "Done.": "Готово.",
 
     "Access Controls": "Контроль доступа",
+    "You can revert to your original state by logging out.": "Вы можете вернуться к исходному состоянию, выйдя из системы.",
 
     "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": "Забыли пароль? Ничего страшного. Укажите свой адрес электронной почты, и мы отправим вам ссылку для сброса пароля, по которой вы сможете задать новый.",
     "Email Password Reset Link": "Отправить ссылку для сброса пароля",

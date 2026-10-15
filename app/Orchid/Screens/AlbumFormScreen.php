@@ -73,7 +73,7 @@ class AlbumFormScreen extends Screen
                     ->placeholder('Введите название альбома'),
 
                 Input::make('album.slug')
-                    ->title('Slug (URL)')
+                    ->title('URL-адрес (slug)')
                     ->placeholder('Оставьте пустым для автоматической генерации')
                     ->help('Будет автоматически сгенерирован из названия, если оставить пустым'),
 
