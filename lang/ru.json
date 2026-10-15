@@ -40,5 +40,21 @@
     "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.": "После удаления вашего аккаунта все его ресурсы и данные будут удалены навсегда. Перед удалением аккаунта загрузите любые данные или информацию, которые вы хотите сохранить.",
 
     "Access Controls": "Контроль доступа",
-    "": ""
+
+    "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": "Забыли пароль? Ничего страшного. Укажите свой адрес электронной почты, и мы отправим вам ссылку для сброса пароля, по которой вы сможете задать новый.",
+    "Email Password Reset Link": "Отправить ссылку для сброса пароля",
+    "Reset Password": "Сбросить пароль",
+    "This is a secure area of the application. Please confirm your password before continuing.": "Это защищённая часть приложения. Пожалуйста, подтвердите свой пароль, прежде чем продолжить.",
+    "Confirm": "Подтвердить",
+    "Whoops! Something went wrong.": "Упс! Что-то пошло не так.",
+    "Whoops!": "Упс!",
+
+    "Reset Password Notification": "Сброс пароля",
+    "You are receiving this email because we received a password reset request for your account.": "Вы получили это письмо, потому что мы получили запрос на сброс пароля для вашей учётной записи.",
+    "This password reset link will expire in :count minutes.": "Ссылка для сброса пароля будет действительна :count мин.",
+    "If you did not request a password reset, no further action is required.": "Если вы не запрашивали сброс пароля, никаких действий предпринимать не нужно.",
+    "Hello!": "Здравствуйте!",
+    "Regards,": "С уважением,",
+    "All rights reserved.": "Все права защищены.",
+    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Если у вас возникли проблемы с нажатием кнопки «:actionText», скопируйте и вставьте приведённый ниже адрес в адресную строку браузера:"
 }
