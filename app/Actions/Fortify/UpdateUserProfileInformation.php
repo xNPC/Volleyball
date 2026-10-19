@@ -24,6 +24,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'phone' => ['nullable', 'string', 'max:12', 'regex:/^\+7\d{10}$/i'],
             'birthday' => ['nullable', 'date'],
             'gender' => ['required', 'in:male,female'],
+            'show_email' => ['nullable', 'boolean'],
+            'show_birthday' => ['nullable', 'boolean'],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
@@ -40,6 +42,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'phone' => $input['phone'],
                 'birthday' => $input['birthday'],
                 'gender' => $input['gender'],
+                'show_email' => (bool) ($input['show_email'] ?? false),
+                'show_birthday' => (bool) ($input['show_birthday'] ?? false),
             ])->save();
         }
     }
@@ -57,6 +61,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'phone' => $input['phone'],
             'birthday' => $input['birthday'],
             'gender' => $input['gender'],
+            'show_email' => (bool) ($input['show_email'] ?? false),
+            'show_birthday' => (bool) ($input['show_birthday'] ?? false),
             'email_verified_at' => null,
         ])->save();
 

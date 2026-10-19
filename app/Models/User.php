@@ -40,6 +40,8 @@ class User extends Authenticatable
         'phone',
         'birthday',
         'gender',
+        'show_email',
+        'show_birthday',
     ];
 
 //    protected $dates = [
@@ -88,6 +90,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'permissions' => 'array',
             'birthday' => 'date:Y-m-d',
+            'show_email' => 'boolean',
+            'show_birthday' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime'
         ];

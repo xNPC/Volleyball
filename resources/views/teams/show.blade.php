@@ -59,7 +59,9 @@
                                        class="block truncate font-semibold text-brand-800 transition hover:text-accent-600">
                                         {{ $team->captain->name }}
                                     </a>
-                                    <p class="truncate text-xs text-slate-400">{{ $team->captain->email }}</p>
+                                    @if ($team->captain->show_email)
+                                        <p class="truncate text-xs text-slate-400">{{ $team->captain->email }}</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>

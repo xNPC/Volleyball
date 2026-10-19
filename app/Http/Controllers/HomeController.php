@@ -155,6 +155,7 @@ class HomeController extends Controller
         $birthdayUsers = User::whereMonth('birthday', now()->month)
             ->whereDay('birthday', now()->day)
             ->whereNotNull('birthday')
+            ->where('show_birthday', true)
             ->limit(8)
             ->get()
             ->map(function($user) {

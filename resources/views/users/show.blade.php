@@ -44,14 +44,16 @@
                     </p>
 
                     <div class="mt-5 space-y-2.5 rounded-xl bg-slate-50 p-4 text-left text-sm text-slate-600">
-                        @if ($user->birthday)
+                        @if ($user->birthday && $user->show_birthday)
                             <p class="flex items-center gap-2.5">
                                 @svg('lucide-cake-slice', 'h-4 w-4 text-slate-400')Дата рождения: {{ $user->birthday->format('d.m.Y') }}
                             </p>
                         @endif
-                        <p class="flex items-center gap-2.5 break-all">
-                            @svg('lucide-mail', 'h-4 w-4 shrink-0 text-slate-400'){{ $user->email }}
-                        </p>
+                        @if ($user->show_email)
+                            <p class="flex items-center gap-2.5 break-all">
+                                @svg('lucide-mail', 'h-4 w-4 shrink-0 text-slate-400'){{ $user->email }}
+                            </p>
+                        @endif
                         <p class="flex items-center gap-2.5">
                             @svg('lucide-calendar-days', 'h-4 w-4 text-slate-400')Зарегистрирован: {{ $user->created_at->format('d.m.Y') }}
                         </p>

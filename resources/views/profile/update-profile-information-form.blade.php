@@ -107,6 +107,23 @@
             <x-input-error for="birthday" class="mt-2" />
         </div>
 
+        <!-- Privacy -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label value="Приватность" />
+
+            <label class="flex items-center gap-2 mt-2">
+                <input type="checkbox" wire:model="state.show_email" value="1"
+                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" />
+                <span class="text-sm text-gray-600">Показывать мой email другим пользователям</span>
+            </label>
+
+            <label class="flex items-center gap-2 mt-2">
+                <input type="checkbox" wire:model="state.show_birthday" value="1"
+                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" />
+                <span class="text-sm text-gray-600">Показывать мою дату рождения другим пользователям</span>
+            </label>
+        </div>
+
     </x-slot>
 
     <x-slot name="actions">
