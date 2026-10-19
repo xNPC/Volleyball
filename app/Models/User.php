@@ -42,6 +42,8 @@ class User extends Authenticatable
         'gender',
         'show_email',
         'show_birthday',
+        'personal_data_consent_at',
+        'permissions',
     ];
 
 //    protected $dates = [
@@ -92,6 +94,7 @@ class User extends Authenticatable
             'birthday' => 'date:Y-m-d',
             'show_email' => 'boolean',
             'show_birthday' => 'boolean',
+            'personal_data_consent_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime'
         ];
