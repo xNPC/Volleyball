@@ -6,12 +6,13 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Orchid\Platform\Dashboard;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@volleyball.local'],
             [
                 'name' => 'Администратор',
@@ -22,9 +23,12 @@ class UserSeeder extends Seeder
                 'show_email' => false,
                 'show_birthday' => false,
                 'personal_data_consent_at' => now(),
-                'permissions' => ['*' => true],
+                'email_verified_at' => now(),
             ]
         );
+
+        $admin->forceFill(['permissions' => app(Dashboard::class)->getAllowAllPermission()]);
+        $admin->save();
 
         $maleNames = [
             'Иван Иванов', 'Александр Петров', 'Дмитрий Сидоров', 'Сергей Козлов',
@@ -70,6 +74,7 @@ class UserSeeder extends Seeder
                 'show_email' => rand(0, 1),
                 'show_birthday' => rand(0, 1),
                 'personal_data_consent_at' => now(),
+                'email_verified_at' => now(),
             ]
         );
     }

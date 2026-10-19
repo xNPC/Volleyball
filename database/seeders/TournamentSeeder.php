@@ -526,19 +526,44 @@ class TournamentSeeder extends Seeder
         $applications = collect();
         $positions = ['outside', 'setter', 'middle', 'opposite', 'libero'];
 
-        foreach ($teams as $teamIndex => $team) {
-            $players = User::where('email', '!=', 'admin@volleyball.local')
-                ->inRandomOrder()
-                ->limit(7)
-                ->get();
+        $gender = $teams->first()->captain->gender;
+        $availablePlayers = User::where('gender', $gender)
+            ->where('email', '!=', 'admin@volleyball.local')
+            ->get();
 
+        $teamCount = $teams->count();
+        $availableCount = $availablePlayers->count();
+        $rosterSize = min(7, max(5, intdiv($availableCount, $teamCount)));
+
+        $captains = $teams->pluck('captain_id');
+        $pool = $availablePlayers->shuffle();
+
+        $reservedCaptains = $pool->whereIn('id', $captains)->values();
+        $pool = $pool->whereNotIn('id', $captains)->values();
+
+        foreach ($teams as $team) {
             $application = $this->createApplication($tournament, $team, 'approved', 1);
             $applications->push($application);
 
-            $jerseyNumbers = range(1, 7);
+            $roster = collect();
+
+            if ($team->captain_id) {
+                $captain = $reservedCaptains->firstWhere('id', $team->captain_id);
+                if ($captain) {
+                    $roster->push($captain);
+                }
+            }
+
+            $needed = $rosterSize - $roster->count();
+            for ($i = 0; $i < $needed && $pool->count() > 0; $i++) {
+                $player = $pool->pop();
+                $roster->push($player);
+            }
+
+            $jerseyNumbers = range(1, $roster->count());
             shuffle($jerseyNumbers);
 
-            foreach ($players as $index => $player) {
+            foreach ($roster as $index => $player) {
                 ApplicationRoster::create([
                     'application_id' => $application->id,
                     'user_id' => $player->id,
