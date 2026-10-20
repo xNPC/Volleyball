@@ -15,6 +15,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TournamentTeamController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\BroadcastController;
+use App\Http\Controllers\LegalDocumentController;
 use App\Livewire\TournamentList;
 use App\Livewire\TournamentTeamList;
 use App\Livewire\UserList;
@@ -44,7 +45,6 @@ Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show')
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
-    'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -66,3 +66,4 @@ Route::get('/broadcasts', [BroadcastController::class, 'index'])->name('broadcas
 Route::get('/broadcasts/{broadcast}', [BroadcastController::class, 'show'])->name('broadcasts.show');
 
 Route::view('/privacy', 'privacy')->name('privacy');
+Route::get('/personal-data-consent', [LegalDocumentController::class, 'consent'])->name('legal.consent');
