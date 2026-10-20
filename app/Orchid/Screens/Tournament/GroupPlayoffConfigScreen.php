@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Fields\CheckBox;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Layout;
@@ -83,11 +82,6 @@ class GroupPlayoffConfigScreen extends Screen
                     ->multiple()
                     ->value($this->config->bye_positions ?? [])
                     ->help('Выберите команды, которые сразу проходят в следующий раунд'),
-
-                CheckBox::make('config.reverse_seeding')
-                    ->title('Обратный посев')
-                    ->placeholder('Поменять местами верхнюю и нижнюю половину')
-                    ->value($this->config->reverse_seeding ?? false),
             ]),
         ];
     }
@@ -112,7 +106,6 @@ class GroupPlayoffConfigScreen extends Screen
             'group_id' => $this->group->id,
             'total_teams' => $this->group->teams->count(),
             'bye_positions' => array_map('intval', $data['bye_positions'] ?? []),
-            'reverse_seeding' => isset($data['reverse_seeding']) && $data['reverse_seeding'] === 'on',
             'match_format' => $data['match_format'] ?? 'single',
         ];
 

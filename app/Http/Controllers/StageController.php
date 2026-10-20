@@ -53,7 +53,6 @@ class StageController extends Controller
                 if (!$config) {
                     $config = [
                         'bye_positions' => [],
-                        'reverse_seeding' => false,
                     ];
                 } else {
                     $config = $config->toArray();

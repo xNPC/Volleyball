@@ -120,7 +120,6 @@ class TournamentSeeder extends Seeder
             'group_id' => $playoffGroup->id,
             'total_teams' => 4,
             'bye_positions' => [],
-            'reverse_seeding' => false,
             'match_format' => 'single',
         ]);
 
@@ -474,7 +473,6 @@ class TournamentSeeder extends Seeder
             'group_id' => $playoffGroup->id,
             'total_teams' => 4,
             'bye_positions' => [],
-            'reverse_seeding' => false,
             'match_format' => 'single',
         ]);
 

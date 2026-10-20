@@ -11,13 +11,11 @@ class PlayoffConfig extends Model
         'group_id',
         'total_teams',
         'bye_positions',
-        'reverse_seeding',
         'match_format', // 'single' или 'best_of_3'
     ];
 
     protected $casts = [
         'bye_positions' => 'array',
-        'reverse_seeding' => 'boolean',
         'match_format' => 'string',
     ];
 
