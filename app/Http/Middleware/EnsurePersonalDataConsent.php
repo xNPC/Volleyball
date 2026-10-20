@@ -11,6 +11,10 @@ class EnsurePersonalDataConsent
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->routeIs('logout')) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if ($user === null || $user->personal_data_consent_at !== null) {

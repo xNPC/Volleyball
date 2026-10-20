@@ -109,4 +109,66 @@ class ConsentTest extends TestCase
 
         $this->actingAs($user)->get(route('profile.index'))->assertOk();
     }
+
+    public function test_jetstream_profile_show_redirects_to_consent(): void
+    {
+        $user = $this->createUser();
+
+        $this->actingAs($user)
+            ->get(route('profile.show'))
+            ->assertRedirect(route('legal.consent'));
+
+        $this->actingAs($this->createUser(['personal_data_consent_at' => now()]))
+            ->get(route('profile.show'))
+            ->assertOk();
+    }
+
+    public function test_fortify_profile_information_update_redirects_to_consent(): void
+    {
+        $user = $this->createUser();
+
+        $response = $this->actingAs($user)->put(route('user-profile-information.update'), [
+            'name' => 'New Name',
+            'email' => $user->email,
+        ]);
+
+        $response->assertRedirect(route('legal.consent'));
+        $this->assertNotEquals('New Name', $user->fresh()->name);
+    }
+
+    public function test_fortify_password_update_redirects_to_consent(): void
+    {
+        $user = $this->createUser();
+
+        $response = $this->actingAs($user)->put(route('user-password.update'), [
+            'current_password' => 'password',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ]);
+
+        $response->assertRedirect(route('legal.consent'));
+    }
+
+    public function test_login_redirects_to_consent_when_not_signed(): void
+    {
+        $user = $this->createUser();
+
+        $this->post(route('login'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect(route('profile.show'));
+
+        $this->get(route('profile.show'))
+            ->assertRedirect(route('legal.consent'));
+    }
+
+    public function test_logout_works_without_consent(): void
+    {
+        $user = $this->createUser();
+
+        $response = $this->actingAs($user)->post(route('logout'));
+
+        $response->assertRedirect(route('home'));
+        $this->assertGuest();
+    }
 }
