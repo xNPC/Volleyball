@@ -45,6 +45,7 @@ Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show')
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
+    'consent',
 ])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -67,3 +68,6 @@ Route::get('/broadcasts/{broadcast}', [BroadcastController::class, 'show'])->nam
 
 Route::view('/privacy', 'privacy')->name('privacy');
 Route::get('/personal-data-consent', [LegalDocumentController::class, 'consent'])->name('legal.consent');
+Route::post('/personal-data-consent', [LegalDocumentController::class, 'store'])
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')])
+    ->name('legal.consent.accept');
