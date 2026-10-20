@@ -43,6 +43,9 @@ class ConsentTest extends TestCase
 
         $response->assertRedirect(route('profile.index'));
         $this->assertNotNull($user->fresh()->personal_data_consent_at);
+        $this->assertNotNull($user->fresh()->personal_data_consent_ip);
+        $this->assertNotNull($user->fresh()->personal_data_consent_user_agent);
+        $this->assertNotNull($user->fresh()->personal_data_consent_doc_version);
 
         $this->actingAs($user)
             ->get(route('profile.index'))

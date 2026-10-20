@@ -43,6 +43,9 @@ class User extends Authenticatable
         'show_email',
         'show_birthday',
         'personal_data_consent_at',
+        'personal_data_consent_ip',
+        'personal_data_consent_user_agent',
+        'personal_data_consent_doc_version',
         'permissions',
     ];
 
@@ -95,6 +98,7 @@ class User extends Authenticatable
             'show_email' => 'boolean',
             'show_birthday' => 'boolean',
             'personal_data_consent_at' => 'datetime',
+            'personal_data_consent_doc_version' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime'
         ];

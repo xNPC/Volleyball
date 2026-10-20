@@ -22,6 +22,9 @@
                 <div class="prose-sm max-w-none space-y-6 text-sm leading-relaxed text-slate-600 [&_h2]:font-display [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-brand-800 [&_h2]:mt-6 [&_h2]:mb-2 [&_p]:mt-2 [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:ps-5 [&_ul]:space-y-1">
                     {!! $document->content !!}
                 </div>
+                <p class="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-400">
+                    Редакция документа от {{ $document->updated_at->format('d.m.Y H:i') }}
+                </p>
             @else
                 <p class="text-sm leading-relaxed text-slate-600">Текст документа скоро будет опубликован.</p>
             @endif
@@ -29,7 +32,9 @@
 
         <p class="mt-6 text-center text-sm text-slate-500">
             Дополнительно ознакомьтесь с
-            <a href="{{ route('privacy') }}" class="font-medium text-accent-600 transition hover:text-accent-700">политикой конфиденциальности</a>.
+            <a href="{{ route('privacy') }}" class="font-medium text-accent-600 transition hover:text-accent-700">политикой конфиденциальности</a>
+            и
+            <a href="{{ route('legal.terms') }}" class="font-medium text-accent-600 transition hover:text-accent-700">пользовательским соглашением</a>.
         </p>
 
         @auth
@@ -55,9 +60,17 @@
                     </form>
                 </x-card>
             @else
-                <p class="mt-6 text-center text-sm text-slate-500">
-                    Согласие подписано {{ auth()->user()->personal_data_consent_at->format('d.m.Y H:i') }}.
-                </p>
+                <div class="mt-6 text-center text-sm text-slate-500">
+                    <p>Согласие подписано {{ auth()->user()->personal_data_consent_at->format('d.m.Y H:i') }}.</p>
+                    @if (auth()->user()->personal_data_consent_ip)
+                        <p class="mt-1 text-xs text-slate-400">
+                            IP-адрес: {{ auth()->user()->personal_data_consent_ip }}
+                            @if (auth()->user()->personal_data_consent_doc_version)
+                                · редакция документа от {{ auth()->user()->personal_data_consent_doc_version->format('d.m.Y H:i') }}
+                            @endif
+                        </p>
+                    @endif
+                </div>
             @endif
         @endauth
     </div>

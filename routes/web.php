@@ -67,6 +67,7 @@ Route::get('/broadcasts', [BroadcastController::class, 'index'])->name('broadcas
 Route::get('/broadcasts/{broadcast}', [BroadcastController::class, 'show'])->name('broadcasts.show');
 
 Route::view('/privacy', 'privacy')->name('privacy');
+Route::get('/terms', [LegalDocumentController::class, 'terms'])->name('legal.terms');
 Route::get('/personal-data-consent', [LegalDocumentController::class, 'consent'])->name('legal.consent');
 Route::post('/personal-data-consent', [LegalDocumentController::class, 'store'])
     ->middleware(['auth:sanctum', config('jetstream.auth_session')])

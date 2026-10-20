@@ -272,6 +272,8 @@
                 <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-xs text-brand-300">
                     <span>&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Все права защищены.</span>
                     <a href="{{ route('privacy') }}" class="transition hover:text-accent-400">Политика конфиденциальности</a>
+                    <a href="{{ route('legal.terms') }}" class="transition hover:text-accent-400">Пользовательское соглашение</a>
+                    <a href="{{ route('legal.consent') }}" class="transition hover:text-accent-400">Согласие на обработку ПД</a>
                 </div>
             </div>
         </div>

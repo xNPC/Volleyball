@@ -7,6 +7,7 @@ use App\Orchid\Screens\Application\ApplicationListScreen;
 use App\Orchid\Screens\Documentation\DocumentationEditScreen;
 use App\Orchid\Screens\Documentation\DocumentationListScreen;
 use App\Orchid\Screens\Documentation\DocumentationMainScreen;
+use App\Orchid\Screens\LegalDocument\LegalDocumentEditScreen;
 use App\Orchid\Screens\RosterRequest\RosterRequestFormScreen;
 use App\Orchid\Screens\RosterRequest\RosterRequestListScreen;
 use App\Orchid\Screens\PlatformScreen;
@@ -342,5 +343,8 @@ Route::screen('documentation/create', DocumentationEditScreen::class)
 
 Route::screen('documentation/{doc}/edit', DocumentationEditScreen::class)
     ->name('platform.documentation.edit');
+
+Route::screen('legal/{slug}', LegalDocumentEditScreen::class)
+    ->name('platform.legal.edit');
 
 // Route::screen('idea', Idea::class, 'platform.screens.idea');

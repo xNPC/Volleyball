@@ -16,6 +16,13 @@ class LegalDocumentController extends Controller
         return view('legal.consent', compact('document'));
     }
 
+    public function terms(): View
+    {
+        $document = LegalDocument::findBySlug(LegalDocument::TERMS);
+
+        return view('legal.terms', compact('document'));
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -25,7 +32,14 @@ class LegalDocumentController extends Controller
         $user = $request->user();
 
         if ($user !== null && $user->personal_data_consent_at === null) {
-            $user->forceFill(['personal_data_consent_at' => now()])->save();
+            $document = LegalDocument::findBySlug(LegalDocument::CONSENT);
+
+            $user->forceFill([
+                'personal_data_consent_at' => now(),
+                'personal_data_consent_ip' => $request->ip(),
+                'personal_data_consent_user_agent' => $request->userAgent(),
+                'personal_data_consent_doc_version' => $document?->updated_at,
+            ])->save();
         }
 
         return redirect()->intended(route('dashboard'));

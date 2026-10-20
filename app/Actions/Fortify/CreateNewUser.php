@@ -2,11 +2,11 @@
 
 namespace App\Actions\Fortify;
 
+use App\Models\LegalDocument;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
-use Laravel\Jetstream\Jetstream;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -23,14 +23,21 @@ class CreateNewUser implements CreatesNewUsers
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+            'personal_data_consent' => ['accepted', 'required'],
         ])->validate();
 
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+            'personal_data_consent_at' => now(),
         ]);
+
+        $user->forceFill([
+            'personal_data_consent_ip' => request()->ip(),
+            'personal_data_consent_user_agent' => request()->userAgent(),
+            'personal_data_consent_doc_version' => LegalDocument::findBySlug(LegalDocument::CONSENT)?->updated_at,
+        ])->save();
 
         // Просто добавляем разрешение
         $user->permissions = ['platform.index' => true];

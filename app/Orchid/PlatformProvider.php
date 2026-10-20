@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Orchid;
 
+use App\Models\LegalDocument;
 use Orchid\Platform\Dashboard;
 use Orchid\Platform\ItemPermission;
 use Orchid\Platform\OrchidServiceProvider;
@@ -113,6 +114,7 @@ class PlatformProvider extends OrchidServiceProvider
                     'platform.content.gallery',
                     'platform.content.broadcasts',
                     'platform.content.docs',
+                    'platform.content.legal',
                 ])
                 ->list([
                     Menu::make('Фотоальбомы')
@@ -131,6 +133,16 @@ class PlatformProvider extends OrchidServiceProvider
                         ->icon('bs.pencil-square')
                         ->route('platform.documentation.list')
                         ->permission('platform.content.docs'),
+
+                    Menu::make('Согласие на обработку ПД')
+                        ->icon('bs.file-earmark-check')
+                        ->route('platform.legal.edit', LegalDocument::CONSENT)
+                        ->permission('platform.content.legal'),
+
+                    Menu::make('Пользовательское соглашение')
+                        ->icon('bs.file-earmark-text')
+                        ->route('platform.legal.edit', LegalDocument::TERMS)
+                        ->permission('platform.content.legal'),
                 ]),
 
             Menu::make(__('Users'))
@@ -186,7 +198,8 @@ class PlatformProvider extends OrchidServiceProvider
             ItemPermission::group('Контент')
                 ->addPermission('platform.content.gallery', 'Управление медиатекой')
                 ->addPermission('platform.content.broadcasts', 'Управление трансляциями')
-                ->addPermission('platform.content.docs', 'Управление инструкциями'),
+                ->addPermission('platform.content.docs', 'Управление инструкциями')
+                ->addPermission('platform.content.legal', 'Управление правовыми документами'),
 
             ItemPermission::group('Опасная зона!')
                 ->addPermission('platform.danger','Для обслуживания сайта'),
