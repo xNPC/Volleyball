@@ -14,6 +14,7 @@ class RosterRequest extends Model
         'type',
         'tournament_id',
         'player_user_id',
+        'old_player_user_id',
         'to_application_id',
         'from_application_id',
         'jersey_number',
@@ -35,6 +36,7 @@ class RosterRequest extends Model
     public const TYPE_TRANSFER = 'transfer';
     public const TYPE_REMOVAL = 'removal';
     public const TYPE_NUMBER_CHANGE = 'number_change';
+    public const TYPE_CAPTAIN_CHANGE = 'captain_change';
 
     public const MANUAL_TYPES = [
         self::TYPE_ADDITION => 'Дозаявка',
@@ -47,6 +49,7 @@ class RosterRequest extends Model
         self::TYPE_TRANSFER => 'Переход',
         self::TYPE_REMOVAL => 'Отзаявка',
         self::TYPE_NUMBER_CHANGE => 'Смена номера',
+        self::TYPE_CAPTAIN_CHANGE => 'Смена капитана',
     ];
 
     public const STATUS_PENDING = 'pending';
@@ -67,6 +70,11 @@ class RosterRequest extends Model
     public function player()
     {
         return $this->belongsTo(User::class, 'player_user_id');
+    }
+
+    public function oldPlayer()
+    {
+        return $this->belongsTo(User::class, 'old_player_user_id');
     }
 
     public function toApplication()

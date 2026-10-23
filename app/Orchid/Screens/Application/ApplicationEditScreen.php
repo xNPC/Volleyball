@@ -3,14 +3,17 @@
 namespace App\Orchid\Screens\Application;
 
 use App\Models\ApplicationRoster;
+use App\Models\RosterRequest;
 use App\Models\Tournament;
 use App\Models\TournamentApplication;
 use App\Models\User;
 use App\Orchid\Layouts\Application\PlayersListener;
 use App\Orchid\Layouts\Application\TournamentsListener;
+use App\Services\ApplicationCaptainService;
 use App\Services\RosterNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
@@ -18,6 +21,7 @@ use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\CheckBox;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
+use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Color;
@@ -215,6 +219,27 @@ class ApplicationEditScreen extends Screen
                 ->async('asyncGetNumber')
                 ->title('Смена игрового номера'),
 
+            Layout::modal('changeCaptain', [
+                Layout::rows([
+                    Input::make('captain.new')
+                        ->title('Новый капитан')
+                        ->disabled(),
+
+                    Input::make('captain.old')
+                        ->title('Текущий капитан')
+                        ->disabled(),
+
+                    TextArea::make('captain.comment')
+                        ->title('Комментарий')
+                        ->rows(3)
+                        ->max(1000)
+                        ->help('Необязательно. Пояснение для администратора.'),
+                ]),
+            ])
+                ->applyButton('Отправить запрос')
+                ->async('asyncGetCaptain')
+                ->title('Смена капитана'),
+
             Layout::split([
 
                 [
@@ -234,7 +259,7 @@ class ApplicationEditScreen extends Screen
 
                         CheckBox::make('application.is_complete')
                             ->title('Отправить заявку на утверждение')
-                            ->help('После этого состав изменить нельзя — только через дозаявки, отзаявки и смену игрового номера')
+                            ->help('После этого состав изменить нельзя — только через дозаявки, отзаявки, смену игрового номера и капитана')
                             ->sendTrueOrFalse()
                             ->disabled(
                                 $this->application->exists
@@ -331,6 +356,13 @@ TD::make('user_id', 'Ф.И.О.')
                                         ->method('changeNumber')
                                         ->asyncParameters(['roster' => $roster->id])
                                         ->canSee($this->canChangeNumber()),
+
+                                    ModalToggle::make('Сменить капитана')
+                                        ->icon('bs.person-check')
+                                        ->modal('changeCaptain')
+                                        ->method('requestCaptainChange')
+                                        ->asyncParameters(['roster' => $roster->id])
+                                        ->canSee($this->canRequestCaptainChange($roster)),
 
                                     Link::make('Отзаявить')
                                         ->icon('bs.box-arrow-right')
@@ -707,6 +739,102 @@ TD::make('user_id', 'Ф.И.О.')
         Toast::info('Игровой номер изменён');
 
         return back();
+    }
+
+    private function canRequestCaptainChange(ApplicationRoster $roster): bool
+    {
+        $application = $this->application;
+
+        if (!$application || !$application->exists || $application->status !== 'approved') {
+            return false;
+        }
+
+        if ((bool) $roster->is_captain) {
+            return false;
+        }
+
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        if ($application->tournament?->status === 'completed') {
+            return false;
+        }
+
+        if (!$user->hasAccess('platform.applications.edit')
+            && $application->team?->captain_id !== $user->id) {
+            return false;
+        }
+
+        return !RosterRequest::query()
+            ->where('to_application_id', $application->id)
+            ->where('type', RosterRequest::TYPE_CAPTAIN_CHANGE)
+            ->where('status', RosterRequest::STATUS_PENDING)
+            ->exists();
+    }
+
+    public function asyncGetCaptain(Request $request): array
+    {
+        $roster = $this->rosterForCaptain((int) $request->query('roster'));
+
+        abort_unless($this->canRequestCaptainChange($roster), 403);
+
+        $oldCaptain = ApplicationRoster::query()
+            ->where('application_id', $this->application->id)
+            ->where('is_captain', true)
+            ->with('player')
+            ->first();
+
+        return [
+            'captain' => [
+                'new' => $roster->player?->name,
+                'old' => $oldCaptain?->player?->name ?? '—',
+                'comment' => '',
+            ],
+        ];
+    }
+
+    public function requestCaptainChange(TournamentApplication $application, Request $request)
+    {
+        $roster = ApplicationRoster::query()
+            ->where('application_id', $application->id)
+            ->whereKey((int) $request->query('roster'))
+            ->with('player')
+            ->firstOrFail();
+
+        abort_unless($this->canRequestCaptainChange($roster), 403);
+
+        $validated = $request->validate([
+            'captain.comment' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            app(ApplicationCaptainService::class)->createRequest(
+                $application,
+                $roster->player,
+                auth()->user(),
+                $validated['captain']['comment'] ?? null
+            );
+        } catch (ValidationException $e) {
+            Toast::error(collect($e->errors())->flatten()->first());
+
+            return back();
+        }
+
+        Toast::info('Запрос на смену капитана отправлен на рассмотрение');
+
+        return back();
+    }
+
+    private function rosterForCaptain(int $rosterId): ApplicationRoster
+    {
+        return ApplicationRoster::query()
+            ->where('application_id', $this->application->id)
+            ->whereKey($rosterId)
+            ->with('player')
+            ->firstOrFail();
     }
 
     public function asyncGetPlayer(Request $request): array

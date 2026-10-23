@@ -4,9 +4,11 @@ namespace App\Orchid\Screens\RosterRequest;
 
 use App\Models\ApplicationRoster;
 use App\Models\RosterRequest;
+use App\Services\ApplicationCaptainService;
 use App\Services\RosterNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
@@ -29,6 +31,7 @@ class RosterRequestListScreen extends Screen
         $requests = RosterRequest::query()
             ->with([
                 'player',
+                'oldPlayer',
                 'tournament',
                 'toApplication.team',
                 'fromApplication.team',
@@ -57,7 +60,7 @@ class RosterRequestListScreen extends Screen
 
     public function description(): ?string
     {
-        return 'Заявки на дозаявку, переход, отзаявку и историю смены игровых номеров. Утверждение доступно администратору.';
+        return 'Заявки на дозаявку, переход, отзаявку, смену игрового номера и капитана. Утверждение доступно администратору.';
     }
 
     public function commandBar(): iterable
@@ -97,6 +100,7 @@ class RosterRequestListScreen extends Screen
                             RosterRequest::TYPE_TRANSFER => 'info',
                             RosterRequest::TYPE_REMOVAL => 'danger',
                             RosterRequest::TYPE_NUMBER_CHANGE => 'primary',
+                            RosterRequest::TYPE_CAPTAIN_CHANGE => 'warning',
                         ];
 
                         return '<span class="badge bg-' . ($classes[$r->type] ?? 'secondary') . '">'
@@ -104,7 +108,13 @@ class RosterRequestListScreen extends Screen
                     }),
 
                 TD::make('player', 'Игрок')
-                    ->render(fn (RosterRequest $r) => e($r->player->name ?? '—')),
+                    ->render(function (RosterRequest $r) {
+                        if ($r->type === RosterRequest::TYPE_CAPTAIN_CHANGE) {
+                            return e($r->oldPlayer?->name ?? '—') . ' → ' . e($r->player?->name ?? '—');
+                        }
+
+                        return e($r->player?->name ?? '—');
+                    }),
 
                 TD::make('tournament', 'Турнир')
                     ->render(fn (RosterRequest $r) => e($r->tournament->name ?? '—')),
@@ -117,15 +127,19 @@ class RosterRequestListScreen extends Screen
                         return match ($r->type) {
                             RosterRequest::TYPE_ADDITION => '→ ' . e($to ?? '—'),
                             RosterRequest::TYPE_REMOVAL => e($from ?? '—') . ' →',
-                            RosterRequest::TYPE_NUMBER_CHANGE => e($to ?? $from ?? '—'),
+                            RosterRequest::TYPE_NUMBER_CHANGE,
+                            RosterRequest::TYPE_CAPTAIN_CHANGE => e($to ?? $from ?? '—'),
                             default => e($from ?? '—') . ' → ' . e($to ?? '—'),
                         };
                     }),
 
-                TD::make('details', '№ / амплуа')
+                TD::make('details', 'Детали')
                     ->width('140px')
                     ->render(function (RosterRequest $r) {
-                        if ($r->type === RosterRequest::TYPE_REMOVAL) {
+                        if (in_array($r->type, [
+                            RosterRequest::TYPE_REMOVAL,
+                            RosterRequest::TYPE_CAPTAIN_CHANGE,
+                        ], true)) {
                             return '<span class="text-muted">—</span>';
                         }
 
@@ -218,22 +232,29 @@ class RosterRequestListScreen extends Screen
 
         $roster_request->load(['toApplication', 'fromApplication']);
 
-        DB::transaction(function () use ($roster_request) {
-            match ($roster_request->type) {
-                RosterRequest::TYPE_ADDITION => $this->applyAddition($roster_request),
-                RosterRequest::TYPE_TRANSFER => $this->applyTransfer($roster_request),
-                RosterRequest::TYPE_REMOVAL => $this->applyRemoval($roster_request),
-                RosterRequest::TYPE_NUMBER_CHANGE => $this->applyNumberChange($roster_request),
-            };
+        try {
+            DB::transaction(function () use ($roster_request) {
+                match ($roster_request->type) {
+                    RosterRequest::TYPE_ADDITION => $this->applyAddition($roster_request),
+                    RosterRequest::TYPE_TRANSFER => $this->applyTransfer($roster_request),
+                    RosterRequest::TYPE_REMOVAL => $this->applyRemoval($roster_request),
+                    RosterRequest::TYPE_NUMBER_CHANGE => $this->applyNumberChange($roster_request),
+                    RosterRequest::TYPE_CAPTAIN_CHANGE => $this->applyCaptainChange($roster_request),
+                };
 
-            $roster_request->update([
-                'status' => RosterRequest::STATUS_APPROVED,
-                'reviewed_by' => auth()->id(),
-                'reviewed_at' => now(),
-            ]);
-        });
+                $roster_request->update([
+                    'status' => RosterRequest::STATUS_APPROVED,
+                    'reviewed_by' => auth()->id(),
+                    'reviewed_at' => now(),
+                ]);
+            });
+        } catch (ValidationException $e) {
+            Toast::error(collect($e->errors())->flatten()->first());
 
-        Toast::success('Запрос утверждён, состав обновлён');
+            return back();
+        }
+
+        Toast::success('Запрос утверждён, изменения применены');
 
         return redirect()->route('platform.roster.requests.list');
     }
@@ -350,5 +371,10 @@ class RosterRequestListScreen extends Screen
         );
 
         $roster->update(['jersey_number' => (int) $request->jersey_number]);
+    }
+
+    private function applyCaptainChange(RosterRequest $request): void
+    {
+        app(ApplicationCaptainService::class)->apply($request);
     }
 }
