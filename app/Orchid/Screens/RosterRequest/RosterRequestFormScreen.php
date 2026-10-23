@@ -86,7 +86,7 @@ class RosterRequestFormScreen extends Screen
             Layout::rows([
                 Select::make('request.type')
                     ->title('Тип запроса')
-                    ->options(RosterRequest::TYPES)
+                    ->options(RosterRequest::MANUAL_TYPES)
                     ->required(),
 
                 Select::make('request.application_id')

@@ -17,6 +17,7 @@ class RosterRequest extends Model
         'to_application_id',
         'from_application_id',
         'jersey_number',
+        'old_jersey_number',
         'position',
         'comment',
         'rejection_reason',
@@ -33,11 +34,19 @@ class RosterRequest extends Model
     public const TYPE_ADDITION = 'addition';
     public const TYPE_TRANSFER = 'transfer';
     public const TYPE_REMOVAL = 'removal';
+    public const TYPE_NUMBER_CHANGE = 'number_change';
+
+    public const MANUAL_TYPES = [
+        self::TYPE_ADDITION => 'Дозаявка',
+        self::TYPE_TRANSFER => 'Переход',
+        self::TYPE_REMOVAL => 'Отзаявка',
+    ];
 
     public const TYPES = [
         self::TYPE_ADDITION => 'Дозаявка',
         self::TYPE_TRANSFER => 'Переход',
         self::TYPE_REMOVAL => 'Отзаявка',
+        self::TYPE_NUMBER_CHANGE => 'Смена номера',
     ];
 
     public const STATUS_PENDING = 'pending';

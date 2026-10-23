@@ -8,6 +8,7 @@ use App\Models\TournamentApplication;
 use App\Models\User;
 use App\Orchid\Layouts\Application\PlayersListener;
 use App\Orchid\Layouts\Application\TournamentsListener;
+use App\Services\RosterNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Orchid\Screen\Actions\Button;
@@ -192,6 +193,28 @@ class ApplicationEditScreen extends Screen
                 ->async('asyncGetPlayer')
                 ->title('Редактирование игрока'),
 
+            Layout::modal('changeNumber', [
+                Layout::rows([
+                    Input::make('number.player')
+                        ->title('Игрок')
+                        ->disabled(),
+
+                    Input::make('number.old')
+                        ->title('Текущий номер')
+                        ->disabled(),
+
+                    Input::make('number.value')
+                        ->title('Новый номер')
+                        ->type('number')
+                        ->min(1)
+                        ->max(99)
+                        ->required(),
+                ]),
+            ])
+                ->applyButton('Сохранить')
+                ->async('asyncGetNumber')
+                ->title('Смена игрового номера'),
+
             Layout::split([
 
                 [
@@ -211,7 +234,7 @@ class ApplicationEditScreen extends Screen
 
                         CheckBox::make('application.is_complete')
                             ->title('Отправить заявку на утверждение')
-                            ->help('После этого состав изменить нельзя — только через дозаявки и отзаявки')
+                            ->help('После этого состав изменить нельзя — только через дозаявки, отзаявки и смену игрового номера')
                             ->sendTrueOrFalse()
                             ->disabled(
                                 $this->application->exists
@@ -301,6 +324,13 @@ TD::make('user_id', 'Ф.И.О.')
                                             : (auth()->user()->hasAccess('platform.applications.edit')
                                                 or !$this->application->is_complete)
                                         ),
+
+                                    ModalToggle::make('Сменить номер')
+                                        ->icon('bs.hash')
+                                        ->modal('changeNumber')
+                                        ->method('changeNumber')
+                                        ->asyncParameters(['roster' => $roster->id])
+                                        ->canSee($this->canChangeNumber()),
 
                                     Link::make('Отзаявить')
                                         ->icon('bs.box-arrow-right')
@@ -437,6 +467,15 @@ TD::make('user_id', 'Ф.И.О.')
                 return back();
             }
 
+            $numberTaken = collect($draft['roster'])->contains(
+                fn ($row) => (int) ($row['jersey_number'] ?? 0) === (int) $data['jersey_number']
+            );
+
+            if ($numberTaken) {
+                Toast::error('Этот игровой номер уже занят в заявке');
+                return back();
+            }
+
             if (($draft['tournament_id'] ?? null)
                 && $this->playerInAnotherTeam((int) $data['user_id'], (int) $draft['tournament_id'])) {
                 $conflict = $this->conflictInfo((int) $data['user_id'], (int) $draft['tournament_id']);
@@ -478,6 +517,13 @@ TD::make('user_id', 'Ф.И.О.')
                 . ' уже заявлен за команду ' . ($conflict['team']->name ?? '—') . ' в этом турнире');
             return back();
         }
+
+        app(RosterNumberService::class)->assertAvailable(
+            (int) $application->id,
+            (int) $data['jersey_number'],
+            null,
+            'roster.jersey_number'
+        );
 
         ApplicationRoster::create($data);
 
@@ -547,6 +593,17 @@ TD::make('user_id', 'Ф.И.О.')
                 abort(404);
             }
 
+            $newNumber = (int) $request->input('roster.jersey_number');
+            $numberTaken = collect($draft['roster'])->contains(
+                fn ($row, $id) => (string) $id !== (string) $rosterId
+                    && (int) ($row['jersey_number'] ?? 0) === $newNumber
+            );
+
+            if ($numberTaken) {
+                Toast::error('Этот игровой номер уже занят в заявке');
+                return back();
+            }
+
             $draft['roster'][$rosterId]['jersey_number'] = $request->input('roster.jersey_number');
             $draft['roster'][$rosterId]['position'] = $request->input('roster.position');
             session(['draft_application' => $draft]);
@@ -564,9 +621,90 @@ TD::make('user_id', 'Ф.И.О.')
             ->where('id', $rosterId)
             ->firstOrFail();
 
-        $roster->update($request->input('roster'));
+        $data = $request->input('roster');
+        $newNumber = (int) $data['jersey_number'];
+
+        DB::transaction(function () use ($roster, $newNumber, $data) {
+            if ((int) $roster->jersey_number !== $newNumber) {
+                $roster = app(RosterNumberService::class)->change(
+                    $roster,
+                    $newNumber,
+                    auth()->user(),
+                    'roster.jersey_number'
+                );
+            }
+
+            if ($roster->position !== $data['position']) {
+                $roster->update(['position' => $data['position']]);
+            }
+        });
 
         Toast::info('Игрок успешно обновлен');
+
+        return back();
+    }
+
+    private function canChangeNumber(?TournamentApplication $application = null): bool
+    {
+        $application = $application ?? $this->application;
+
+        if (!$application || !$application->exists) {
+            return false;
+        }
+
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->hasAccess('platform.applications.edit')) {
+            return true;
+        }
+
+        if (!$application->team || $application->team->captain_id !== $user->id) {
+            return false;
+        }
+
+        return $application->tournament?->status !== 'completed';
+    }
+
+    public function asyncGetNumber(Request $request): array
+    {
+        abort_unless($this->canChangeNumber(), 403);
+
+        $roster = ApplicationRoster::where('application_id', $this->application->id)
+            ->where('id', (int) $request->query('roster'))
+            ->firstOrFail();
+
+        return [
+            'number' => [
+                'player' => $roster->player?->name,
+                'old' => $roster->jersey_number,
+                'value' => $roster->jersey_number,
+            ],
+        ];
+    }
+
+    public function changeNumber(TournamentApplication $application, Request $request)
+    {
+        abort_unless($this->canChangeNumber($application), 403);
+
+        $request->validate([
+            'number.value' => 'required|integer|min:1|max:99',
+        ]);
+
+        $roster = ApplicationRoster::where('application_id', $application->id)
+            ->where('id', (int) $request->query('roster'))
+            ->firstOrFail();
+
+        app(RosterNumberService::class)->change(
+            $roster,
+            (int) $request->input('number.value'),
+            auth()->user()
+        );
+
+        Toast::info('Игровой номер изменён');
 
         return back();
     }

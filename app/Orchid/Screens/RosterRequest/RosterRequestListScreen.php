@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\RosterRequest;
 
 use App\Models\ApplicationRoster;
 use App\Models\RosterRequest;
+use App\Services\RosterNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Orchid\Screen\Actions\Button;
@@ -56,7 +57,7 @@ class RosterRequestListScreen extends Screen
 
     public function description(): ?string
     {
-        return 'Заявки на дозаявку, переход и отзаявку игроков. Утверждение доступно администратору.';
+        return 'Заявки на дозаявку, переход, отзаявку и историю смены игровых номеров. Утверждение доступно администратору.';
     }
 
     public function commandBar(): iterable
@@ -95,6 +96,7 @@ class RosterRequestListScreen extends Screen
                             RosterRequest::TYPE_ADDITION => 'success',
                             RosterRequest::TYPE_TRANSFER => 'info',
                             RosterRequest::TYPE_REMOVAL => 'danger',
+                            RosterRequest::TYPE_NUMBER_CHANGE => 'primary',
                         ];
 
                         return '<span class="badge bg-' . ($classes[$r->type] ?? 'secondary') . '">'
@@ -115,6 +117,7 @@ class RosterRequestListScreen extends Screen
                         return match ($r->type) {
                             RosterRequest::TYPE_ADDITION => '→ ' . e($to ?? '—'),
                             RosterRequest::TYPE_REMOVAL => e($from ?? '—') . ' →',
+                            RosterRequest::TYPE_NUMBER_CHANGE => e($to ?? $from ?? '—'),
                             default => e($from ?? '—') . ' → ' . e($to ?? '—'),
                         };
                     }),
@@ -124,6 +127,10 @@ class RosterRequestListScreen extends Screen
                     ->render(function (RosterRequest $r) {
                         if ($r->type === RosterRequest::TYPE_REMOVAL) {
                             return '<span class="text-muted">—</span>';
+                        }
+
+                        if ($r->type === RosterRequest::TYPE_NUMBER_CHANGE) {
+                            return e((string) ($r->old_jersey_number ?? '—')) . ' → ' . e((string) $r->jersey_number);
                         }
 
                         $position = \App\Models\ApplicationRoster::POSITIONS[$r->position] ?? $r->position;
@@ -216,6 +223,7 @@ class RosterRequestListScreen extends Screen
                 RosterRequest::TYPE_ADDITION => $this->applyAddition($roster_request),
                 RosterRequest::TYPE_TRANSFER => $this->applyTransfer($roster_request),
                 RosterRequest::TYPE_REMOVAL => $this->applyRemoval($roster_request),
+                RosterRequest::TYPE_NUMBER_CHANGE => $this->applyNumberChange($roster_request),
             };
 
             $roster_request->update([
@@ -318,5 +326,29 @@ class RosterRequestListScreen extends Screen
         ApplicationRoster::where('application_id', $request->from_application_id)
             ->where('user_id', $request->player_user_id)
             ->delete();
+    }
+
+    private function applyNumberChange(RosterRequest $request): void
+    {
+        if (!$request->to_application_id) {
+            throw new \RuntimeException('Не указана целевая заявка');
+        }
+
+        $roster = ApplicationRoster::where('application_id', $request->to_application_id)
+            ->where('user_id', $request->player_user_id)
+            ->first();
+
+        if (!$roster) {
+            throw new \RuntimeException('Игрок не найден в составе');
+        }
+
+        app(RosterNumberService::class)->assertAvailable(
+            (int) $request->to_application_id,
+            (int) $request->jersey_number,
+            (int) $roster->id,
+            'jersey_number'
+        );
+
+        $roster->update(['jersey_number' => (int) $request->jersey_number]);
     }
 }
