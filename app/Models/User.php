@@ -166,7 +166,8 @@ class User extends Authenticatable
             'id', // Внешний ключ в tournament_applications
             'id', // Локальный ключ в users
             'application_id' // Локальный ключ в application_rosters
-        );
+        )->whereNull('application_rosters.deleted_at')
+            ->whereNull('tournament_applications.deleted_at');
     }
 
     /**
