@@ -11,29 +11,31 @@ class UserController extends Controller
         // Загружаем данные безопасно с проверкой отношений
         $user->load([
             'tournamentApplications' => function ($query) {
-                $query->withTrashed()
+                $query->whereNull('deleted_at')
+                    ->whereHas('team', function ($q) {
+                        $q->whereNull('deleted_at');
+                    })
+                    ->whereHas('tournament', function ($q) {
+                        $q->whereNull('deleted_at');
+                    })
                     ->with([
-                        'team' => function ($q) {
-                            $q->withTrashed();
-                        },
-                        'tournament' => function ($q) {
-                            $q->withTrashed();
-                        },
+                        'team',
+                        'tournament',
                         'roster',
                     ])->orderBy('created_at', 'desc');
             },
             'applicationRosters' => function ($query) {
-                $query->with([
-                    'tournamentApplication' => function ($q) {
-                        $q->withTrashed()->with([
-                            'team' => function ($q2) {
-                                $q2->withTrashed();
-                            },
-                            'tournament' => function ($q3) {
-                                $q3->withTrashed();
-                            },
-                        ]);
-                    },
+                $query->whereHas('application', function ($q) {
+                    $q->whereNull('deleted_at')
+                        ->whereHas('team', function ($q2) {
+                            $q2->whereNull('deleted_at');
+                        })
+                        ->whereHas('tournament', function ($q3) {
+                            $q3->whereNull('deleted_at');
+                        });
+                })->with([
+                    'application.team',
+                    'application.tournament',
                 ])->orderBy('created_at', 'desc');
             },
         ]);

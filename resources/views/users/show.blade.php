@@ -92,24 +92,16 @@
                                 @endphp
                                 <x-card class="min-w-0 p-5 transition hover:bg-slate-50/70">
                                     <div class="flex items-center gap-3">
-                                        <x-team-logo :name="$team->name ?? '?'" :logo="$team?->logo_url" size="sm" />
+                                        <x-team-logo :name="$team->name" :logo="$team->logo_url" size="sm" />
                                         <div class="min-w-0">
-                                            @if ($team)
-                                                <a href="{{ route('teams.show', $team) }}"
-                                                   class="block truncate font-display font-bold text-brand-800 transition hover:text-accent-600">
-                                                    {{ $team->name }}
-                                                </a>
-                                            @else
-                                                <span class="block truncate font-display font-bold text-slate-400">Неизвестная команда</span>
-                                            @endif
-                                            @if ($tournament)
-                                                <a href="{{ route('tournaments.show', $tournament) }}"
-                                                   class="block truncate text-sm text-slate-500 transition hover:text-accent-600">
-                                                    @svg('lucide-trophy', 'inline h-3.5 w-3.5'){{ $tournament->name }}
-                                                </a>
-                                            @else
-                                                <span class="block truncate text-sm text-slate-400">@svg('lucide-trophy', 'inline h-3.5 w-3.5')-</span>
-                                            @endif
+                                            <a href="{{ route('teams.show', $team) }}"
+                                               class="block truncate font-display font-bold text-brand-800 transition hover:text-accent-600">
+                                                {{ $team->name }}
+                                            </a>
+                                            <a href="{{ route('tournaments.show', $tournament) }}"
+                                               class="block truncate text-sm text-slate-500 transition hover:text-accent-600">
+                                                @svg('lucide-trophy', 'inline h-3.5 w-3.5'){{ $tournament->name }}
+                                            </a>
                                         </div>
                                     </div>
 
@@ -133,7 +125,15 @@
                     @endif
                 </x-card>
 
-                @if ($user->applicationRosters->count() > 0)
+                @php
+                    $validRosters = $user->applicationRosters->filter(function ($roster) {
+                        $application = $roster->application ?? $roster->tournamentApplication ?? null;
+                        $team = $application?->team ?? null;
+                        $tournament = $application?->tournament ?? null;
+                        return $application && $team && $tournament;
+                    });
+                @endphp
+                @if ($validRosters->count() > 0)
                     <x-card class="mt-6">
                         <div class="px-6 pt-6">
                             <h3 class="flex items-center gap-2 font-display text-lg font-bold text-brand-800">
@@ -151,26 +151,18 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    @foreach ($user->applicationRosters as $roster)
+                                    @foreach ($validRosters as $roster)
                                         @php
                                             $application = $roster->application ?? $roster->tournamentApplication ?? null;
-                                            $team = $application?->team ?? null;
-                                            $tournament = $application?->tournament ?? null;
+                                            $team = $application->team;
+                                            $tournament = $application->tournament;
                                         @endphp
                                         <tr class="transition hover:bg-slate-50">
                                             <td class="px-4 py-2.5 sm:px-6">
-                                                @if ($team)
-                                                    <a href="{{ route('teams.show', $team) }}" class="font-medium text-brand-800 hover:text-accent-600">{{ $team->name }}</a>
-                                                @else
-                                                    <span class="text-slate-400">Неизвестная команда</span>
-                                                @endif
+                                                <a href="{{ route('teams.show', $team) }}" class="font-medium text-brand-800 hover:text-accent-600">{{ $team->name }}</a>
                                             </td>
                                             <td class="px-4 py-2.5 sm:px-6">
-                                                @if ($tournament)
-                                                    <a href="{{ route('tournaments.show', $tournament) }}" class="text-slate-600 hover:text-accent-600">{{ $tournament->name }}</a>
-                                                @else
-                                                    <span class="text-slate-400">-</span>
-                                                @endif
+                                                <a href="{{ route('tournaments.show', $tournament) }}" class="text-slate-600 hover:text-accent-600">{{ $tournament->name }}</a>
                                             </td>
                                             <td class="px-4 py-2.5 sm:px-6">
                                                 @if ($roster->position)
