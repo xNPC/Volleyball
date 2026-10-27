@@ -11,32 +11,17 @@ class UserController extends Controller
         // Загружаем данные безопасно с проверкой отношений
         $user->load([
             'tournamentApplications' => function ($query) {
-                $query->whereNull('deleted_at')
-                    ->whereHas('team', function ($q) {
-                        $q->whereNull('deleted_at');
-                    })
-                    ->whereHas('tournament', function ($q) {
-                        $q->whereNull('deleted_at');
-                    })
-                    ->with([
-                        'team',
-                        'tournament',
-                        'roster',
-                    ])->orderBy('created_at', 'desc');
+                $query->with([
+                    'team',
+                    'tournament',
+                    'roster',
+                ])->orderBy('tournament_applications.created_at', 'desc');
             },
             'applicationRosters' => function ($query) {
-                $query->whereHas('application', function ($q) {
-                    $q->whereNull('deleted_at')
-                        ->whereHas('team', function ($q2) {
-                            $q2->whereNull('deleted_at');
-                        })
-                        ->whereHas('tournament', function ($q3) {
-                            $q3->whereNull('deleted_at');
-                        });
-                })->with([
+                $query->with([
                     'application.team',
                     'application.tournament',
-                ])->orderBy('created_at', 'desc');
+                ])->orderBy('application_rosters.created_at', 'desc');
             },
         ]);
 
