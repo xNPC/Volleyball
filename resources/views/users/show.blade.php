@@ -70,9 +70,14 @@
                         @svg('lucide-list', 'h-5 w-5 text-accent-500')Заявлен в командах
                     </h2>
 
-                    @if ($user->tournamentApplications->count() > 0)
+                    @php
+                        $validApplications = $user->tournamentApplications->filter(function ($application) {
+                            return $application->team && $application->tournament;
+                        });
+                    @endphp
+                    @if ($validApplications->count() > 0)
                         <div class="grid gap-4 md:grid-cols-2">
-                            @foreach ($user->tournamentApplications as $application)
+                            @foreach ($validApplications as $application)
                                 @php
                                     $team = $application->team;
                                     $tournament = $application->tournament;
