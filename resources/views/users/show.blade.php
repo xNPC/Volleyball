@@ -71,13 +71,19 @@
                     </h2>
 
                     @php
-                        $validApplications = $user->tournamentApplications->filter(function ($application) {
-                            return $application->team && $application->tournament;
-                        });
+                        $actualApplications = $user->tournamentApplications
+                            ->filter(fn ($application) =>
+                                $application->team
+                                && $application->tournament
+                                && in_array($application->tournament->status, ['planned', 'ongoing'], true)
+                                && $application->status !== 'rejected'
+                            )
+                            ->unique('id')
+                            ->values();
                     @endphp
-                    @if ($validApplications->count() > 0)
+                    @if ($actualApplications->count() > 0)
                         <div class="grid gap-4 md:grid-cols-2">
-                            @foreach ($validApplications as $application)
+                            @foreach ($actualApplications as $application)
                                 @php
                                     $team = $application->team;
                                     $tournament = $application->tournament;
@@ -131,14 +137,17 @@
                 </x-card>
 
                 @php
-                    $validRosters = $user->applicationRosters->filter(function ($roster) {
-                        $application = $roster->application ?? $roster->tournamentApplication ?? null;
-                        $team = $application?->team ?? null;
-                        $tournament = $application?->tournament ?? null;
-                        return $application && $team && $tournament;
+                    $historyRosters = $user->applicationRosters->filter(function ($roster) {
+                        $application = $roster->application;
+
+                        return $application
+                            && $application->team
+                            && $application->tournament
+                            && $application->tournament->status === 'completed'
+                            && $application->status === 'approved';
                     });
                 @endphp
-                @if ($validRosters->count() > 0)
+                @if ($historyRosters->count() > 0)
                     <x-card class="mt-6">
                         <div class="px-6 pt-6">
                             <h3 class="flex items-center gap-2 font-display text-lg font-bold text-brand-800">
@@ -156,9 +165,9 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    @foreach ($validRosters as $roster)
+                                    @foreach ($historyRosters as $roster)
                                         @php
-                                            $application = $roster->application ?? $roster->tournamentApplication ?? null;
+                                            $application = $roster->application;
                                             $team = $application->team;
                                             $tournament = $application->tournament;
                                         @endphp
