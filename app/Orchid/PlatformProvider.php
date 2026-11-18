@@ -99,7 +99,7 @@ class PlatformProvider extends OrchidServiceProvider
             Menu::make('Дозаявки и переходы')
                 ->slug('roster-requests')
                 ->icon('bs.box-arrow-in-right')
-                ->route('platform.roster.requests.list'),
+                ->route('platform.roster.requests.list', ['status' => 'pending']),
 
             Menu::make('Управление играми')
                 ->icon('controller')

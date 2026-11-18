@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\RosterRequest;
 
 use App\Models\ApplicationRoster;
 use App\Models\RosterRequest;
+use App\Orchid\Layouts\RosterRequest\RosterRequestFiltersLayout;
 use App\Services\ApplicationCaptainService;
 use App\Services\RosterNumberService;
 use Illuminate\Http\Request;
@@ -13,6 +14,8 @@ use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Actions\ModalToggle;
+use Orchid\Screen\Fields\Group;
+use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
@@ -22,6 +25,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RosterRequestListScreen extends Screen
 {
+    public $hasComment = false;
+
+    public $hasRejection = false;
+
     public function query(): iterable
     {
         $user = auth()->user();
@@ -38,6 +45,8 @@ class RosterRequestListScreen extends Screen
                 'createdBy',
                 'reviewer',
             ])
+            ->filters()
+            ->filtersApplySelection(RosterRequestFiltersLayout::class)
             ->when(!$seeAll, function ($q) use ($user) {
                 $q->where(function ($sub) use ($user) {
                     $sub->where('created_by', $user->id)
@@ -46,7 +55,7 @@ class RosterRequestListScreen extends Screen
                 });
             })
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate(30);
 
         return [
             'requests' => $requests,
@@ -75,6 +84,60 @@ class RosterRequestListScreen extends Screen
     public function layout(): iterable
     {
         return [
+            RosterRequestFiltersLayout::class,
+
+            Layout::modal('viewRequestModal', [
+                Layout::rows([
+                    Group::make([
+                        Label::make('view.type')
+                            ->title('Тип'),
+
+                        Label::make('view.status')
+                            ->title('Статус'),
+                    ])->autoWidth(),
+
+                    Group::make([
+                        Label::make('view.player')
+                            ->title('Игрок'),
+
+                        Label::make('view.tournament')
+                            ->title('Турнир'),
+                    ])->autoWidth(),
+
+                    Group::make([
+                        Label::make('view.teams')
+                            ->title('Команды'),
+
+                        Label::make('view.details')
+                            ->title('Детали'),
+                    ])->autoWidth(),
+
+                    Group::make([
+                        Label::make('view.created')
+                            ->title('Подано'),
+
+                        Label::make('view.reviewed')
+                            ->title('Рассмотрено'),
+                    ])->autoWidth(),
+
+                    TextArea::make('view.comment')
+                        ->title('Комментарий')
+                        ->rows(2)
+                        ->readonly()
+                        ->canSee($this->hasComment),
+
+                    TextArea::make('view.rejection_reason')
+                        ->title('Причина отклонения')
+                        ->rows(2)
+                        ->readonly()
+                        ->canSee($this->hasRejection),
+                ]),
+            ])
+                ->title('Детали запроса')
+                ->async('asyncGetRequest')
+                ->withoutApplyButton()
+                ->size('modal-lg'),
+
             Layout::modal('rejectModal', [
                 Layout::rows([
                     TextArea::make('rejection_reason')
@@ -178,37 +241,36 @@ class RosterRequestListScreen extends Screen
                     ->render(function (RosterRequest $r) {
                         $user = auth()->user();
 
-                        if (!$r->isPending()) {
-                            return '';
-                        }
-
                         $canApprove = $user->hasAccess('platform.applications.approve');
                         $canDelete = $user->hasAccess('platform.roster_requests.delete');
 
-                        if (!$canApprove && !$canDelete) {
-                            return '';
-                        }
-
                         $list = [];
 
-                        if ($canApprove) {
-                            $list[] = Button::make('Утвердить')
-                                ->icon('bs.check-lg')
-                                ->confirm('Утвердить запрос? Изменения в составе будут применены сразу.')
-                                ->method('approve', ['roster_request' => $r->id]);
+                        $list[] = ModalToggle::make('Просмотр')
+                            ->icon('bs.eye')
+                            ->modal('viewRequestModal')
+                            ->asyncParameters(['roster_request' => $r->id]);
 
-                            $list[] = ModalToggle::make('Отклонить')
-                                ->icon('bs.x-lg')
-                                ->modal('rejectModal')
-                                ->method('reject')
-                                ->asyncParameters(['roster_request' => $r->id]);
-                        }
+                        if ($r->isPending()) {
+                            if ($canApprove) {
+                                $list[] = Button::make('Утвердить')
+                                    ->icon('bs.check-lg')
+                                    ->confirm('Утвердить запрос? Изменения в составе будут применены сразу.')
+                                    ->method('approve', ['roster_request' => $r->id]);
 
-                        if ($canDelete) {
-                            $list[] = Button::make('Удалить')
-                                ->icon('bs.trash3')
-                                ->confirm('Удалить запрос? Он исчезнет из списка и истории.')
-                                ->method('destroy', ['roster_request' => $r->id]);
+                                $list[] = ModalToggle::make('Отклонить')
+                                    ->icon('bs.x-lg')
+                                    ->modal('rejectModal')
+                                    ->method('reject')
+                                    ->asyncParameters(['roster_request' => $r->id]);
+                            }
+
+                            if ($canDelete) {
+                                $list[] = Button::make('Удалить')
+                                    ->icon('bs.trash3')
+                                    ->confirm('Удалить запрос? Он исчезнет из списка и истории.')
+                                    ->method('destroy', ['roster_request' => $r->id]);
+                            }
                         }
 
                         return DropDown::make()
@@ -216,6 +278,86 @@ class RosterRequestListScreen extends Screen
                             ->list($list);
                     }),
             ]),
+        ];
+    }
+
+    public function asyncGetRequest(RosterRequest $roster_request): array
+    {
+        $roster_request->load([
+            'player',
+            'oldPlayer',
+            'tournament',
+            'toApplication.team',
+            'fromApplication.team',
+            'createdBy',
+            'reviewer',
+        ]);
+
+        $user = auth()->user();
+        $seeAll = $user->hasAccess('platform.applications.approve')
+            || $user->hasAccess('platform.applications.edit');
+
+        if (!$seeAll) {
+            $visible = $roster_request->created_by === $user->id
+                || $roster_request->toApplication?->team?->captain_id === $user->id
+                || $roster_request->fromApplication?->team?->captain_id === $user->id;
+
+            abort_unless($visible, 403);
+        }
+
+        $player = $roster_request->type === RosterRequest::TYPE_CAPTAIN_CHANGE
+            ? ($roster_request->oldPlayer?->name ?? '—') . ' → ' . ($roster_request->player?->name ?? '—')
+            : ($roster_request->player?->name ?? '—');
+
+        $to = $roster_request->toApplication?->team?->name;
+        $from = $roster_request->fromApplication?->team?->name;
+
+        $teams = match ($roster_request->type) {
+            RosterRequest::TYPE_ADDITION => '→ ' . ($to ?? '—'),
+            RosterRequest::TYPE_REMOVAL => ($from ?? '—') . ' →',
+            RosterRequest::TYPE_NUMBER_CHANGE,
+            RosterRequest::TYPE_CAPTAIN_CHANGE => $to ?? $from ?? '—',
+            default => ($from ?? '—') . ' → ' . ($to ?? '—'),
+        };
+
+        if (in_array($roster_request->type, [
+            RosterRequest::TYPE_REMOVAL,
+            RosterRequest::TYPE_CAPTAIN_CHANGE,
+        ], true)) {
+            $details = '—';
+        } elseif ($roster_request->type === RosterRequest::TYPE_NUMBER_CHANGE) {
+            $details = ($roster_request->old_jersey_number ?? '—') . ' → ' . $roster_request->jersey_number;
+        } else {
+            $position = ApplicationRoster::POSITIONS[$roster_request->position] ?? $roster_request->position;
+            $details = $roster_request->jersey_number . ' · ' . $position;
+        }
+
+        $this->hasComment = filled($roster_request->comment);
+        $this->hasRejection = filled($roster_request->rejection_reason);
+
+        $createdAt = $roster_request->created_at?->format('d.m.Y H:i');
+        $createdBy = $roster_request->createdBy?->name;
+        $created = trim(($createdBy ?? '—') . ($createdAt ? ' · ' . $createdAt : ''));
+
+        $reviewedAt = $roster_request->reviewed_at?->format('d.m.Y H:i');
+        $reviewedBy = $roster_request->reviewer?->name;
+        $reviewed = $reviewedAt || $reviewedBy
+            ? trim(($reviewedBy ?? '—') . ($reviewedAt ? ' · ' . $reviewedAt : ''))
+            : '—';
+
+        return [
+            'view' => [
+                'type' => RosterRequest::TYPES[$roster_request->type] ?? $roster_request->type,
+                'status' => RosterRequest::STATUSES[$roster_request->status] ?? $roster_request->status,
+                'player' => $player,
+                'tournament' => $roster_request->tournament?->name ?? '—',
+                'teams' => $teams,
+                'details' => $details,
+                'comment' => $roster_request->comment ?? '',
+                'rejection_reason' => $roster_request->rejection_reason ?? '',
+                'created' => $created,
+                'reviewed' => $reviewed,
+            ],
         ];
     }
 

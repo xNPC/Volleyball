@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Orchid\Filters\Filterable;
 use Orchid\Screen\AsSource;
 
 class RosterRequest extends Model
 {
-    use AsSource, SoftDeletes;
+    use AsSource, SoftDeletes, Filterable;
 
     protected $fillable = [
         'type',
