@@ -17,13 +17,13 @@
     </div>
 
     <x-card class="mb-6 p-5">
-        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div class="xl:col-span-2">
+        <div class="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div class="min-w-0 xl:col-span-2">
                 <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Команда</label>
                 <x-search model="search" placeholder="Поиск по названию команды..." />
             </div>
 
-            <div>
+            <div class="min-w-0">
                 <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Период</label>
                 <select wire:model.live="period" class="input-base">
                     <option value="all">Все игры</option>
@@ -32,7 +32,7 @@
                 </select>
             </div>
 
-            <div>
+            <div class="min-w-0">
                 <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Статус</label>
                 <select wire:model.live="status" class="input-base">
                     <option value="all">Все статусы</option>
@@ -42,17 +42,26 @@
                 </select>
             </div>
 
-            <div>
+            <div class="min-w-0">
                 <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Дата с</label>
                 <input type="date" wire:model.live="dateFrom" class="input-base">
             </div>
 
-            <div>
+            <div class="min-w-0">
                 <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Дата по</label>
                 <input type="date" wire:model.live="dateTo" class="input-base">
             </div>
 
-            <div class="xl:col-span-2" x-data="{ open: false }">
+            <div class="min-w-0">
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Сортировка</label>
+                <select wire:model.live="sort" class="input-base">
+                    <option value="auto">По умолчанию</option>
+                    <option value="date_desc">Сначала новые</option>
+                    <option value="date_asc">Сначала старые</option>
+                </select>
+            </div>
+
+            <div class="min-w-0" x-data="{ open: false }">
                 <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Турниры</label>
                 <div class="relative">
                     <button type="button" @click="open = !open" @click.outside="open = false"

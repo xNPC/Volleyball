@@ -32,6 +32,9 @@ class GameList extends Component
     #[Url]
     public $dateTo = '';
 
+    #[Url]
+    public $sort = 'auto';
+
     public function updatedSearch()
     {
         $this->resetPage();
@@ -62,9 +65,14 @@ class GameList extends Component
         $this->resetPage();
     }
 
+    public function updatedSort()
+    {
+        $this->resetPage();
+    }
+
     public function resetFilters()
     {
-        $this->reset(['search', 'tournaments', 'period', 'status', 'dateFrom', 'dateTo']);
+        $this->reset(['search', 'tournaments', 'period', 'status', 'dateFrom', 'dateTo', 'sort']);
         $this->resetPage();
     }
 
@@ -75,6 +83,8 @@ class GameList extends Component
             ->map(fn ($id) => (int) $id)
             ->values()
             ->all();
+
+        $sort = in_array($this->sort, ['auto', 'date_asc', 'date_desc'], true) ? $this->sort : 'auto';
 
         $games = Game::query()
             ->with([
@@ -114,9 +124,16 @@ class GameList extends Component
             ->when($this->dateTo, function ($query) {
                 $query->whereDate('scheduled_time', '<=', $this->dateTo);
             })
-            ->when($this->period === 'upcoming', function ($query) {
+            ->when($sort === 'date_asc', function ($query) {
+                $query->orderByRaw('scheduled_time is null')->orderBy('scheduled_time');
+            })
+            ->when($sort === 'date_desc', function ($query) {
+                $query->orderByRaw('scheduled_time is null')->orderByDesc('scheduled_time');
+            })
+            ->when($sort === 'auto' && $this->period === 'upcoming', function ($query) {
                 $query->orderBy('scheduled_time');
-            }, function ($query) {
+            })
+            ->when($sort === 'auto' && $this->period !== 'upcoming', function ($query) {
                 $query->orderByRaw('scheduled_time is null')->orderByDesc('scheduled_time');
             })
             ->paginate(30);
