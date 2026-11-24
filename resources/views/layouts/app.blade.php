@@ -90,6 +90,9 @@
                     <a href="{{ route('tournaments.index') }}" class="nav-link-item @if(request()->routeIs('tournaments.*')) nav-link-item-active @endif">
                         @svg('lucide-trophy', 'h-4 w-4')Турниры
                     </a>
+                    <a href="{{ route('games.index') }}" class="nav-link-item @if(request()->routeIs('games.*')) nav-link-item-active @endif">
+                        @svg('lucide-calendar-days', 'h-4 w-4')Игры
+                    </a>
                     <a href="{{ route('users.index') }}" class="nav-link-item @if(request()->routeIs('users.*')) nav-link-item-active @endif">
                         @svg('lucide-users', 'h-4 w-4')Игроки
                     </a>
@@ -177,6 +180,9 @@
                 <a href="{{ route('tournaments.index') }}" class="nav-link-item @if(request()->routeIs('tournaments.*')) nav-link-item-active @endif">
                     @svg('lucide-trophy', 'h-4 w-4')Турниры
                 </a>
+                <a href="{{ route('games.index') }}" class="nav-link-item @if(request()->routeIs('games.*')) nav-link-item-active @endif">
+                    @svg('lucide-calendar-days', 'h-4 w-4')Игры
+                </a>
                 <a href="{{ route('users.index') }}" class="nav-link-item @if(request()->routeIs('users.*')) nav-link-item-active @endif">
                     @svg('lucide-users', 'h-4 w-4')Игроки
                 </a>
@@ -253,6 +259,7 @@
                 <ul class="mt-4 space-y-2.5 text-sm">
                     <li><a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-home', 'h-4 w-4')Главная</a></li>
                     <li><a href="{{ route('tournaments.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-trophy', 'h-4 w-4')Турниры</a></li>
+                    <li><a href="{{ route('games.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-calendar-days', 'h-4 w-4')Игры</a></li>
                     <li><a href="{{ route('users.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-users', 'h-4 w-4')Игроки</a></li>
                     <li><a href="{{ route('teams.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-shield', 'h-4 w-4')Команды</a></li>
                     <li><a href="{{ route('gallery.index') }}" class="inline-flex items-center gap-2 text-brand-200 transition hover:text-accent-400">@svg('lucide-images', 'h-4 w-4')Фотоальбомы</a></li>

@@ -239,6 +239,14 @@
                         </div>
                     </div>
                 </x-card>
+
+                <div class="mt-6 text-center">
+                    <a href="{{ route('games.index') }}"
+                       class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-brand-700 shadow-sm transition hover:border-accent-200 hover:bg-accent-50 hover:text-accent-700">
+                        Посмотреть все игры
+                        @svg('lucide-arrow-right', 'h-4 w-4')
+                    </a>
+                </div>
             </div>
         </section>
 

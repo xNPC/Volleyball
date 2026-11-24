@@ -20,6 +20,7 @@ use App\Livewire\TournamentList;
 use App\Livewire\TournamentTeamList;
 use App\Livewire\UserList;
 use App\Livewire\TeamList;
+use App\Livewire\GameList;
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
@@ -27,6 +28,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/tournaments', TournamentList::class)->name('tournaments.index');
 Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
+Route::get('/games', GameList::class)->name('games.index');
 Route::get('/tournaments/{tournament}/teams', TournamentTeamList::class)->name('tournaments.teams');
 Route::get('/tournaments/{tournament}/documents/{attachment}', [TournamentDocumentController::class, 'download'])->name('tournaments.documents.download');
 
