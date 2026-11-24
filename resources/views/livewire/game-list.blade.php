@@ -61,10 +61,10 @@
                 </select>
             </div>
 
-            <div class="min-w-0" x-data="{ open: false }">
+            <div class="min-w-0" x-data="{ open: false, tournamentSearch: '' }">
                 <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Турниры</label>
                 <div class="relative">
-                    <button type="button" @click="open = !open" @click.outside="open = false"
+                    <button type="button" @click="open = !open; if (open) $nextTick(() => $refs.tournamentSearch?.focus())" @click.outside="open = false"
                             class="input-base flex w-full items-center justify-between gap-2 text-left">
                         <span class="truncate text-slate-700">
                             @if (count($tournaments) > 0)
@@ -77,16 +77,26 @@
                     </button>
 
                     <div x-cloak x-show="open" x-transition
-                         class="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
-                        @forelse ($tournamentsList as $tournament)
-                            <label class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
-                                <input type="checkbox" value="{{ $tournament->id }}" wire:model.live="tournaments"
-                                       class="rounded border-slate-300 text-accent-500 focus:ring-accent-500/20">
-                                <span class="min-w-0 truncate">{{ $tournament->name }}</span>
-                            </label>
-                        @empty
-                            <div class="px-2 py-1.5 text-sm text-slate-500">Нет турниров с играми</div>
-                        @endforelse
+                         class="absolute right-0 z-20 mt-1 w-[min(32rem,calc(100vw-2rem))] rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+                        <div class="mb-2 px-1">
+                            <input type="text" x-ref="tournamentSearch" x-model.debounce.150ms="tournamentSearch"
+                                   placeholder="Поиск турнира..."
+                                   class="input-base py-2">
+                        </div>
+                        <div class="max-h-64 overflow-auto" x-ref="tournamentOptions">
+                            @forelse ($tournamentsList as $tournament)
+                                <label data-tournament-option title="{{ $tournament->name }}"
+                                       x-show="!tournamentSearch || @js(mb_strtolower($tournament->name)).includes(tournamentSearch.toLowerCase())"
+                                       class="flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50">
+                                    <input type="checkbox" value="{{ $tournament->id }}" wire:model.live="tournaments"
+                                           class="mt-0.5 shrink-0 rounded border-slate-300 text-accent-500 focus:ring-accent-500/20">
+                                    <span class="min-w-0 whitespace-normal break-words leading-snug">{{ $tournament->name }}</span>
+                                </label>
+                            @empty
+                                <div class="px-2 py-1.5 text-sm text-slate-500">Нет турниров с играми</div>
+                            @endforelse
+                            <div x-cloak x-show="tournamentSearch && !@js($tournamentsList->map(fn ($t) => mb_strtolower($t->name))->values()).some(n => n.includes(tournamentSearch.toLowerCase()))" class="px-2 py-1.5 text-sm text-slate-500">Ничего не найдено</div>
+                        </div>
                     </div>
                 </div>
             </div>
