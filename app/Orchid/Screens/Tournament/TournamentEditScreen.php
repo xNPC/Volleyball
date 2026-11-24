@@ -139,13 +139,21 @@ class TournamentEditScreen extends Screen
             'stage.order' => 'required|integer|min:1',
             'stage.start_date' => 'required|date',
             'stage.end_date' => 'required|date|after_or_equal:stage.start_date',
+            'stage.configuration.carry_over_previous_stage' => 'nullable|boolean',
         ]);
+
+        $stage = $stageId ? TournamentStage::findOrFail($stageId) : new TournamentStage();
+        $configuration = $stage->configuration ?? [];
+        $configuration['carry_over_previous_stage'] = (bool) data_get($validated, 'stage.configuration.carry_over_previous_stage', false);
+
+        $stageData = $validated['stage'];
+        $stageData['configuration'] = $configuration;
 
         TournamentStage::updateOrCreate([
             'id' => $stageId,
             'tournament_id' => $this->tournament->id
         ],
-            $validated['stage']
+            $stageData
         );
 
         Toast::info('Успешно сохранено');

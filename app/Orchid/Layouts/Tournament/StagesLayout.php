@@ -6,6 +6,7 @@ use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Select;
+use Orchid\Screen\Fields\Switcher;
 use Orchid\Screen\Layouts\Rows;
 
 class StagesLayout extends Rows
@@ -41,6 +42,10 @@ class StagesLayout extends Rows
                 ->title('Порядок')
                 ->type('number')
                 ->min(1),
+
+            Switcher::make('stage.configuration.carry_over_previous_stage')
+                ->title('Учитывать результаты предыдущего этапа')
+                ->sendTrueOrFalse(),
 
             Group::make([
                 DateTimer::make('stage.start_date')

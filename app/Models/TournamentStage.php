@@ -18,7 +18,8 @@ class TournamentStage extends Model
 
     protected $fillable = [
         'tournament_id', 'name', 'stage_type',
-        'order', 'start_date', 'end_date'
+        'order', 'start_date', 'end_date',
+        'configuration',
     ];
 
     protected $casts = [

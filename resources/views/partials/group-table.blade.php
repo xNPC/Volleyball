@@ -1,6 +1,6 @@
 @php
     $standings = $group->standings;
-    $games = $group->games()->with('sets', 'homeApplication.team', 'awayApplication.team')->get();
+    $games = $group->standings_games ?? collect();
 
     $getGameDetails = function($games, $team1Id, $team2Id) {
         $game = $games->first(function($game) use ($team1Id, $team2Id) {
@@ -17,7 +17,13 @@
             $setsDetails[] = "{$set->home_score}:{$set->away_score}";
         }
 
-        return "Сеты: " . implode(', ', $setsDetails);
+        $details = "Сеты: " . implode(', ', $setsDetails);
+
+        if ($game->source_stage_name) {
+            $details .= ' · из этапа «' . $game->source_stage_name . '»';
+        }
+
+        return $details;
     };
 @endphp
 
@@ -73,7 +79,7 @@
                                     : 'text-slate-400';
                             @endphp
                             <td class="border-r border-slate-100 px-2 py-2 text-center transition hover:bg-slate-50 {{ $scoreClass }}"
-                                {!! $gameDetails ? 'title="' . $gameDetails . '"' : '' !!}>
+                                @if ($gameDetails) title="{{ $gameDetails }}" @endif>
                                 {{ $result ? $result['score'] : '-:-' }}
                             </td>
                         @endif

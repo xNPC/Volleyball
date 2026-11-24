@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Game;
 use App\Models\StageGroup;
 use App\Models\Tournament;
 use App\Models\TournamentApplication;
@@ -17,10 +18,11 @@ class GroupStandingsService
     /**
      * Рассчитывает турнирную таблицу для группы
      */
-    public function calculateStandings(StageGroup $group): Collection
+    public function calculateStandings(StageGroup $group, ?Collection $previousStageGames = null): Collection
     {
         $teams = $group->teams->load('team');
-        $games = $group->games()->with('sets')->get();
+        $games = $this->getStandingsGames($group, $previousStageGames);
+        $group->setRelation('standings_games', $games);
 
         // Определяем тип турнира через группу -> этап -> турнир
         $volleyballType = $this->getVolleyballType($group);
@@ -47,6 +49,149 @@ class GroupStandingsService
 
         // Если не нашли - по умолчанию классический волейбол
         return self::TYPE_INDOOR;
+    }
+
+    private function isCarryOverEnabled(TournamentStage $stage): bool
+    {
+        return (bool) data_get($stage->configuration, 'carry_over_previous_stage', false);
+    }
+
+    private function getPreviousStageGamesForStage(TournamentStage $stage): Collection
+    {
+        if (!$this->isCarryOverEnabled($stage)) {
+            return collect();
+        }
+
+        $previousStage = TournamentStage::where('tournament_id', $stage->tournament_id)
+            ->where('order', '<', $stage->order)
+            ->orderByDesc('order')
+            ->first();
+
+        if (!$previousStage) {
+            return collect();
+        }
+
+        return $previousStage->games()
+            ->with(['sets', 'homeApplication', 'awayApplication'])
+            ->where('status', 'completed')
+            ->whereNotNull('home_score')
+            ->whereNotNull('away_score')
+            ->orderBy('scheduled_time')
+            ->orderBy('id')
+            ->get()
+            ->map(function (Game $game) use ($previousStage) {
+                $carry = clone $game;
+                $carry->setAttribute('is_carried_over', true);
+                $carry->setAttribute('source_stage_id', $previousStage->id);
+                $carry->setAttribute('source_stage_name', $previousStage->name);
+
+                return $carry;
+            });
+    }
+
+    private function getStandingsGames(StageGroup $group, ?Collection $previousStageGames = null): Collection
+    {
+        $currentGames = $this->getCurrentGames($group);
+
+        return $currentGames
+            ->concat($this->getCarriedGames($group, $previousStageGames, $currentGames))
+            ->values();
+    }
+
+    private function getCurrentGames(StageGroup $group): Collection
+    {
+        if ($group->relationLoaded('games')) {
+            return $group->getRelation('games');
+        }
+
+        return $group->games()
+            ->with('sets', 'homeApplication', 'awayApplication')
+            ->get();
+    }
+
+    private function getCarriedGames(StageGroup $group, ?Collection $previousStageGames = null, ?Collection $currentGames = null): Collection
+    {
+        if ($previousStageGames === null) {
+            if (!$group->stage) {
+                return collect();
+            }
+
+            $previousStageGames = $this->getPreviousStageGamesForStage($group->stage);
+        }
+
+        if ($previousStageGames->isEmpty()) {
+            return collect();
+        }
+
+        $currentGames ??= $this->getCurrentGames($group);
+        $teams = $group->teams;
+
+        $currentPairs = [];
+        foreach ($currentGames as $game) {
+            if ($game->status === 'cancelled' || $game->home_score === null || $game->away_score === null) {
+                continue;
+            }
+
+            $currentPairs[$this->pairKey($game->home_application_id, $game->away_application_id)] = true;
+        }
+
+        $latestByPair = [];
+        foreach ($previousStageGames as $game) {
+            $homeApplication = $this->resolveGroupApplication($game, 'home', $teams);
+            $awayApplication = $this->resolveGroupApplication($game, 'away', $teams);
+
+            if (!$homeApplication || !$awayApplication || $homeApplication->id === $awayApplication->id) {
+                continue;
+            }
+
+            $pairKey = $this->pairKey($homeApplication->id, $awayApplication->id);
+
+            if (isset($currentPairs[$pairKey])) {
+                continue;
+            }
+
+            $carry = clone $game;
+            $carry->setAttribute('home_application_id', $homeApplication->id);
+            $carry->setAttribute('away_application_id', $awayApplication->id);
+            $carry->setAttribute('source_home_application_id', $game->home_application_id);
+            $carry->setAttribute('source_away_application_id', $game->away_application_id);
+
+            $latestByPair[$pairKey] = $carry;
+        }
+
+        return collect($latestByPair)
+            ->sortBy(function (Game $game) {
+                return [$game->scheduled_time?->timestamp ?? PHP_INT_MAX, $game->id];
+            })
+            ->values();
+    }
+
+    private function resolveGroupApplication(Game $game, string $side, Collection $teams): ?TournamentApplication
+    {
+        $relation = $side . 'Application';
+        $application = $game->relationLoaded($relation)
+            ? $game->getRelation($relation)
+            : $game->{$relation}()->first();
+
+        if (!$application instanceof TournamentApplication) {
+            return null;
+        }
+
+        return $teams->first(function (TournamentApplication $teamApplication) use ($application) {
+            if ($teamApplication->id == $application->id) {
+                return true;
+            }
+
+            return $teamApplication->team_id !== null && $teamApplication->team_id == $application->team_id;
+        });
+    }
+
+    private function pairKey($firstApplicationId, $secondApplicationId): string
+    {
+        $first = (int) $firstApplicationId;
+        $second = (int) $secondApplicationId;
+
+        return $first < $second ? "{$first}-{$second}" : "{$second}-{$first}";
     }
 
     private function calculateTeamStats(TournamentApplication $team, $games, $teams, string $volleyballType): array
@@ -256,9 +401,10 @@ class GroupStandingsService
     public function calculateStandingsForStage(TournamentStage $stage): Collection
     {
         $groupsWithStandings = collect();
+        $previousStageGames = $this->getPreviousStageGamesForStage($stage);
 
         foreach ($stage->groups as $group) {
-            $group->standings = $this->calculateStandings($group);
+            $group->standings = $this->calculateStandings($group, $previousStageGames);
             $groupsWithStandings->push($group);
         }
 
