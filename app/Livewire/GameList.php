@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Game;
 use App\Models\Tournament;
+use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -110,19 +111,19 @@ class GameList extends Component
                 });
             })
             ->when($this->period === 'upcoming', function ($query) {
-                $query->whereNotNull('scheduled_time')->where('scheduled_time', '>=', now());
+                $query->where('scheduled_time', '>=', now());
             })
             ->when($this->period === 'past', function ($query) {
-                $query->whereNotNull('scheduled_time')->where('scheduled_time', '<', now());
+                $query->where('scheduled_time', '<', now());
             })
             ->when($this->status !== 'all', function ($query) {
                 $query->where('status', $this->status);
             })
             ->when($this->dateFrom, function ($query) {
-                $query->whereDate('scheduled_time', '>=', $this->dateFrom);
+                $query->where('scheduled_time', '>=', Carbon::parse($this->dateFrom)->startOfDay());
             })
             ->when($this->dateTo, function ($query) {
-                $query->whereDate('scheduled_time', '<=', $this->dateTo);
+                $query->where('scheduled_time', '<=', Carbon::parse($this->dateTo)->endOfDay());
             })
             ->when($sort === 'date_asc', function ($query) {
                 $query->orderByRaw('scheduled_time is null')->orderBy('scheduled_time');
