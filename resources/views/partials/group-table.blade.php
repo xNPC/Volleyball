@@ -2,7 +2,7 @@
     $standings = $group->standings;
     $games = $group->standings_games ?? collect();
 
-    $getGameDetails = function($games, $team1Id, $team2Id) {
+    $getGameDetails = function($games, $team1Id, $team2Id, $team1Name, $team2Name, $score) {
         $game = $games->first(function($game) use ($team1Id, $team2Id) {
             return ($game->home_application_id == $team1Id && $game->away_application_id == $team2Id) ||
                    ($game->home_application_id == $team2Id && $game->away_application_id == $team1Id);
@@ -14,21 +14,50 @@
 
         $setsDetails = [];
         foreach ($game->sets as $set) {
-            $setsDetails[] = "{$set->home_score}:{$set->away_score}";
+            $firstScore = $game->home_application_id == $team1Id ? $set->home_score : $set->away_score;
+            $secondScore = $game->home_application_id == $team1Id ? $set->away_score : $set->home_score;
+            $setsDetails[] = "{$firstScore}:{$secondScore}";
         }
 
-        $details = "Сеты: " . implode(', ', $setsDetails);
-
-        if ($game->source_stage_name) {
-            $details .= ' · из этапа «' . $game->source_stage_name . '»';
-        }
-
-        return $details;
+        return [
+            'key' => $team1Id . '-' . $team2Id,
+            'title' => $team1Name . ' — ' . $team2Name,
+            'score' => $score,
+            'sets' => 'Сеты: ' . implode(', ', $setsDetails),
+            'source' => $game->source_stage_name ? 'из этапа «' . $game->source_stage_name . '»' : '',
+        ];
     };
 @endphp
 
 @if ($standings->isNotEmpty())
-    <div class="overflow-x-auto">
+    <div x-data="{
+            activeResult: null,
+            openResult(event, details, toggle = true) {
+                if (this.activeResult?.key === details.key) {
+                    if (toggle) this.activeResult = null;
+                    return;
+                }
+                const rect = event.currentTarget.getBoundingClientRect();
+                const mobile = window.innerWidth < 640;
+                let style = 'width:max-content;min-width:18rem;max-width:calc(100vw - 2rem);';
+                if (mobile) {
+                    style += 'left:50%;bottom:1rem;transform:translateX(-50%);';
+                } else {
+                    const horizontal = rect.left + rect.width / 2 <= window.innerWidth / 2
+                        ? `left:${Math.max(8, rect.left)}px;`
+                        : `right:${Math.max(8, window.innerWidth - rect.right)}px;`;
+                    const vertical = window.innerHeight - rect.bottom > 190
+                        ? `top:${rect.bottom + 8}px;`
+                        : `bottom:${window.innerHeight - rect.top + 8}px;`;
+                    style += horizontal + vertical;
+                }
+                this.activeResult = { ...details, style };
+            }
+         }"
+         @keydown.escape.window="activeResult = null"
+         @resize.window="activeResult = null"
+         @click.outside="activeResult = null">
+        <div class="overflow-x-auto" @scroll="activeResult = null">
         <table class="w-full border-collapse text-xs whitespace-nowrap">
             <thead>
             <tr class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -73,14 +102,23 @@
                         @else
                             @php
                                 $result = $teamStats['results'][$opponentStats['team']->id] ?? null;
-                                $gameDetails = $getGameDetails($games, $teamStats['team']->id, $opponentStats['team']->id);
+                                $score = $result ? $result['score'] : '-:-';
+                                $gameDetails = $getGameDetails($games, $teamStats['team']->id, $opponentStats['team']->id, $teamStats['team_name'], $opponentStats['team_name'], $score);
                                 $scoreClass = $result
                                     ? ($result['class'] === 'win-score' ? 'font-bold text-emerald-600' : 'font-bold text-red-600')
                                     : 'text-slate-400';
                             @endphp
-                            <td class="border-r border-slate-100 px-2 py-2 text-center transition hover:bg-slate-50 {{ $scoreClass }}"
-                                @if ($gameDetails) title="{{ $gameDetails }}" @endif>
-                                {{ $result ? $result['score'] : '-:-' }}
+                            <td class="border-r border-slate-100 px-2 py-2 text-center transition hover:bg-slate-50">
+                                @if ($gameDetails)
+                                    <button type="button"
+                                            @click="openResult($event, @js($gameDetails))"
+                                            @mouseenter="if (window.matchMedia('(hover: hover)').matches) openResult($event, @js($gameDetails), false)"
+                                            class="block w-full rounded px-1 py-0.5 text-center {{ $scoreClass }}">
+                                        {{ $score }}
+                                    </button>
+                                @else
+                                    <span class="{{ $scoreClass }}">{{ $score }}</span>
+                                @endif
                             </td>
                         @endif
                     @endforeach
@@ -99,6 +137,32 @@
             @endforeach
             </tbody>
         </table>
+        </div>
+
+        <div x-cloak x-show="activeResult" x-transition.opacity.duration.100ms
+             class="fixed z-50"
+             :style="activeResult?.style">
+            <div class="relative rounded-xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur-sm">
+                <button type="button" @click="activeResult = null" aria-label="Закрыть"
+                        style="right:0.5rem;top:0.5rem;"
+                        class="absolute rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600">
+                    @svg('lucide-x', 'h-4 w-4')
+                </button>
+
+                <p class="mt-5 break-words text-center text-sm font-semibold leading-snug text-brand-900"
+                   x-text="activeResult?.title"></p>
+
+                <p class="mt-3 text-center text-xl font-bold tracking-tight text-brand-800"
+                   x-text="activeResult?.score"></p>
+
+                <div class="mt-3 rounded-lg bg-slate-50 px-3 py-2.5">
+                    <p class="text-center text-xs leading-relaxed text-slate-600" x-text="activeResult?.sets"></p>
+                </div>
+
+                <p x-show="activeResult?.source" class="mt-2 text-center text-[11px] font-medium text-accent-700"
+                   x-text="activeResult?.source"></p>
+            </div>
+        </div>
     </div>
 @else
     <div class="p-8 text-center text-slate-500">

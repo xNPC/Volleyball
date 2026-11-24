@@ -8,7 +8,7 @@ use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentDocumentController;
 use App\Http\Controllers\ApplicationDocumentController;
 use App\Http\Controllers\StageController;
-use App\Http\Controllers\GroupController;
+// use App\Http\Controllers\GroupController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileGamesController;
 use App\Http\Controllers\TeamController;
@@ -36,7 +36,7 @@ Route::get('/tournaments/{tournament}/teams/{team}/roster', [TournamentTeamContr
 
 Route::get('/tournaments/{tournament}/stages/{stage}', [StageController::class, 'show'])->name('stages.show');
 
-Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
+// Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
 
 Route::get('/users', UserList::class)->name('users.index');
 Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');

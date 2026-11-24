@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Album;
 use App\Models\Broadcast;
-use App\Models\StageGroup;
+// use App\Models\StageGroup;
 use App\Models\Team;
 use App\Models\Tournament;
 use App\Models\TournamentStage;
@@ -34,9 +34,9 @@ class SitemapController extends Controller
             }
         });
 
-        StageGroup::query()->get()->each(function (StageGroup $group) use ($urls) {
-            $urls->push($this->entry(route('groups.show', $group->id), $group->updated_at, 'weekly', 0.5));
-        });
+        // StageGroup::query()->get()->each(function (StageGroup $group) use ($urls) {
+        //     $urls->push($this->entry(route('groups.show', $group->id), $group->updated_at, 'weekly', 0.5));
+        // });
 
         Team::query()->get()->each(function (Team $team) use ($urls) {
             $urls->push($this->entry(route('teams.show', $team->id), $team->updated_at, 'weekly', 0.7));
